@@ -10,6 +10,12 @@ typedef struct render_state {
 
 static render_state RenderState;
 
+static void SwapV2(v2* A, v2* B) {
+  v2 Temp = *A;
+  *A = *B;
+  *B = Temp;
+}
+
 static void FrameBufferInit(image* FrameBuffer, u32 Width, u32 Height, u32 Depth, u32 BytesPerPixel) {
   Assert(FrameBuffer);
   FrameBuffer->PixelBuffer = calloc(Width * Height * BytesPerPixel, sizeof(u8));
@@ -56,28 +62,46 @@ static void DrawScanLine(image* FrameBuffer, v2 P1, v2 P2, u8 R, u8 G, u8 B) {
 }
 
 static void DrawTriangle(image* FrameBuffer, v2 P1, v2 P2, v2 P3, u8 R, u8 G, u8 B) {
+}
+
+static void DrawFilledTriangle(image* FrameBuffer, v2 P1, v2 P2, v2 P3, u8 R, u8 G, u8 B) {
+  if (P1.Y > P1.Y) {
+    SwapV2(&P1, &P2);
+  }
+  if (P1.Y > P3.Y) {
+    SwapV2(&P1, &P3);
+  }
+  if (P2.Y > P3.Y) {
+    SwapV2(&P2, &P3);
+  }
+
   i32 DistX1 = P2.X - P1.X;
   i32 DistY1 = P2.Y - P1.Y;
   i32 DistX2 = P3.X - P1.X;
   i32 DistY2 = P3.Y - P1.Y;
+  i32 DistX3 = P3.X - P2.X;
+  i32 DistY3 = P3.Y - P2.Y;
 
   float StepX1 = (float)DistX1 / DistY1;
   float StepX2 = (float)DistX2 / DistY2;
+  float StepX3 = (float)DistX3 / DistY3;
+
   float PixelX1 = P1.X;
   float PixelX2 = P1.X;
 
-  for (i32 PixelY = P1.Y; ; ++PixelY) {
-    if (PixelY == P2.Y || PixelY == P3.Y) {
+  float StepX = StepX1;
+
+  for (i32 PixelY = P1.Y;; ++PixelY) {
+    if (PixelY == P2.Y) {
+      StepX = StepX3;
+    }
+    if (PixelY == P3.Y) {
       break;
     }
     DrawScanLine(FrameBuffer, V2(P1.X + PixelX1, PixelY), V2(P1.X + PixelX2, PixelY), R, G, B);
-    PixelX1 += StepX1;
+    PixelX1 += StepX;
     PixelX2 += StepX2;
   }
-}
-
-static void DrawFilledTriangle(image* FrameBuffer, v2 P1, v2 P2, v2 P3, u8 R, u8 G, u8 B) {
-
 }
 
 i32 SoftwareRendererInit(u32 Width, u32 Height) {
@@ -92,10 +116,9 @@ i32 SoftwareRendererInit(u32 Width, u32 Height) {
 
   v2 P1 = V2(50, 50);
   v2 P2 = V2(30, 90);
-  v2 P3 = V2(70, 70);
+  v2 P3 = V2(70, 120);
 
-  // DrawFilledTriangle(&State->FrameBuffer, P1, P2, P3, 0xff, 0xff, 0xff);
-  DrawTriangle(&State->FrameBuffer, P1, P2, P3, 255, 255, 255);
+  DrawFilledTriangle(&State->FrameBuffer, P1, P2, P3, 0xff, 0xff, 0xff);
 
   return Result;
 }

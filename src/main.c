@@ -4,7 +4,7 @@
 #include "software_renderer.c"
 
 int main(void) {
-  SoftwareRendererInit(800, 600);
+  SoftwareRendererInit(512, 512);
   SoftwareRendererStart();
   return 0;
 }

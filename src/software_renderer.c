@@ -32,7 +32,7 @@ static void FrameBufferDestroy(image* FrameBuffer) {
 }
 
 static void DrawPixel(image* FrameBuffer, i32 X, i32 Y, u8 R, u8 G, u8 B) {
-  if (X < 0 || Y < 0 || X > FrameBuffer->Width || Y > FrameBuffer->Height) {
+  if (X < 0 || Y < 0 || X >= FrameBuffer->Width || Y >= FrameBuffer->Height) {
     return;
   }
   u8* Pixel = &FrameBuffer->PixelBuffer[FrameBuffer->BytesPerPixel * ((Y * FrameBuffer->Width) + X)];
@@ -59,9 +59,6 @@ static void DrawScanLine(image* FrameBuffer, v2 P1, v2 P2, u8 R, u8 G, u8 B) {
   for (i32 PixelX = P1.X; PixelX < P2.X; ++PixelX) {
     DrawPixel(FrameBuffer, PixelX, P1.Y, R, G, B);
   }
-}
-
-static void DrawTriangle(image* FrameBuffer, v2 P1, v2 P2, v2 P3, u8 R, u8 G, u8 B) {
 }
 
 static void DrawFilledTriangle(image* FrameBuffer, v2 P1, v2 P2, v2 P3, u8 R, u8 G, u8 B) {
@@ -107,8 +104,6 @@ static void DrawFilledTriangle(image* FrameBuffer, v2 P1, v2 P2, v2 P3, u8 R, u8
 i32 SoftwareRendererInit(u32 Width, u32 Height) {
   i32 Result = 0;
   (void)LoadImage;
-  (void)DrawTriangle;
-  (void)DrawFilledTriangle;
   (void)DrawLine;
 
   render_state* State = &RenderState;
@@ -119,6 +114,10 @@ i32 SoftwareRendererInit(u32 Width, u32 Height) {
   v2 P3 = V2(70, 120);
 
   DrawFilledTriangle(&State->FrameBuffer, P1, P2, P3, 0xff, 0xff, 0xff);
+
+  DrawFilledTriangle(&State->FrameBuffer, V2(50, 200), V2(200, 250), V2(175, 60), 0xff, 0xff, 0xff);
+
+  DrawFilledTriangle(&State->FrameBuffer, V2(50 + 50, 200), V2(50 + 200, 250), V2(150 + 175, 60), 0xff, 0xff, 0xff);
 
   return Result;
 }

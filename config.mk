@@ -8,12 +8,11 @@ INCLUDE_DIR=include
 
 RES_DIR=resource
 
-# SRC=src/*.c
 SRC=src/main.c
 
 BUILD_DIR=build
 
-LIBS=-lpng -lm
+LIBS=-lpng -lm -lX11
 
 FLAGS=${SRC} -I${INCLUDE_DIR} -o ${BUILD_DIR}/${PROG_NAME} -Wno-missing-braces -std=c99
 

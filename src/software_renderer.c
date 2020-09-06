@@ -12,6 +12,12 @@
   V1 = Temp; \
 }
 
+#define Min3(A, B, C) (((A < B) && (A < C)) ? (A) : ((B < C) ? (B) : C ))
+#define Max3(A, B, C) (((A > B) && (A > C)) ? (A) : ((B > C) ? (B) : C ))
+
+#define Min(A, B) ((A < B ) ? (A) : (B))
+#define Max(A, B) ((A > B ) ? (A) : (B))
+
 typedef struct render_state {
   image FrameBuffer;
 } render_state;
@@ -33,6 +39,14 @@ static void FrameBufferDestroy(image* FrameBuffer) {
   if (FrameBuffer->PixelBuffer) {
     free(FrameBuffer->PixelBuffer);
   }
+}
+
+static i32 OrientationTest2D(v2 A, v2 B, v2 C) {
+  i32 Result = 0;
+
+  Result = (C.X - A.X) * (B.Y - A.Y) - (C.Y - A.Y) * (B.X - A.X);
+
+  return Result;
 }
 
 static void DrawPixel(image* FrameBuffer, i32 X, i32 Y, u8 ColorR, u8 ColorG, u8 ColorB) {
@@ -70,13 +84,7 @@ static void DrawLine(image* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG, u8 Co
   }
 }
 
-static void DrawScanLine(image* FrameBuffer, v2 P1, v2 P2, u8 R, u8 G, u8 B) {
-  for (i32 PixelX = P1.X; PixelX < P2.X; ++PixelX) {
-    DrawPixel(FrameBuffer, PixelX, P1.Y, R, G, B);
-  }
-}
-
-static void DrawFilledTriangle(image* FrameBuffer, v2 A, v2 B, v2 C, u8 ColorR, u8 ColorG, u8 ColorB) {
+static void DrawTriangle(image* FrameBuffer, v2 A, v2 B, v2 C, u8 ColorR, u8 ColorG, u8 ColorB) {
   if (A.X == B.X && A.Y == B.Y) {
     return;
   }
@@ -93,54 +101,50 @@ static void DrawFilledTriangle(image* FrameBuffer, v2 A, v2 B, v2 C, u8 ColorR, 
   DrawLine(FrameBuffer, A, B, ColorR, ColorG, ColorB);
   DrawLine(FrameBuffer, A, C, ColorR, ColorG, ColorB);
   DrawLine(FrameBuffer, B, C, ColorR, ColorG, ColorB);
+}
 
+static void DrawScanLine(image* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG, u8 ColorB) {
+  for (i32 PixelX = A.X; PixelX < B.X; ++PixelX) {
+    DrawPixel(FrameBuffer, PixelX, A.Y, ColorR, ColorG, ColorB);
+  }
+}
+
+static void DrawFilledTriangle(image* FrameBuffer, v2 A, v2 B, v2 C, u8 ColorR, u8 ColorG, u8 ColorB) {
 #if 0
-  if (P1.X == P2.X && P1.Y == P2.Y) {
-    return;
+  if (A.Y > B.Y) {
+    Swap(A, B);
   }
-
-  if (P1.Y > P2.Y) {
-    SwapV2(&P1, &P2);
+  if (A.Y > C.Y) {
+    Swap(A, C);
   }
-  if (P1.Y > P3.Y) {
-    SwapV2(&P1, &P3);
-  }
-  if (P2.Y > P3.Y) {
-    SwapV2(&P2, &P3);
-  }
-
-  v2 Dist1 = V2(P1.X - P2.X, P1.Y - P2.Y);
-  v2 Dist2 = V2(P1.X - P3.X, P1.Y - P3.Y);
-  v2 Dist3 = V2(P2.X - P3.X, P2.Y - P3.Y);
-
-  float LeftStepX = Dist1.X / Dist1.Y;
-  float RightStepX = Dist2.X / Dist2.Y;
-  float SecondStepX = Dist3.X / Dist3.Y;
-  
-  if (!Dist1.Y)  LeftStepX = 0;
-  if (!Dist2.Y)  RightStepX = 0;
-  if (!Dist3.Y)  SecondStepX = 0;
-
-  i32 StartX = P1.X;
-  float PixelX1 = StartX;
-  float PixelX2 = StartX;
-
-  i32 LastPixelY = P3.Y;
-
-  for (i32 PixelY = P1.Y;; ++PixelY) {
-    if (PixelY == P2.Y) {
-      LeftStepX = SecondStepX;
-    }
-    if (PixelY == LastPixelY) {
-      break;
-    }
-    DrawScanLine(FrameBuffer, V2(StartX + PixelX1, PixelY), V2(StartX + PixelX2, PixelY), R, G, B);
-    DrawPixel(FrameBuffer, StartX + PixelX1, PixelY, 0, 255, 0);
-    DrawPixel(FrameBuffer, StartX + PixelX2, PixelY, 50, 100, 255);
-    PixelX1 += LeftStepX;
-    PixelX2 += RightStepX;
+  if (B.Y > C.Y) {
+    Swap(B, C);
   }
 #endif
+
+  i32 MinX = Min3(A.X, B.X, C.X);
+  i32 MinY = Min3(A.Y, B.Y, C.Y);
+  i32 MaxX = Max3(A.X, B.X, C.X);
+  i32 MaxY = Max3(A.Y, B.Y, C.Y);
+
+  MinX = Max(MinX, 0);
+  MinX = Max(MinX, 0);
+  MaxX = Min(MaxX, FrameBuffer->Width - 1);
+  MaxY = Min(MaxY, FrameBuffer->Height - 1);
+
+  v2 P = {0};
+  for (P.Y = MinY; P.Y <= MaxY; P.Y++) {
+    for (P.X = MinX; P.X <= MaxX; P.X++) {
+      // NOTE(lucas): Find the barycentric coordinates
+      i32 W0 = OrientationTest2D(B, C, P);
+      i32 W1 = OrientationTest2D(C, A, P);
+      i32 W2 = OrientationTest2D(A, B, P);
+
+      if (W0 >= 0 && W1 >= 0 && W2 >= 0) {
+        DrawPixel(FrameBuffer, P.X, P.Y, ColorR, ColorG, ColorB);
+      }
+    }
+  }
 }
 
 i32 SoftwareRendererInit(u32 Width, u32 Height) {
@@ -153,22 +157,18 @@ i32 SoftwareRendererInit(u32 Width, u32 Height) {
   FrameBufferInit(&State->FrameBuffer, Width, Height, 24, 3);
 
 {
-  v2 A = V2(100, 100);
-  v2 B = V2(150, 140);
-  v2 C = V2(80, 190);
+  v2 A = V2(60, 50);
+  v2 B = V2(50, 100);
+  v2 C = V2(100, 100);
   DrawFilledTriangle(&State->FrameBuffer, A, B, C, 255, 255, 255);
+  DrawTriangle(&State->FrameBuffer, A, B, C, 255, 0, 0);
 }
 {
-  v2 A = V2(220, 400);
-  v2 B = V2(120, 230);
-  v2 C = V2(200, 200);
+  v2 A = V2(150, 100);
+  v2 B = V2(130, 150);
+  v2 C = V2(180, 200);
   DrawFilledTriangle(&State->FrameBuffer, A, B, C, 255, 255, 255);
-}
-{
-  v2 A = V2(150, 90 + 70);
-  v2 B = V2(200, 160 + 70);
-  v2 C = V2(130, 220 + 70);
-  DrawFilledTriangle(&State->FrameBuffer, A, B, C, 240, 20, 20);
+  DrawTriangle(&State->FrameBuffer, A, B, C, 255, 0, 0);
 }
 
   return Result;

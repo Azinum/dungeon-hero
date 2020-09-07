@@ -27,7 +27,7 @@ static void GameStateInit(game_state* Game) {
 static v2 Light = V2(0, 350);
 static float LightStrength = 20000;
 
-#define SCALING (128)
+#define SCALING (512)
 
 static void GameDrawMesh(framebuffer* FrameBuffer, mesh* Mesh, v2 P) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {

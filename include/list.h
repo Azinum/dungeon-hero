@@ -16,7 +16,6 @@
 }
 
 #define ListFree(List, Count) {\
-  Assert(List); \
   if (List) {\
     free(List);\
     Count = 0;\

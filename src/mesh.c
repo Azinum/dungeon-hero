@@ -6,6 +6,12 @@
   IterBuffer += ReadBytes;\
 }
 
+static void MeshUnload(mesh* Mesh) {
+  Assert(Mesh);
+  ListFree(Mesh->Vertices, Mesh->VertexCount);
+  ListFree(Mesh->Indices, Mesh->IndexCount);
+}
+
 static i32 ReadFile(const char* Path, buffer* Buffer) {
   i32 Result = 0;
 
@@ -49,6 +55,8 @@ static void MeshInit(mesh* Mesh) {
 #define WORD_SIZE 128
 
 static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
+  i32 Status = 0;
+
   buffer Buffer = {0};
   MeshInit(Mesh);
 
@@ -92,6 +100,12 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
         &X[1], &Y[1], &Z[1],
         &X[2], &Y[2], &Z[2]
       );
+      if (Result != 9) {
+        fprintf(stderr, "Invalid OBJ file '%s'\n", Path);
+        MeshUnload(Mesh);
+        Status = -1;
+        goto done;
+      }
       // NOTE(lucas): Indexes start at 1 in OBJ files
       ListPush(Mesh->Indices, Mesh->IndexCount, X[0] -1);
       ListPush(Mesh->Indices, Mesh->IndexCount, X[1] -1);
@@ -99,7 +113,7 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
     }
   } while (1);
 
-#if 1
+#if 0
   printf(
     "Mesh Loaded ('%s'):\n"
     "  Vertex Count: %i\n"
@@ -111,13 +125,10 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
   );
 #endif
 
+done:
   free(Buffer.Data);
   Buffer.Count = 0;
 
-  return 0;
+  return Status;
 }
 
-static void MeshUnload(mesh* Mesh) {
-  Assert(Mesh);
-  ListFree(Mesh->Vertices, Mesh->VertexCount);
-}

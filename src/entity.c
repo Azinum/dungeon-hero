@@ -22,11 +22,12 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
       Entity->Speed.X = -Entity->Speed.X;
     if (P.Y <= 0 || P.Y >= FrameBuffer->Height)
       Entity->Speed.Y = -Entity->Speed.Y;
-
+#if 0
     DrawFilledTriangleAt(FrameBuffer,
       T.A, T.B, T.C, P,
       255 * (1.0f / Entity->Speed.X) * 100,
       255 * (1.0f / Entity->Speed.X) * 20,
       255 * (1.0f / Entity->Speed.X) * 10);
+#endif
   }
 }

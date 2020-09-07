@@ -107,9 +107,9 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
         goto done;
       }
       // NOTE(lucas): Indexes start at 1 in OBJ files
-      ListPush(Mesh->Indices, Mesh->IndexCount, X[0] -1);
-      ListPush(Mesh->Indices, Mesh->IndexCount, X[1] -1);
-      ListPush(Mesh->Indices, Mesh->IndexCount, X[2] -1);
+      ListPush(Mesh->Indices, Mesh->IndexCount, X[0] - 1);
+      ListPush(Mesh->Indices, Mesh->IndexCount, X[1] - 1);
+      ListPush(Mesh->Indices, Mesh->IndexCount, X[2] - 1);
     }
   } while (1);
 

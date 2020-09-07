@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "config.h"
+#include "math_util.h"
 
 #include "image.h"
 #include "framebuffer.h"

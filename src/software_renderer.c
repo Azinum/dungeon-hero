@@ -69,6 +69,8 @@ inline void DrawScanLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 Col
   }
 }
 
+// NOTE(lucas): Triangles are drawn in counterclockwise order:
+// ABC ABC ABC
 inline void DrawFilledTriangle(framebuffer* FrameBuffer, v2 A, v2 B, v2 C, u8 ColorR, u8 ColorG, u8 ColorB) {
   i32 MinX = Min3(A.X, B.X, C.X);
   i32 MinY = Min3(A.Y, B.Y, C.Y);

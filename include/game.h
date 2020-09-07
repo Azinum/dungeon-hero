@@ -1,13 +1,16 @@
 // game.h
 
 #include "common.h"
+#include "types.h"
 #include "config.h"
 #include "math_util.h"
+#include "list.h"
 
 #include "image.h"
+#include "mesh.h"
 #include "framebuffer.h"
-#include "software_renderer.h"
 #include "window.h"
+#include "software_renderer.h"
 #include "entity.h"
 
 #define MAX_ENTITY 256
@@ -20,5 +23,7 @@ typedef struct game_state {
 typedef struct triangle {
   v2 A, B, C;
 } triangle;
+
+static entity* GameAddEntity(v2 Position);
 
 void GameStart();

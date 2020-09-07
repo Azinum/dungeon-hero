@@ -1,19 +1,5 @@
 // software_renderer.c
 
-#define Abs(X) (((X) >= 0) ? (X) : -(X))
-
-#define Swap(V0, V1) { \
-  __typeof__(V0) Temp = V0; \
-  V0 = V1; \
-  V1 = Temp; \
-}
-
-#define Min3(A, B, C) (((A < B) && (A < C)) ? (A) : ((B < C) ? (B) : C ))
-#define Max3(A, B, C) (((A > B) && (A > C)) ? (A) : ((B > C) ? (B) : C ))
-
-#define Min(A, B) ((A < B ) ? (A) : (B))
-#define Max(A, B) ((A > B ) ? (A) : (B))
-
 static render_state RenderState;
 
 inline i32 OrientationTest2D(v2 A, v2 B, v2 C) {
@@ -108,6 +94,15 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, v2 A, v2 B, v2 C, u8 Co
       }
     }
   }
+}
+
+inline void DrawFilledTriangleAt(framebuffer* FrameBuffer, v2 A, v2 B, v2 C, v2 P, u8 ColorR, u8 ColorG, u8 ColorB) {
+  DrawFilledTriangle(
+    FrameBuffer,
+    V2(P.X + A.X, P.Y + A.Y),
+    V2(P.X + B.X, P.Y + B.Y),
+    V2(P.X + C.X, P.Y + C.Y),
+    ColorR, ColorG, ColorB);
 }
 
 i32 RendererInit(u32 Width, u32 Height) {

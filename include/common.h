@@ -13,6 +13,20 @@
 #define V3(X, Y, Z) ((v3) {X, Y, Z})
 #define V4(X, Y, Z, W) ((v4) {X, Y, Z, W})
 
+#define Abs(X) (((X) >= 0) ? (X) : -(X))
+
+#define Swap(V0, V1) { \
+  __typeof__(V0) Temp = V0; \
+  V0 = V1; \
+  V1 = Temp; \
+}
+
+#define Min3(A, B, C) (((A < B) && (A < C)) ? (A) : ((B < C) ? (B) : C ))
+#define Max3(A, B, C) (((A > B) && (A > C)) ? (A) : ((B > C) ? (B) : C ))
+
+#define Min(A, B) ((A < B ) ? (A) : (B))
+#define Max(A, B) ((A > B ) ? (A) : (B))
+
 typedef int64_t i64;
 typedef uint64_t u64;
 typedef int32_t i32;

@@ -32,3 +32,11 @@
 inline float Random(float From, float To) {
   return (float)rand() / (float)(RAND_MAX / To) + (float)rand() / (float)(RAND_MAX / From);
 }
+
+inline float Clamp(float Value, float MaxValue) {
+  if (Value > MaxValue) {
+    return MaxValue;
+  }
+  return Value;
+}
+

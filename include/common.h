@@ -1,8 +1,5 @@
 // common.h
 
-#ifndef _COMMON_H
-#define _COMMON_H
-
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
@@ -43,10 +40,8 @@ typedef struct v3i {
   i32 X, Y, Z;
 } v3i;
 
-inline float random_number(float from, float to) {
-  return (float)rand() / (float)(RAND_MAX / to) + (float)rand() / (float)(RAND_MAX / from);
+inline float Random(float From, float To) {
+  return (float)rand() / (float)(RAND_MAX / To) + (float)rand() / (float)(RAND_MAX / From);
 }
 
 #define Assert(VALUE) assert(VALUE)
-
-#endif

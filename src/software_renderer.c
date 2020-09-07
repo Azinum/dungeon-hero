@@ -3,7 +3,9 @@
 #include "software_renderer.h"
 
 #include "image.c"
+#include "framebuffer.c"
 #include "window.c"
+#include "entity.c"
 
 #define Abs(X) (((X) >= 0) ? (X) : -(X))
 
@@ -148,15 +150,55 @@ i32 SoftwareRendererInit(u32 Width, u32 Height) {
   return Result;
 }
 
+typedef struct triangle {
+  v2 A, B, C;
+} triangle;
+
+#define MAX_ENTITY 256
+static entity Entities[MAX_ENTITY];
+static i32 EntityCount = 0;
+
 void SoftwareRendererStart() {
   u8 IsRunning = 1;
+  render_state* State = &RenderState;
+
+  for (u32 EntityIndex = 0; EntityIndex < MAX_ENTITY; ++EntityIndex) {
+    entity* E = &Entities[EntityCount++];
+    Assert(E);
+
+    EntityInit(E,
+      V2(Random(0, State->FrameBuffer.Width),
+      Random(0, State->FrameBuffer.Height))
+    );
+  }
+
+  triangle T = {
+    .A = V2(5, 0),
+    .B = V2(0, 22),
+    .C = V2(15, 15),
+  };
 
   while (IsRunning) {
     if (WindowEvents() != 0) {
       break;
     }
+    for (u32 EntityIndex = 0; EntityIndex < EntityCount; EntityIndex++) {
+      entity* E = &Entities[EntityIndex];
+      E->P.X += 0.2f;
+      if (E->P.X > State->FrameBuffer.Width)
+        E->P.X = -100;
 
-    WindowSwapBuffers(&RenderState.FrameBuffer);
+      DrawFilledTriangle(&State->FrameBuffer,
+        V2(E->P.X + T.A.X, E->P.Y + T.A.Y),
+        V2(E->P.X + T.B.X, E->P.Y + T.B.Y),
+        V2(E->P.X + T.C.X, E->P.Y + T.C.Y),
+        ((1.0f / E->P.X) * 36) * 255,
+        ((1.0f / E->P.X) * 32) * 255,
+        ((1.0f / E->P.X) * 31) * 255
+      );
+    }
+    WindowSwapBuffers(&State->FrameBuffer);
+    FrameBufferClear(&State->FrameBuffer, 0, 0, 0);
   }
 
   SoftwareRendererExit();

@@ -1,8 +1,5 @@
 // image.h
 
-#ifndef _IMAGE_H
-#define _IMAGE_H
-
 typedef struct image {
   u8* PixelBuffer;
   u32 Width;
@@ -11,5 +8,3 @@ typedef struct image {
   u16 Pitch;
   u16 BytesPerPixel;
 } image;
-
-#endif

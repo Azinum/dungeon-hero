@@ -4,8 +4,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "window.h"
-
 typedef struct window {
   Display* Disp;
   Window Win;
@@ -15,22 +13,6 @@ typedef struct window {
 } window;
 
 static window Win;
-
-static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
-  FrameBuffer->Data = malloc(Width * Height * 4);
-  FrameBuffer->Width = Width;
-  FrameBuffer->Height = Height;
-}
-
-static void FrameBufferDestroy(framebuffer* FrameBuffer) {
-  Assert(FrameBuffer);
-  if (FrameBuffer->Data) {
-    free(FrameBuffer->Data);
-    FrameBuffer->Data = NULL;
-    FrameBuffer->Width = 0;
-    FrameBuffer->Height = 0;
-  }
-}
 
 static i32 WindowOpen(u32 Width, u32 Height, const char* Title) {
   Win.Disp = XOpenDisplay(0);

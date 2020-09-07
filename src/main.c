@@ -1,10 +1,9 @@
 // main.c
 // Software Renderer
 
-#include "software_renderer.c"
+#include "game.c"
 
 int main(void) {
-  SoftwareRendererInit(WINDOW_WIDTH, WINDOW_HEIGHT);
-  SoftwareRendererStart();
+  GameStart();
   return 0;
 }

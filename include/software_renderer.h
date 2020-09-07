@@ -1,12 +1,9 @@
 // software_renderer.h
 
-#include "common.h"
-#include "config.h"
-#include "image.h"
-#include "entity.h"
+typedef struct render_state {
+  framebuffer FrameBuffer;
+} render_state;
 
-i32 SoftwareRendererInit(u32 Width, u32 Height);
+i32 RendererInit(u32 Width, u32 Height);
 
-void SoftwareRendererStart();
-
-void SoftwareRendererExit();
+void RendererDestroy();

@@ -1,7 +1,5 @@
 // framebuffer.c
 
-#include "framebuffer.h"
-
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
   FrameBuffer->Width = Width;

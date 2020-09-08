@@ -7,7 +7,7 @@ static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
 }
 
 static void FrameBufferClear(framebuffer* FrameBuffer, u8 ColorR, u8 ColorG, u8 ColorB) {
-  color Zero = {0};
+  color Zero = {ColorB, ColorG, ColorR, 0};
   color* Iter = FrameBuffer->Color;
   u32 Count = FrameBuffer->Width * FrameBuffer->Height;
 

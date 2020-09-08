@@ -15,16 +15,16 @@ static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
   Game->EntityCount = 0;
 
-  for (u32 Index = 0; Index < 64; ++Index) {
-    entity* Entity = GameAddEntity(V2(Random(0, 300), Random(0, 300)));
+  for (u32 Index = 0; Index < MAX_ENTITY; ++Index) {
+    entity* Entity = GameAddEntity(V3(Random(0, 800), Random(0, 600), 0));
     if (!Entity) {
       break;
     }
-    Entity->Speed = V2(Random(-.1, .1), Random(-.1, .1));
+    Entity->Speed = V2(Random(-.4, .4), Random(-.4, .4));
   }
 }
 
-static v2 Light = V2(0, 400);
+static v2 Light = V2(0, 200);
 
 static void GameRun(game_state* Game) {
   mesh Mesh;
@@ -37,18 +37,17 @@ static void GameRun(game_state* Game) {
       break;
     }
     ++Tick;
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer);
+    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 4.0f);
 
-    Light.X = (RenderState.FrameBuffer.Width >> 2) + ((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 500.0f));
-    DrawMesh(&RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, V3(350, 300, 0), Light);
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, Light);
 
     RendererSwapBuffers();
-    RendererClear();
+    RendererClear(2, 15, 40);
   }
   MeshUnload(&Mesh);
 }
 
-static entity* GameAddEntity(v2 Position) {
+static entity* GameAddEntity(v3 Position) {
   if (GameState.EntityCount >= MAX_ENTITY) {
     return NULL;
   }

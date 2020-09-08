@@ -92,8 +92,9 @@ inline void DrawFilledTriangleAt(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v
     ColorR, ColorG, ColorB);
 }
 
-#define LightStrength 12500
-#define MODEL_SCALE 1000
+// #define LightStrength 11500
+#define LightStrength 20
+#define MODEL_SCALE 150
 
 inline void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v2 Light) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
@@ -107,13 +108,14 @@ inline void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v
     A[1] = V3(V[1].X * MODEL_SCALE, V[1].Y * MODEL_SCALE, V[1].Z * MODEL_SCALE);
     A[2] = V3(V[2].X * MODEL_SCALE, V[2].Y * MODEL_SCALE, V[2].Z * MODEL_SCALE);
 
-    float LightFactorX = 1.0f / (Abs(Light.X - A[0].X));
-    float LightFactorY = 1.0f / (Abs(Light.Y - A[0].Y));
-    float LightFactor = Clamp(LightFactorX * LightFactorY * LightStrength, 1.0f);
+    float LightFactorX = 1.0f / (Abs(A[0].X - Light.X));
+    float LightFactorY = 1.0f / (Abs(A[0].Y - Light.Y));
+    // float LightFactor = Clamp(LightFactorX * LightFactorY * LightStrength, 1.0f);
+    float LightFactor = Clamp(LightFactorX * LightStrength, 1.0f);
 
     DrawFilledTriangleAt(FrameBuffer, ZBuffer, A[0], A[1], A[2], P,
-      30 * LightFactor,
-      90 * LightFactor,
+      50 * LightFactor,
+      80 * LightFactor,
       255 * LightFactor
     );
   }
@@ -135,8 +137,8 @@ static void RendererSwapBuffers() {
   WindowSwapBuffers(&RenderState.FrameBuffer);
 }
 
-static void RendererClear() {
-  FrameBufferClear(&RenderState.FrameBuffer, 0, 0, 0);
+static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
+  FrameBufferClear(&RenderState.FrameBuffer, ColorR, ColorG, ColorB);
   memset(RenderState.ZBuffer, 10000, sizeof(i32) * RenderState.FrameBuffer.Width * RenderState.FrameBuffer.Height);
 }
 

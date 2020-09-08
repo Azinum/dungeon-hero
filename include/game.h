@@ -13,7 +13,7 @@
 #include "software_renderer.h"
 #include "entity.h"
 
-#define MAX_ENTITY 256
+#define MAX_ENTITY 56
 
 typedef struct game_state {
   entity Entities[MAX_ENTITY];
@@ -24,6 +24,6 @@ typedef struct triangle {
   v2 A, B, C;
 } triangle;
 
-static entity* GameAddEntity(v2 Position);
+static entity* GameAddEntity(v3 Position);
 
 void GameStart();

@@ -5,7 +5,7 @@ static entity* EntityInit(entity* E, v3 P) {
   E->P = P;
 }
 
-static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v2 Light) {
+static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 Light) {
   for (u32 EntityIndex = 0; EntityIndex < EntityCount; ++EntityIndex) {
     entity* Entity = &Entities[EntityIndex];
     Entity->P.X += Entity->Speed.X;

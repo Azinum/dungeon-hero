@@ -2,6 +2,8 @@
 
 static render_state RenderState;
 
+static mat4 Proj;
+
 inline i32 Barycentric(v3 A, v3 B, v3 C) {
   i32 Result = 0;
 
@@ -14,7 +16,9 @@ inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, u8 ColorR, u8 Colo
   if (X < 0 || Y < 0 || X >= FrameBuffer->Width || Y >= FrameBuffer->Height) {
     return;
   }
-  i8* Pixel = &FrameBuffer->Data[4 * ((Y * FrameBuffer->Width) + X)];
+
+  // NOTE(lucas): Origin is at the bottom left corner!
+  i8* Pixel = &FrameBuffer->Data[4 * (((FrameBuffer->Height - Y) * FrameBuffer->Width) + X)];
   Pixel[0] = ColorB;
   Pixel[1] = ColorG;
   Pixel[2] = ColorR;
@@ -44,8 +48,7 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG,
   }
 }
 
-// NOTE(lucas): Triangles are drawn in counterclockwise order:
-// ABC ABC ABC
+// NOTE(lucas): Triangles are drawn in counterclockwise order
 inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 B, v3 C, u8 ColorR, u8 ColorG, u8 ColorB) {
   i32 MinX = Min3(A.X, B.X, C.X);
   i32 MinY = Min3(A.Y, B.Y, C.Y);
@@ -92,28 +95,43 @@ inline void DrawFilledTriangleAt(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v
     ColorR, ColorG, ColorB);
 }
 
-// #define LightStrength 11500
-#define LightStrength 20
-#define MODEL_SCALE 150
+v3 MatToV3(mat4 M) {
+  v3 Result;
 
-inline void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v2 Light) {
+  Result = V3(M.Elements[0][0] / M.Elements[3][0], M.Elements[1][0] / M.Elements[3][0], M.Elements[2][0] / M.Elements[3][0]);
+
+  return Result;
+}
+
+#define LightStrength 60
+#define MODEL_SCALE 2500
+
+static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v3 Light) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];
-    v3 A[3];
+    v3 L[3];
+    v3 N[3];
 
     V[0] = Mesh->Vertices[Mesh->Indices[Index + 0]];
     V[1] = Mesh->Vertices[Mesh->Indices[Index + 1]];
     V[2] = Mesh->Vertices[Mesh->Indices[Index + 2]];
-    A[0] = V3(V[0].X * MODEL_SCALE, V[0].Y * MODEL_SCALE, V[0].Z * MODEL_SCALE);
-    A[1] = V3(V[1].X * MODEL_SCALE, V[1].Y * MODEL_SCALE, V[1].Z * MODEL_SCALE);
-    A[2] = V3(V[2].X * MODEL_SCALE, V[2].Y * MODEL_SCALE, V[2].Z * MODEL_SCALE);
 
-    float LightFactorX = 1.0f / (Abs(A[0].X - Light.X));
-    float LightFactorY = 1.0f / (Abs(A[0].Y - Light.Y));
-    // float LightFactor = Clamp(LightFactorX * LightFactorY * LightStrength, 1.0f);
-    float LightFactor = Clamp(LightFactorX * LightStrength, 1.0f);
+    N[0] = TransformApply(Proj, V[0]);
+    N[1] = TransformApply(Proj, V[1]);
+    N[2] = TransformApply(Proj, V[2]);
 
-    DrawFilledTriangleAt(FrameBuffer, ZBuffer, A[0], A[1], A[2], P,
+    L[0] = AddToV3(N[0], P);
+    L[1] = AddToV3(N[1], P);
+    L[2] = AddToV3(N[2], P);
+
+#if 0
+    printf("%g, %g; %g, %g; %g, %g\n", N[0].X, N[0].Y, N[1].X, N[1].Y, N[2].X, N[2].Y);
+#endif
+
+    float LightDistance = 1.0f / Distance(L[0], Light);
+    float LightFactor = Clamp(LightDistance * LightStrength, 0, 1.0f);
+
+    DrawFilledTriangleAt(FrameBuffer, ZBuffer, N[0], N[1], N[2], P,
       50 * LightFactor,
       80 * LightFactor,
       255 * LightFactor
@@ -123,6 +141,8 @@ inline void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v
 
 i32 RendererInit(u32 Width, u32 Height) {
   (void)LoadImage; (void)StoreImage; (void)DrawLine; (void)DrawFilledTriangle;
+ 
+  Proj = Perspective(1, 4 / 3.0f, 0.1f, 500);
 
   render_state* State = &RenderState;
   FrameBufferCreate(&State->FrameBuffer, Width, Height);
@@ -139,7 +159,7 @@ static void RendererSwapBuffers() {
 
 static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
   FrameBufferClear(&RenderState.FrameBuffer, ColorR, ColorG, ColorB);
-  memset(RenderState.ZBuffer, 10000, sizeof(i32) * RenderState.FrameBuffer.Width * RenderState.FrameBuffer.Height);
+  memset(RenderState.ZBuffer, -1000, sizeof(i32) * RenderState.FrameBuffer.Width * RenderState.FrameBuffer.Height);
 }
 
 void RendererDestroy() {

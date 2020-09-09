@@ -5,6 +5,8 @@
 #include <X11/Xutil.h>
 
 typedef struct window {
+  u32 Width;
+  u32 Height;
   Display* Disp;
   Window Win;
   XImage* Image;
@@ -15,6 +17,8 @@ typedef struct window {
 static window Win;
 
 static i32 WindowOpen(u32 Width, u32 Height, const char* Title) {
+  Win.Width = Width;
+  Win.Height = Height;
   Win.Disp = XOpenDisplay(0);
   if (!Win.Disp)
     return -1;

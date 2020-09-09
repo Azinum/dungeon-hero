@@ -21,10 +21,11 @@ static void GameStateInit(game_state* Game) {
       break;
     }
     Entity->Speed = V2(Random(-.4, .4), Random(-.4, .4));
+    Entity->P.Z = Random(-2, 2);
   }
 }
 
-static v2 Light = V2(0, 200);
+static v3 Light = V3(0, 300, 0);
 
 static void GameRun(game_state* Game) {
   mesh Mesh;
@@ -37,7 +38,7 @@ static void GameRun(game_state* Game) {
       break;
     }
     ++Tick;
-    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 4.0f);
+    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 4.0f) + 400;
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, Light);
 
@@ -55,7 +56,6 @@ static entity* GameAddEntity(v3 Position) {
   EntityInit(Entity, Position);
   return Entity;
 }
-
 
 void GameStart() {
   game_state* Game = &GameState;

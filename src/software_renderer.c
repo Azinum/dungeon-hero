@@ -146,6 +146,11 @@ static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v
     if (LightFactor < 0)
       continue;
 #endif
+    v3 CameraNormal = V3(0, 0, -1);
+    float DotValue = DotVec3(CameraNormal, N);
+    if (DotValue < 0) {
+      continue;
+    }
 
     DrawFilledTriangle(FrameBuffer, ZBuffer, V[0], V[1], V[2],
       255 * LightFactor,
@@ -163,7 +168,7 @@ i32 RendererInit(u32 Width, u32 Height) {
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
-  Proj = Perspective(50, (float)Win.Height / Win.Width, 0.1f, 500);
+  Proj = Perspective(50, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 

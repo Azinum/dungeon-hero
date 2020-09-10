@@ -12,4 +12,8 @@ typedef struct mesh {
 
   v3* Normals;
   u32 NormalCount;
+
+  v2* UV;
+  u32 UVCount;
+
 } mesh;

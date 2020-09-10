@@ -12,11 +12,18 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
 #if 1
     Entity->P.X += Entity->Speed.X;
     Entity->P.Y += Entity->Speed.Y;
-#else
-    if (P.X <= -10 || P.X >= 10)
-      Entity->Speed.X = -Entity->Speed.X;
-    if (P.Y <= -10 || P.Y >= 10)
+
+#define YMax 6
+
+    if (P.Y < -YMax) {
+      Entity->P.Y = -YMax;
       Entity->Speed.Y = -Entity->Speed.Y;
+    }
+    else if (P.Y > YMax) {
+      Entity->P.Y = YMax;
+      Entity->Speed.Y = -Entity->Speed.Y;
+    }
+#else
 #endif
     DrawMesh(FrameBuffer, ZBuffer, Mesh, P, Light);
   }

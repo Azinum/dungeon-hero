@@ -16,15 +16,15 @@ static void GameStateInit(game_state* Game) {
   Game->EntityCount = 0;
 
   for (u32 Index = 0; Index < MAX_ENTITY; ++Index) {
-    entity* Entity = GameAddEntity(V3(Random(-15, 15), Random(-15, 15), 10));
+    entity* Entity = GameAddEntity(V3(-6 + ((1 + Index) * 2.1f), (Index * 2), 20)); // GameAddEntity(V3(Random(-15, 15), Random(-15, 15), 20));
     if (!Entity) {
       break;
     }
-    Entity->Speed = V2(Random(-0.01, 0.01), Random(-0.01, 0.01));
+    Entity->Speed = V2(0, 0.005f);
   }
 }
 
-static v3 Light = V3(0, 300, -30);
+static v3 Light = V3(0, 300, -25);
 
 static void GameRun(game_state* Game) {
   mesh Mesh;

@@ -14,6 +14,8 @@ static void MeshUnload(mesh* Mesh) {
   ListFree(Mesh->NormalIndices, Mesh->NormalIndexCount);
 
   ListFree(Mesh->Normals, Mesh->NormalCount);
+
+  ListFree(Mesh->UV, Mesh->UVCount);
 }
 
 static i32 ReadFile(const char* Path, buffer* Buffer) {

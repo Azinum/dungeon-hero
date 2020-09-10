@@ -140,7 +140,7 @@ static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v
     printf("%g, %g; %g, %g; %g, %g\n", N[0].X, N[0].Y, N[1].X, N[1].Y, N[2].X, N[2].Y);
 #endif
 
-    v3 LightNormal = NormalizeVec3(DifferenceV3(V[0], Light));
+    v3 LightNormal = NormalizeVec3(DifferenceV3(Light, V[0]));
     float LightFactor = Clamp(DotVec3(N, LightNormal) * LightStrength, 0, 1.0f);
 #if 0
     if (LightFactor < 0)
@@ -163,7 +163,7 @@ i32 RendererInit(u32 Width, u32 Height) {
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
-  Proj = Perspective(80, (float)Win.Height / Win.Width, 0.1f, 500);
+  Proj = Perspective(50, (float)Win.Height / Win.Width, 0.1f, 500);
   return 0;
 }
 

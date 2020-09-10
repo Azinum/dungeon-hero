@@ -24,7 +24,7 @@ static void GameStateInit(game_state* Game) {
   }
 }
 
-static v3 Light = V3(0, 0, 20);
+static v3 Light = V3(0, 300, -30);
 
 static void GameRun(game_state* Game) {
   mesh Mesh;
@@ -37,7 +37,7 @@ static void GameRun(game_state* Game) {
       break;
     }
     ++Tick;
-    // Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
+    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, Light);
 

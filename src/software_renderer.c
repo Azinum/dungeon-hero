@@ -98,14 +98,6 @@ inline void DrawFilledTriangleAt(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v
     ColorR, ColorG, ColorB);
 }
 
-v3 MatToV3(mat4 M) {
-  v3 Result;
-
-  Result = V3(M.Elements[0][0] / M.Elements[3][0], M.Elements[1][0] / M.Elements[3][0], M.Elements[2][0] / M.Elements[3][0]);
-
-  return Result;
-}
-
 #define LightStrength 1.5f
 #define MODEL_SCALE 50
 
@@ -176,9 +168,27 @@ static void RendererSwapBuffers() {
   WindowSwapBuffers(&RenderState.FrameBuffer);
 }
 
+static void ZBufferClear(i32* ZBuffer, u32 Width, u32 Height) {
+  u32 Count = Width * Height;
+  i32 FillValue = 0;
+#if USE_SSE
+  __m128i* Dest = (__m128i*)ZBuffer;
+  __m128i Value = _mm_set_epi32(FillValue, FillValue, FillValue, FillValue);
+  u32 ChunkSize = 4;
+  Count /= ChunkSize;
+  for (u32 Index = 0; Index < Count; ++Index) {
+    *(Dest++) = Value;
+  }
+#else
+  for (u32 Index = 0; Index < Count; ++Index) {
+    *(ZBuffer++) = FillValue;
+  }
+#endif
+}
+
 static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
   FrameBufferClear(&RenderState.FrameBuffer, ColorR, ColorG, ColorB);
-  memset(RenderState.ZBuffer, -1000, sizeof(i32) * RenderState.FrameBuffer.Width * RenderState.FrameBuffer.Height);
+  ZBufferClear(RenderState.ZBuffer, RenderState.FrameBuffer.Width, RenderState.FrameBuffer.Height);
 }
 
 void RendererDestroy() {

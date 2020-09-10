@@ -10,6 +10,10 @@ static void MeshUnload(mesh* Mesh) {
   Assert(Mesh);
   ListFree(Mesh->Vertices, Mesh->VertexCount);
   ListFree(Mesh->Indices, Mesh->IndexCount);
+
+  ListFree(Mesh->NormalIndices, Mesh->NormalIndexCount);
+
+  ListFree(Mesh->Normals, Mesh->NormalCount);
 }
 
 static i32 ReadFile(const char* Path, buffer* Buffer) {
@@ -88,6 +92,7 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
     else if (!strncmp(Word, "vn", WORD_SIZE)) {
       v3 V;
       SScanf(Result, Iter, "%f %f %f", &V.X, &V.Y, &V.Z);
+      ListPush(Mesh->Normals, Mesh->NormalCount, V);
     }
     // Face
     else if (!strncmp(Word, "f", WORD_SIZE)) {
@@ -110,6 +115,10 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
       ListPush(Mesh->Indices, Mesh->IndexCount, X[0] - 1);
       ListPush(Mesh->Indices, Mesh->IndexCount, X[1] - 1);
       ListPush(Mesh->Indices, Mesh->IndexCount, X[2] - 1);
+
+      ListPush(Mesh->NormalIndices, Mesh->NormalIndexCount, Z[0] - 1);
+      ListPush(Mesh->NormalIndices, Mesh->NormalIndexCount, Z[1] - 1);
+      ListPush(Mesh->NormalIndices, Mesh->NormalIndexCount, Z[2] - 1);
     }
   } while (1);
 
@@ -118,10 +127,14 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
     "Mesh Loaded ('%s'):\n"
     "  Vertex Count: %i\n"
     "  Index Count: %i\n"
+    "  Normal Index Count: %i\n"
+    "  Normal Count: %i\n"
     ,
     Path,
     Mesh->VertexCount,
-    Mesh->IndexCount
+    Mesh->IndexCount,
+    Mesh->NormalIndexCount,
+    Mesh->NormalCount
   );
 #endif
 

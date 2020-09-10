@@ -53,6 +53,7 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
     return;
   }
+
   i32 MinX = Min3(A.X, B.X, C.X);
   i32 MinY = Min3(A.Y, B.Y, C.Y);
   i32 MaxX = Max3(A.X, B.X, C.X);
@@ -105,48 +106,52 @@ v3 MatToV3(mat4 M) {
   return Result;
 }
 
-#define LightStrength 80
+#define LightStrength 1.5f
 #define MODEL_SCALE 50
 
 static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v3 Light) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];
-    v3 N[3];
+    v3 N;
 
     V[0] = Mesh->Vertices[Mesh->Indices[Index + 0]];
     V[1] = Mesh->Vertices[Mesh->Indices[Index + 1]];
     V[2] = Mesh->Vertices[Mesh->Indices[Index + 2]];
 
+    N = Mesh->Normals[Mesh->NormalIndices[Index + 0]];
+
     V[0] = AddToV3(V[0], P);
     V[1] = AddToV3(V[1], P);
     V[2] = AddToV3(V[2], P);
 
-    N[0] = MultiplyMatrixVector(Proj, V[0]);
-    N[1] = MultiplyMatrixVector(Proj, V[1]);
-    N[2] = MultiplyMatrixVector(Proj, V[2]);
+    V[0] = MultiplyMatrixVector(Proj, V[0]);
+    V[1] = MultiplyMatrixVector(Proj, V[1]);
+    V[2] = MultiplyMatrixVector(Proj, V[2]);
 
-    N[0].X += 1.0f; N[0].Y += 1.0f;
-    N[1].X += 1.0f; N[1].Y += 1.0f;
-    N[2].X += 1.0f; N[2].Y += 1.0f;
+    V[0].X += 1.0f; V[0].Y += 1.0f;
+    V[1].X += 1.0f; V[1].Y += 1.0f;
+    V[2].X += 1.0f; V[2].Y += 1.0f;
 
-    N[0].X *= 0.5f * Win.Width; N[0].Y *= 0.5f * Win.Height;
-    N[1].X *= 0.5f * Win.Width; N[1].Y *= 0.5f * Win.Height;
-    N[2].X *= 0.5f * Win.Width; N[2].Y *= 0.5f * Win.Height;
+    V[0].X *= 0.5f * Win.Width; V[0].Y *= 0.5f * Win.Height;
+    V[1].X *= 0.5f * Win.Width; V[1].Y *= 0.5f * Win.Height;
+    V[2].X *= 0.5f * Win.Width; V[2].Y *= 0.5f * Win.Height;
 
 #if 0
     printf("%g, %g; %g, %g; %g, %g\n", N[0].X, N[0].Y, N[1].X, N[1].Y, N[2].X, N[2].Y);
 #endif
 
-    float LightDistance = 1.0f / DistanceV3(N[0], Light);
-    float LightFactor = Clamp(LightDistance * LightStrength, 0, 1.0f);
+    v3 LightNormal = NormalizeVec3(DifferenceV3(V[0], Light));
+    float LightFactor = Clamp(DotVec3(N, LightNormal) * LightStrength, 0, 1.0f);
+#if 0
+    if (LightFactor < 0)
+      continue;
+#endif
 
-#if 1
-    DrawFilledTriangle(FrameBuffer, ZBuffer, N[0], N[1], N[2],
+    DrawFilledTriangle(FrameBuffer, ZBuffer, V[0], V[1], V[2],
       255 * LightFactor,
       255 * LightFactor,
       255 * LightFactor
     );
-#endif
   }
 }
 

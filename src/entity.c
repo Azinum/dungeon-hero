@@ -12,7 +12,6 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
 #if 1
     Entity->P.X += Entity->Speed.X;
     Entity->P.Y += Entity->Speed.Y;
-
 #else
     if (P.X <= -10 || P.X >= 10)
       Entity->Speed.X = -Entity->Speed.X;

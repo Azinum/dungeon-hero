@@ -16,7 +16,7 @@ static void GameStateInit(game_state* Game) {
   Game->EntityCount = 0;
 
   for (u32 Index = 0; Index < MAX_ENTITY; ++Index) {
-    entity* Entity = GameAddEntity(V3(Random(-5, 5), Random(-5, 5), 10));
+    entity* Entity = GameAddEntity(V3(Random(-15, 15), Random(-15, 15), 10));
     if (!Entity) {
       break;
     }
@@ -24,7 +24,7 @@ static void GameStateInit(game_state* Game) {
   }
 }
 
-static v3 Light = V3(0, 400, 50);
+static v3 Light = V3(0, 0, 20);
 
 static void GameRun(game_state* Game) {
   mesh Mesh;
@@ -37,7 +37,7 @@ static void GameRun(game_state* Game) {
       break;
     }
     ++Tick;
-    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
+    // Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, Light);
 

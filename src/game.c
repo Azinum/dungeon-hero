@@ -25,7 +25,7 @@ static void GameStateInit(game_state* Game) {
   }
 }
 
-static void OutputZBufferToFile() {
+static void OutputZBufferToFile(const char* Path) {
   image Image;
   Image.Width = Win.Width;
   Image.Height = Win.Height;
@@ -40,7 +40,7 @@ static void OutputZBufferToFile() {
     color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
     *Pixel = Color;
   }
-  StorePNGFromSource("zbuffer.png", &Image);
+  StorePNGFromSource(Path, &Image);
   free(Image.PixelBuffer);
 }
 
@@ -63,7 +63,7 @@ static void GameRun(game_state* Game) {
     RendererSwapBuffers();
     RendererClear(2, 15, 40);
   }
-  OutputZBufferToFile();
+  OutputZBufferToFile("zbuffer.png");
   MeshUnload(&Mesh);
 }
 

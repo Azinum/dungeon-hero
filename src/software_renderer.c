@@ -4,6 +4,8 @@ static render_state RenderState;
 
 static mat4 Proj;
 
+#define DRAW_Z_BUFFER 1
+
 inline i32 Barycentric(v3 A, v3 B, v3 C) {
   i32 Result = 0;
 
@@ -78,10 +80,15 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 
         Z += (B.Z * W1);
         Z += (C.Z * W2);
 
-        i32 Index = P.X + (P.Y * FrameBuffer->Width);
+        i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) + P.X;
         if (ZBuffer[Index] > Z) {
           ZBuffer[Index] = Z;
+#if DRAW_Z_BUFFER
+          u8 Value = Abs(ZBuffer[Index]);
+          DrawPixel(FrameBuffer, P.X, P.Y, Value, Value, Value);
+#else
           DrawPixel(FrameBuffer, P.X, P.Y, ColorR, ColorG, ColorB);
+#endif
         }
       }
     }
@@ -134,10 +141,7 @@ static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v
 
     v3 LightNormal = NormalizeVec3(DifferenceV3(Light, V[0]));
     float LightFactor = Clamp(DotVec3(N, LightNormal) * LightStrength, 0, 1.0f);
-#if 0
-    if (LightFactor < 0)
-      continue;
-#endif
+
     v3 CameraNormal = V3(0, 0, -1);
     float DotValue = DotVec3(CameraNormal, N);
     if (DotValue < 0) {
@@ -163,6 +167,7 @@ i32 RendererInit(u32 Width, u32 Height) {
   Proj = Perspective(50, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
+
 
 static void RendererSwapBuffers() {
   WindowSwapBuffers(&RenderState.FrameBuffer);

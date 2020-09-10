@@ -13,7 +13,7 @@
 #include "software_renderer.h"
 #include "entity.h"
 
-#define MAX_ENTITY 18
+#define MAX_ENTITY 4
 
 typedef struct game_state {
   entity Entities[MAX_ENTITY];

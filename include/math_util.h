@@ -23,6 +23,7 @@
 #define Scale2D(MODEL, X, Y) { \
   MODEL = MultiplyMat4(MODEL, Scale(V3(X, Y, 1))); \
 }
+
 typedef union mat4 {
   float Elements[4][4];
 #if USE_SSE
@@ -30,8 +31,86 @@ typedef union mat4 {
 #endif
 } mat4;
 
+inline mat4 Mat4D(float Diagonal);
+
+inline float ClampMax(float Value, float MaxValue) {
+  if (Value > MaxValue) {
+    return MaxValue;
+  }
+  return Value;
+}
+
+inline float Clamp(float Value, float MinValue, float MaxValue) {
+  if (Value > MaxValue) {
+    return MaxValue;
+  }
+  if (Value < MinValue) {
+    return MinValue;
+  }
+  return Value;
+}
+
+inline float InnerV2(v2 A, v2 B) {
+  float Result = 0;
+
+  Result = (A.X * B.X) + (A.Y * B.Y);
+
+  return Result;
+}
+
+inline v3 DifferenceV3(v3 A, v3 B) {
+  v3 Result = A;
+
+  Result.X -= B.X;
+  Result.Y -= B.Y;
+  Result.Z -= B.Z;
+
+  return Result;
+}
+
+inline float Power(float A, float B) {
+  float Result = 0;
+
+  Result = (float)pow(A, B);
+
+  return Result;
+}
+
+inline float SquareRoot(float A) {
+  float Result = 0;
+#if USE_SSE
+  Result = _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(A)));
+#else
+  Result = sqrt(A);
+#endif
+  return Result;
+}
+
+// NOTE(lucas): This only calculates the X and Y values
+inline float DistanceV2(v3 A, v3 B) {
+  float Result = 0;
+  v3 Delta = DifferenceV3(A, B);
+
+  Result = SquareRoot(Power(Delta.X, 2) + Power(Delta.Y, 2));
+
+  return Result;
+}
+
+inline float DistanceV3(v3 A, v3 B) {
+  float Result = 0;
+
+  v3 Delta = DifferenceV3(A, B);
+  Result = SquareRoot(Power(Delta.X, 2) + Power(Delta.Y, 2) + Power(Delta.Z, 2));
+
+  return Result;
+}
+
+inline float ToRadians(float Degrees) {
+  return Degrees * (PI32 / 180.0f);
+}
+
 inline mat4 Translate(v3 T) {
-  mat4 Result = {0};
+  mat4 Result = Mat4D(1.0f);
 
   Result.Elements[3][0] = T.X;
   Result.Elements[3][1] = T.X;
@@ -50,13 +129,20 @@ inline mat4 TranslateMat4(mat4 A, v3 T) {
   return Result;
 }
 
-inline v3 TransformApply(mat4 M, v3 A) {
+inline v3 MultiplyMatrixVector(mat4 M, v3 A) {
   v3 Result;
   float X = A.X, Y = A.Y, Z = A.Z;
 
-  Result.X = X * M.Elements[0][0] + Y * M.Elements[1][0] + Z * M.Elements[2][0] + 1 * M.Elements[3][0];
-  Result.Y = X * M.Elements[0][1] + Y * M.Elements[1][1] + Z * M.Elements[2][1] + 1 * M.Elements[3][1];
-  Result.Z = X * M.Elements[0][2] + Y * M.Elements[1][2] + Z * M.Elements[2][2] + 1 * M.Elements[3][2];
+  Result.X = X * M.Elements[0][0] + Y * M.Elements[1][0] + Z * M.Elements[2][0] + M.Elements[3][0];
+  Result.Y = X * M.Elements[0][1] + Y * M.Elements[1][1] + Z * M.Elements[2][1] + M.Elements[3][1];
+  Result.Z = X * M.Elements[0][2] + Y * M.Elements[1][2] + Z * M.Elements[2][2] + M.Elements[3][2];
+  float W = X * M.Elements[0][3] + Y * M.Elements[1][3] + Z * M.Elements[2][3] + M.Elements[3][3];
+
+  if (W != 0.0f) {
+    Result.X /= W;
+    Result.Y /= W;
+    Result.Z /= W;
+  }
 
   return Result;
 }
@@ -132,12 +218,34 @@ inline v3 MultiplyV3(v3 A, float Value) {
   return Result;
 }
 
+inline v3 MultiplyToV3(v3 A, v3 B) {
+  v3 Result = A;
+
+  Result.X *= B.X;
+  Result.Y *= B.Y;
+  Result.Z *= B.Z;
+
+  return Result;
+}
+
 inline v3 AddV3(v3 A, float Value) {
   v3 Result = A;
 
   Result.X += Value;
   Result.Y += Value;
   Result.Z += Value;
+
+  return Result;
+}
+
+inline v3 DivideV3(v3 A, float Value) {
+  v3 Result = A;
+
+  if (Value != 0.0f) {
+    Result.X /= Value;
+    Result.Y /= Value;
+    Result.Z /= Value;
+  }
 
   return Result;
 }
@@ -206,6 +314,22 @@ inline mat4 Rotate(float Angle, v3 Axis) {
 
   Axis = NormalizeVec3(Axis);
 
+  float SinTheta = sinf(ToRadians(Angle));
+  float CosTheta = cosf(ToRadians(Angle));
+  float CosValue = 1.0f - CosTheta;
+
+  Result.Elements[0][0] = (Axis.X * Axis.X * CosValue) + CosTheta;
+  Result.Elements[0][1] = (Axis.X * Axis.Y * CosValue) + (Axis.Z * SinTheta);
+  Result.Elements[0][2] = (Axis.X * Axis.Z * CosValue) - (Axis.Y * SinTheta);
+
+  Result.Elements[1][0] = (Axis.Y * Axis.X * CosValue) - (Axis.Z * SinTheta);
+  Result.Elements[1][1] = (Axis.Y * Axis.Y * CosValue) + CosTheta;
+  Result.Elements[1][2] = (Axis.Y * Axis.Z * CosValue) + (Axis.X * SinTheta);
+
+  Result.Elements[2][0] = (Axis.Z * Axis.X * CosValue) + (Axis.Y * SinTheta);
+  Result.Elements[2][1] = (Axis.Z * Axis.Y * CosValue) - (Axis.X * SinTheta);
+  Result.Elements[2][2] = (Axis.Z * Axis.Z * CosValue) + CosTheta;
+
   return Result;
 }
 
@@ -219,6 +343,16 @@ inline mat4 Scale(v3 A) {
   return Result;
 }
 
+inline mat4 ScaleMat4(mat4 A, v3 B) {
+  mat4 Result = A;
+
+  Result.Elements[0][0] *= B.X;
+  Result.Elements[1][1] *= B.Y;
+  Result.Elements[2][2] *= B.Z;
+
+  return Result;
+}
+
 inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
   mat4 Result = {0};
 
@@ -226,74 +360,10 @@ inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
 
   Result.Elements[0][0] = 1.0f / TanThetaOver2;
   Result.Elements[1][1] = AspectRatio / TanThetaOver2;
-  Result.Elements[2][3] = -1.0f;
+  Result.Elements[2][3] = 1.0f;
   Result.Elements[2][2] = (ZNear + ZFar) / (ZNear - ZFar);
   Result.Elements[3][2] = (2.0f * ZNear * ZFar) / (ZNear - ZFar);
-  Result.Elements[3][3] = 0.0f;
+  Result.Elements[3][3] = 2.0f;
 
   return Result;
 }
-
-inline float ClampMax(float Value, float MaxValue) {
-  if (Value > MaxValue) {
-    return MaxValue;
-  }
-  return Value;
-}
-
-inline float Clamp(float Value, float MinValue, float MaxValue) {
-  if (Value > MaxValue) {
-    return MaxValue;
-  }
-  if (Value < MinValue) {
-    return MinValue;
-  }
-  return Value;
-}
-
-inline float InnerV2(v2 A, v2 B) {
-  float Result = 0;
-
-  Result = (A.X * B.X) + (A.Y * B.Y);
-
-  return Result;
-}
-
-inline v3 DifferenceV3(v3 A, v3 B) {
-  v3 Result = A;
-
-  Result.X -= B.X;
-  Result.Y -= B.Y;
-  Result.Z -= B.Z;
-
-  return Result;
-}
-
-inline float Power(float A, float B) {
-  float Result = 0;
-
-  Result = (float)pow(A, B);
-
-  return Result;
-}
-
-inline float SquareRoot(float A) {
-  float Result = 0;
-#if USE_SSE
-  Result = _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(A)));
-#else
-  Result = sqrt(A);
-#endif
-  return Result;
-}
-
-// NOTE(lucas): This only calculates the X and Y values
-inline float Distance(v3 A, v3 B) {
-  float Result = 0;
-  v3 Delta = DifferenceV3(A, B);
-
-  Result = SquareRoot(Power(Delta.X, 2) + Power(Delta.Y, 2));
-
-  return Result;
-}
-

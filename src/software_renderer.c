@@ -13,7 +13,7 @@ inline i32 Barycentric(v3 A, v3 B, v3 C) {
 }
 
 inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, u8 ColorR, u8 ColorG, u8 ColorB) {
-  if (X < 0 || Y < 0 || X >= FrameBuffer->Width || Y >= FrameBuffer->Height) {
+  if (X <= 0 || Y <= 0 || X > FrameBuffer->Width || Y > FrameBuffer->Height) {
     return;
   }
 
@@ -61,7 +61,6 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 
   MaxY = Min(MaxY, FrameBuffer->Height - 1);
 
   v3 P = {0};
-  float Z = 0;
   for (P.Y = MinY; P.Y <= MaxY; P.Y++) {
     for (P.X = MinX; P.X <= MaxX; P.X++) {
       i32 W0 = Barycentric(B, C, P);
@@ -103,53 +102,60 @@ v3 MatToV3(mat4 M) {
   return Result;
 }
 
-#define LightStrength 60
-#define MODEL_SCALE 2500
+#define LightStrength 80
+#define MODEL_SCALE 50
 
 static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v3 Light) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];
-    v3 L[3];
     v3 N[3];
 
     V[0] = Mesh->Vertices[Mesh->Indices[Index + 0]];
     V[1] = Mesh->Vertices[Mesh->Indices[Index + 1]];
     V[2] = Mesh->Vertices[Mesh->Indices[Index + 2]];
 
-    N[0] = TransformApply(Proj, V[0]);
-    N[1] = TransformApply(Proj, V[1]);
-    N[2] = TransformApply(Proj, V[2]);
+    V[0] = AddToV3(V[0], P);
+    V[1] = AddToV3(V[1], P);
+    V[2] = AddToV3(V[2], P);
 
-    L[0] = AddToV3(N[0], P);
-    L[1] = AddToV3(N[1], P);
-    L[2] = AddToV3(N[2], P);
+    N[0] = MultiplyMatrixVector(Proj, V[0]);
+    N[1] = MultiplyMatrixVector(Proj, V[1]);
+    N[2] = MultiplyMatrixVector(Proj, V[2]);
+
+    N[0].X += 1.0f; N[0].Y += 1.0f;
+    N[1].X += 1.0f; N[1].Y += 1.0f;
+    N[2].X += 1.0f; N[2].Y += 1.0f;
+
+    N[0].X *= 0.5f * Win.Width; N[0].Y *= 0.5f * Win.Height;
+    N[1].X *= 0.5f * Win.Width; N[1].Y *= 0.5f * Win.Height;
+    N[2].X *= 0.5f * Win.Width; N[2].Y *= 0.5f * Win.Height;
 
 #if 0
     printf("%g, %g; %g, %g; %g, %g\n", N[0].X, N[0].Y, N[1].X, N[1].Y, N[2].X, N[2].Y);
 #endif
 
-    float LightDistance = 1.0f / Distance(L[0], Light);
+    float LightDistance = 1.0f / DistanceV3(N[0], Light);
     float LightFactor = Clamp(LightDistance * LightStrength, 0, 1.0f);
 
-    DrawFilledTriangleAt(FrameBuffer, ZBuffer, N[0], N[1], N[2], P,
-      50 * LightFactor,
-      80 * LightFactor,
+#if 1
+    DrawFilledTriangle(FrameBuffer, ZBuffer, N[0], N[1], N[2],
+      255 * LightFactor,
+      255 * LightFactor,
       255 * LightFactor
     );
+#endif
   }
 }
 
 i32 RendererInit(u32 Width, u32 Height) {
   (void)LoadImage; (void)StoreImage; (void)DrawLine; (void)DrawFilledTriangle;
- 
-  Proj = Perspective(1, 4 / 3.0f, 0.1f, 500);
-
   render_state* State = &RenderState;
   FrameBufferCreate(&State->FrameBuffer, Width, Height);
-  State->ZBuffer = calloc(Width * Height, sizeof(float));
+  State->ZBuffer = calloc(Width * Height, sizeof(i32));
 
   WindowOpen(Width, Height, WINDOW_TITLE);
-
+ 
+  Proj = Perspective(80, (float)Win.Height / Win.Width, 0.1f, 500);
   return 0;
 }
 

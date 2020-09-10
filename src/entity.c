@@ -8,15 +8,17 @@ static entity* EntityInit(entity* E, v3 P) {
 static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 Light) {
   for (u32 EntityIndex = 0; EntityIndex < EntityCount; ++EntityIndex) {
     entity* Entity = &Entities[EntityIndex];
+    v3 P = Entity->P;
+#if 1
     Entity->P.X += Entity->Speed.X;
     Entity->P.Y += Entity->Speed.Y;
 
-    v3 P = Entity->P;
-    if (P.X <= 0 || P.X >= FrameBuffer->Width)
+#else
+    if (P.X <= -10 || P.X >= 10)
       Entity->Speed.X = -Entity->Speed.X;
-    if (P.Y <= 0 || P.Y >= FrameBuffer->Height)
+    if (P.Y <= -10 || P.Y >= 10)
       Entity->Speed.Y = -Entity->Speed.Y;
-
+#endif
     DrawMesh(FrameBuffer, ZBuffer, Mesh, P, Light);
   }
 }

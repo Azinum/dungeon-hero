@@ -50,6 +50,9 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG,
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
 inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 B, v3 C, u8 ColorR, u8 ColorG, u8 ColorB) {
+  if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
+    return;
+  }
   i32 MinX = Min3(A.X, B.X, C.X);
   i32 MinY = Min3(A.Y, B.Y, C.Y);
   i32 MaxX = Max3(A.X, B.X, C.X);

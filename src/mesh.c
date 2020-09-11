@@ -95,23 +95,23 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
     }
   } while (1);
 
-#if 1
+#if 0
   printf(
     "Mesh Loaded ('%s'):\n"
     "  Vertex Count: %i\n"
     "  Index Count: %i\n"
-    "  Normal Index Count: %i\n"
     "  Normal Count: %i\n"
-    "  UV Index Count: %i\n"
+    "  Normal Index Count: %i\n"
     "  UV Coords Count: %i\n"
+    "  UV Index Count: %i\n"
     ,
     Path,
     Mesh->VertexCount,
     Mesh->IndexCount,
-    Mesh->NormalIndexCount,
     Mesh->NormalCount,
-    Mesh->UVIndexCount,
-    Mesh->UVCount
+    Mesh->NormalIndexCount,
+    Mesh->UVCount,
+    Mesh->UVIndexCount
   );
 #endif
 

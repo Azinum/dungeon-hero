@@ -33,22 +33,8 @@ typedef union mat4 {
 
 inline mat4 Mat4D(float Diagonal);
 
-inline float ClampMax(float Value, float MaxValue) {
-  if (Value > MaxValue) {
-    return MaxValue;
-  }
-  return Value;
-}
-
-inline float Clamp(float Value, float MinValue, float MaxValue) {
-  if (Value > MaxValue) {
-    return MaxValue;
-  }
-  if (Value < MinValue) {
-    return MinValue;
-  }
-  return Value;
-}
+#define ClampMax(Value, MaxValue) (Value > MaxValue) ? (MaxValue) : (Value)
+#define Clamp(Value, MinValue, MaxValue) (Value > MaxValue) ? (MaxValue) : ((Value < MinValue) ? (MinValue) : (Value))
 
 inline float InnerV2(v2 A, v2 B) {
   float Result = 0;

@@ -10,7 +10,7 @@
 #include "entity.c"
 
 static game_state GameState;
-static v3 Light = V3(0, 300, -25);
+static v3 Light = V3(0, 300, -20);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -54,7 +54,7 @@ static void GameRun(game_state* Game) {
   u32 Tick = 0;
   while (IsRunning) {
     ++Tick;
-    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
+    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 4.0f) + 400;
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
 

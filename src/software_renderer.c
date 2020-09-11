@@ -40,6 +40,23 @@ inline i32 Barycentric(v3 A, v3 B, v3 C) {
   return Result;
 }
 
+inline void Barycentric_(v3 P, v3 A, v3 B, v3 C, float* W0, float* W1, float* W2) {
+  v3 V0 = DifferenceV3(B, A);
+  v3 V1 = DifferenceV3(C, A);
+  v3 V2 = DifferenceV3(P, A);
+
+  float D00 = DotVec3(V0, V0);
+  float D01 = DotVec3(V0, V1);
+  float D11 = DotVec3(V1, V1);
+  float D20 = DotVec3(V2, V0);
+  float D21 = DotVec3(V2, V1);
+
+  float Denom = D00 * D11 - D01 * D01;
+  *W1 = (D11 * D20 - D01 * D21) / Denom;
+  *W2 = (D00 * D21 - D01 * D20) / Denom;
+  *W0 = 1.0f - *W1 - *W2;
+}
+
 inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   if (X <= 0 || Y <= 0 || X > FrameBuffer->Width || Y > FrameBuffer->Height) {
     return;
@@ -77,7 +94,7 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG,
 }
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
-inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 B, v3 C, color Color) {
+inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, color Color, v2 T0, v2 T1, v2 T2, v3 V0, v3 V1, v3 V2, image* Texture) {
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
     return;
   }
@@ -95,19 +112,20 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 
   v3 P = {0};
   for (P.Y = MinY; P.Y <= MaxY; P.Y++) {
     for (P.X = MinX; P.X <= MaxX; P.X++) {
-      i32 W0 = Barycentric(B, C, P);
-      i32 W1 = Barycentric(C, A, P);
-      i32 W2 = Barycentric(A, B, P);
+      float W0 = 0.0f;
+      float W1 = 0.0f;
+      float W2 = 0.0f;
+      Barycentric_(P, A, B, C, &W0, &W1, &W2);
 
       // NOTE(lucas): Are we inside the triangle?
       if (W0 >= 0 && W1 >= 0 && W2 >= 0) {
-        i32 Z = 0;
-        Z += (A.Z * W0);
-        Z += (B.Z * W1);
-        Z += (C.Z * W2);
+        float Z = 0;
+        Z += A.Z * W0;
+        Z += B.Z * W1;
+        Z += C.Z * W2;
 
-        i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) + P.X;
-        if (ZBuffer[Index] > Z) {
+        i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) - P.X;
+        if (ZBuffer[Index] < Z) {
           ZBuffer[Index] = Z;
 #if DRAW_Z_BUFFER
           u8 Value = Abs(ZBuffer[Index]);
@@ -122,50 +140,52 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 
   }
 }
 
-#define LightStrength 1.5f
+#define LightStrength 4.0f
 #define MODEL_SCALE 50
 
-static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
+static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
-    v3 V[3];
-    v3 N;
+    v3 V[3];  // Vertices
+    v2 T[3];  // UV coords
+    v3 R[3];  // Resulting transformed vertices
+    v3 Normal;
 
     V[0] = Mesh->Vertices[Mesh->Indices[Index + 0]];
     V[1] = Mesh->Vertices[Mesh->Indices[Index + 1]];
     V[2] = Mesh->Vertices[Mesh->Indices[Index + 2]];
 
-    N = Mesh->Normals[Mesh->NormalIndices[Index + 0]];
+    T[0] = Mesh->UV[Mesh->UVIndices[Index + 0]];
+    T[1] = Mesh->UV[Mesh->UVIndices[Index + 1]];
+    T[2] = Mesh->UV[Mesh->UVIndices[Index + 2]];
 
-    V[0] = AddToV3(V[0], P);
-    V[1] = AddToV3(V[1], P);
-    V[2] = AddToV3(V[2], P);
+    Normal = Mesh->Normals[Mesh->NormalIndices[Index + 0]];
 
-    V[0] = MultiplyMatrixVector(Proj, V[0]);
-    V[1] = MultiplyMatrixVector(Proj, V[1]);
-    V[2] = MultiplyMatrixVector(Proj, V[2]);
+    R[0] = AddToV3(V[0], P);
+    R[1] = AddToV3(V[1], P);
+    R[2] = AddToV3(V[2], P);
 
-    V[0].X += 1.0f; V[0].Y += 1.0f;
-    V[1].X += 1.0f; V[1].Y += 1.0f;
-    V[2].X += 1.0f; V[2].Y += 1.0f;
+    R[0] = MultiplyMatrixVector(Proj, R[0]);
+    R[1] = MultiplyMatrixVector(Proj, R[1]);
+    R[2] = MultiplyMatrixVector(Proj, R[2]);
 
-    V[0].X *= 0.5f * Win.Width; V[0].Y *= 0.5f * Win.Height;
-    V[1].X *= 0.5f * Win.Width; V[1].Y *= 0.5f * Win.Height;
-    V[2].X *= 0.5f * Win.Width; V[2].Y *= 0.5f * Win.Height;
+    R[0].X += 1.0f; R[0].Y += 1.0f;
+    R[1].X += 1.0f; R[1].Y += 1.0f;
+    R[2].X += 1.0f; R[2].Y += 1.0f;
 
-#if 0
-    printf("%g, %g; %g, %g; %g, %g\n", N[0].X, N[0].Y, N[1].X, N[1].Y, N[2].X, N[2].Y);
-#endif
+    R[0].X *= 0.5f * Win.Width; R[0].Y *= 0.5f * Win.Height;
+    R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
+    R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
 
-    v3 LightNormal = NormalizeVec3(DifferenceV3(Light, V[0]));
-    float LightFactor = Clamp(DotVec3(N, LightNormal) * LightStrength, 0, 1.0f);
+    v3 LightNormal = NormalizeVec3(DifferenceV3(Light, R[0]));
+    float LightFactor = Clamp(DotVec3(Normal, LightNormal) * LightStrength, 0, 1.0f);
 
     v3 CameraNormal = V3(0, 0, -1.0f);
-    float DotValue = DotVec3(CameraNormal, N);
+    float DotValue = DotVec3(CameraNormal, Normal);
     if (DotValue < 0) {
       continue;
     }
 
-    u8* At = &Texture->PixelBuffer[17 * 4];
+    u8* At = &Texture->PixelBuffer[0 * 4];
     color Color = {
       *(At + 2),
       *(At + 1),
@@ -175,15 +195,15 @@ static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, image* 
     Color.R *= LightFactor;
     Color.G *= LightFactor;
     Color.B *= LightFactor;
-    DrawFilledTriangle(FrameBuffer, ZBuffer, V[0], V[1], V[2], Color);
+    DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], Color, T[0], T[1], T[2], V[0], V[1], V[2], Texture);
   }
 }
 
 i32 RendererInit(u32 Width, u32 Height) {
-  (void)LoadImage; (void)StoreImage; (void)DrawLine; (void)DrawFilledTriangle;
+  (void)LoadImage; (void)StoreImage; (void)DrawLine;
   render_state* State = &RenderState;
   FrameBufferCreate(&State->FrameBuffer, Width, Height);
-  State->ZBuffer = calloc(Width * Height, sizeof(i32));
+  State->ZBuffer = calloc(Width * Height, sizeof(float));
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
@@ -196,12 +216,12 @@ static void RendererSwapBuffers() {
   WindowSwapBuffers(&RenderState.FrameBuffer);
 }
 
-static void ZBufferClear(i32* ZBuffer, u32 Width, u32 Height) {
+static void ZBufferClear(float* ZBuffer, u32 Width, u32 Height) {
   u32 Count = Width * Height;
-  i32 FillValue = 0;
+  float FillValue = -10000;
 #if USE_SSE
-  __m128i* Dest = (__m128i*)ZBuffer;
-  __m128i Value = _mm_set_epi32(FillValue, FillValue, FillValue, FillValue);
+  __m128* Dest = (__m128*)ZBuffer;
+  __m128 Value = _mm_set_ps1(FillValue);
   u32 ChunkSize = 4;
   Count /= ChunkSize;
   for (u32 Index = 0; Index < Count; ++Index) {

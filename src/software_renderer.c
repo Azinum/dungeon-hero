@@ -164,7 +164,8 @@ static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, image* 
     if (DotValue < 0) {
       continue;
     }
-    u8* At = &Texture->PixelBuffer[0 * 4];
+
+    u8* At = &Texture->PixelBuffer[17 * 4];
     color Color = {
       *(At + 2),
       *(At + 1),

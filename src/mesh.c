@@ -11,11 +11,11 @@ static void MeshUnload(mesh* Mesh) {
   ListFree(Mesh->Vertices, Mesh->VertexCount);
   ListFree(Mesh->Indices, Mesh->IndexCount);
 
+  ListFree(Mesh->Normals, Mesh->NormalCount);
   ListFree(Mesh->NormalIndices, Mesh->NormalIndexCount);
 
-  ListFree(Mesh->Normals, Mesh->NormalCount);
-
   ListFree(Mesh->UV, Mesh->UVCount);
+  ListFree(Mesh->UVIndices, Mesh->UVIndexCount);
 }
 
 static void MeshInit(mesh* Mesh) {
@@ -49,13 +49,13 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
     if (!strncmp(Word, "v", WORD_SIZE)) {
       v3 V;
       SScanf(Result, Iter, "%f %f %f", &V.X, &V.Y, &V.Z);
-
       ListPush(Mesh->Vertices, Mesh->VertexCount, V);
     }
     // Texture Vertex
     else if (!strncmp(Word, "vt", WORD_SIZE)) {
       v2 V;
       SScanf(Result, Iter, "%f %f", &V.X, &V.Y);
+      ListPush(Mesh->UV, Mesh->UVCount, V);
     }
     // Vertex Normal
     else if (!strncmp(Word, "vn", WORD_SIZE)) {
@@ -85,25 +85,33 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
       ListPush(Mesh->Indices, Mesh->IndexCount, X[1] - 1);
       ListPush(Mesh->Indices, Mesh->IndexCount, X[2] - 1);
 
+      ListPush(Mesh->UVIndices, Mesh->UVIndexCount, Y[0] - 1);
+      ListPush(Mesh->UVIndices, Mesh->UVIndexCount, Y[1] - 1);
+      ListPush(Mesh->UVIndices, Mesh->UVIndexCount, Y[2] - 1);
+
       ListPush(Mesh->NormalIndices, Mesh->NormalIndexCount, Z[0] - 1);
       ListPush(Mesh->NormalIndices, Mesh->NormalIndexCount, Z[1] - 1);
       ListPush(Mesh->NormalIndices, Mesh->NormalIndexCount, Z[2] - 1);
     }
   } while (1);
 
-#if 0
+#if 1
   printf(
     "Mesh Loaded ('%s'):\n"
     "  Vertex Count: %i\n"
     "  Index Count: %i\n"
     "  Normal Index Count: %i\n"
     "  Normal Count: %i\n"
+    "  UV Index Count: %i\n"
+    "  UV Coords Count: %i\n"
     ,
     Path,
     Mesh->VertexCount,
     Mesh->IndexCount,
     Mesh->NormalIndexCount,
-    Mesh->NormalCount
+    Mesh->NormalCount,
+    Mesh->UVIndexCount,
+    Mesh->UVCount
   );
 #endif
 

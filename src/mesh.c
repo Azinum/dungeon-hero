@@ -67,12 +67,11 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
   MeshInit(Mesh);
 
   ReadFile(Path, &Buffer);
-  u8 Word[WORD_SIZE] = {0};
-  u8* Iter = Buffer.Data;
+  char Word[WORD_SIZE] = {0};
+  char* Iter = Buffer.Data;
   i32 Result = 0;
 
   do {
-    u32 BytesRead = 0;
     SScanf(Result, Iter, "%s", Word);
     if (Result == EOF) {
       break;

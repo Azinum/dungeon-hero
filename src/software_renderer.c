@@ -4,7 +4,7 @@ static render_state RenderState;
 
 static mat4 Proj;
 
-#define DRAW_Z_BUFFER 1
+#define DRAW_Z_BUFFER 0
 
 inline i32 Barycentric(v3 A, v3 B, v3 C) {
   i32 Result = 0;
@@ -142,7 +142,7 @@ static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v
     v3 LightNormal = NormalizeVec3(DifferenceV3(Light, V[0]));
     float LightFactor = Clamp(DotVec3(N, LightNormal) * LightStrength, 0, 1.0f);
 
-    v3 CameraNormal = V3(0, 0, -1);
+    v3 CameraNormal = V3(0, 0, -1.0f);
     float DotValue = DotVec3(CameraNormal, N);
     if (DotValue < 0) {
       continue;

@@ -28,7 +28,7 @@ typedef struct v3i {
 } v3i;
 
 typedef struct string {
-  i8* Data;
+  char* Data;
   u32 Count;
 } string;
 

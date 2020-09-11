@@ -3,6 +3,7 @@
 static entity* EntityInit(entity* E, v3 P) {
   memset(E, 0, sizeof(entity));
   E->P = P;
+  return E;
 }
 
 static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 Light) {

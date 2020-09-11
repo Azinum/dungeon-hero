@@ -4,8 +4,6 @@ static render_state RenderState;
 
 static mat4 Proj;
 
-#define DRAW_Z_BUFFER 0
-
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
   FrameBuffer->Width = Width;
@@ -95,7 +93,12 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG,
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
 inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, color Color, v2 T0, v2 T1, v2 T2, v3 V0, v3 V1, v3 V2, image* Texture) {
+  u32 Width = FrameBuffer->Width;
+  u32 Height = FrameBuffer->Height;
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
+    return;
+  }
+  if (A.X >= Width || A.Y >= Height || B.X >= Width || B.Y >= Height || C.X >= Width || C.Y >= Height) {
     return;
   }
 
@@ -123,17 +126,14 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
         Z += A.Z * W0;
         Z += B.Z * W1;
         Z += C.Z * W2;
-
         i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) - P.X;
         if (ZBuffer[Index] < Z) {
           ZBuffer[Index] = Z;
-#if DRAW_Z_BUFFER
-          u8 Value = Abs(ZBuffer[Index]);
-          Color = (color) {Value, Value, Value, 255};
+
+          Color.R = W0 * 255;
+          Color.G = W1 * 255;
+          Color.B = (1.0f - W0 - W1) * 255;
           DrawPixel(FrameBuffer, P.X, P.Y, Color);
-#else
-          DrawPixel(FrameBuffer, P.X, P.Y, Color);
-#endif
         }
       }
     }

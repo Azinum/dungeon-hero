@@ -17,7 +17,7 @@ static void GameStateInit(game_state* Game) {
   Game->EntityCount = 0;
 
   for (u32 Index = 0; Index < MAX_ENTITY; ++Index) {
-    entity* Entity = GameAddEntity(V3(-6.0f + ((1 + Index) * 2.0f), (Index * 2.0f), 20.0f)); // GameAddEntity(V3(Random(-15, 15), Random(-15, 15), 20));
+    entity* Entity = GameAddEntity(V3(-6.0f + ((1 + Index) * 2.0f), (Index * 2.0f), 10.0f + 4*Index)); // GameAddEntity(V3(Random(-15, 15), Random(-15, 15), 20));
     if (!Entity) {
       break;
     }
@@ -35,7 +35,7 @@ static void OutputZBufferToFile(const char* Path) {
   Image.BytesPerPixel = 4;
 
   for (u32 Index = 0; Index < Image.Width * Image.Height; Index++) {
-    i32 V = Abs(RenderState.ZBuffer[Index]);
+    float V = Clamp(255 * Abs(RenderState.ZBuffer[Index]), 0, 255);
     color Color = {V, V, V, 255};
     color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
     *Pixel = Color;

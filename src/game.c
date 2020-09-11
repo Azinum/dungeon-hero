@@ -2,6 +2,7 @@
 
 #include "game.h"
 
+#include "misc.c"
 #include "image.c"
 #include "mesh.c"
 #include "framebuffer.c"
@@ -40,13 +41,15 @@ static void OutputZBufferToFile(const char* Path) {
     color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
     *Pixel = Color;
   }
-  StorePNGFromSource(Path, &Image);
-  free(Image.PixelBuffer);
+  StoreImage(Path, &Image);
+  UnloadImage(&Image);
 }
 
 static void GameRun(game_state* Game) {
   mesh Mesh;
   MeshLoadOBJ("resource/mesh/test.obj", &Mesh);
+  image Texture;
+  LoadImage("resource/texture/test.png", &Texture);
 
   u8 IsRunning = 1;
   u32 Tick = 0;
@@ -54,7 +57,7 @@ static void GameRun(game_state* Game) {
     ++Tick;
     Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
 
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, Light);
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
 
     if (WindowEvents() != 0) {
       break;
@@ -63,8 +66,10 @@ static void GameRun(game_state* Game) {
     RendererSwapBuffers();
     RendererClear(2, 15, 40);
   }
+
   OutputZBufferToFile("zbuffer.png");
   MeshUnload(&Mesh);
+  UnloadImage(&Texture);
 }
 
 static entity* GameAddEntity(v3 Position) {

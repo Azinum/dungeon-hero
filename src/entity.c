@@ -6,7 +6,7 @@ static entity* EntityInit(entity* E, v3 P) {
   return E;
 }
 
-static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 Light) {
+static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, image* Texture, v3 Light) {
   for (u32 EntityIndex = 0; EntityIndex < EntityCount; ++EntityIndex) {
     entity* Entity = &Entities[EntityIndex];
     v3 P = Entity->P;
@@ -26,6 +26,6 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
     }
 #else
 #endif
-    DrawMesh(FrameBuffer, ZBuffer, Mesh, P, Light);
+    DrawMesh(FrameBuffer, ZBuffer, Mesh, Texture, P, Light);
   }
 }

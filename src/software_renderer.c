@@ -108,7 +108,7 @@ inline void DrawFilledTriangleAt(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v
 #define LightStrength 1.5f
 #define MODEL_SCALE 50
 
-static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, v3 P, v3 Light) {
+static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];
     v3 N;

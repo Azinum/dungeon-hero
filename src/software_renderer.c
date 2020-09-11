@@ -40,19 +40,18 @@ inline i32 Barycentric(v3 A, v3 B, v3 C) {
   return Result;
 }
 
-inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, u8 ColorR, u8 ColorG, u8 ColorB) {
+inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   if (X <= 0 || Y <= 0 || X > FrameBuffer->Width || Y > FrameBuffer->Height) {
     return;
   }
 
   // NOTE(lucas): Origin is at the bottom left corner!
-  i8* Pixel = &FrameBuffer->Data[4 * (((FrameBuffer->Height - Y) * FrameBuffer->Width) + X)];
-  Pixel[0] = ColorB;
-  Pixel[1] = ColorG;
-  Pixel[2] = ColorR;
+  color* Pixel = (color*)&FrameBuffer->Color[(((FrameBuffer->Height - Y) * FrameBuffer->Width) + X)];
+  *Pixel = Color;
 }
 
 inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG, u8 ColorB) {
+#if 0
   u8 Steep = 0;
   if (Abs(A.X - B.X) < Abs(A.Y - B.Y)) {
     Steep = 1;
@@ -68,16 +67,17 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG,
     float T = (X - A.X) / (float)(B.X - A.X);
     i32 Y = A.Y * (1.0f - T) + (B.Y * T);
     if (Steep) {
-      DrawPixel(FrameBuffer, Y, X, ColorR, ColorG, ColorB);
+      // DrawPixel(FrameBuffer, Y, X, ColorR, ColorG, ColorB);
     }
     else {
-      DrawPixel(FrameBuffer, X, Y, ColorR, ColorG, ColorB);
+      // DrawPixel(FrameBuffer, X, Y, ColorR, ColorG, ColorB);
     }
   }
+#endif
 }
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
-inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 B, v3 C, u8 ColorR, u8 ColorG, u8 ColorB) {
+inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 B, v3 C, color Color) {
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
     return;
   }
@@ -111,24 +111,15 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 
           ZBuffer[Index] = Z;
 #if DRAW_Z_BUFFER
           u8 Value = Abs(ZBuffer[Index]);
-          DrawPixel(FrameBuffer, P.X, P.Y, Value, Value, Value);
+          Color = (color) {Value, Value, Value, 255};
+          DrawPixel(FrameBuffer, P.X, P.Y, Color);
 #else
-          DrawPixel(FrameBuffer, P.X, P.Y, ColorR, ColorG, ColorB);
+          DrawPixel(FrameBuffer, P.X, P.Y, Color);
 #endif
         }
       }
     }
   }
-}
-
-inline void DrawFilledTriangleAt(framebuffer* FrameBuffer, i32* ZBuffer, v3 A, v3 B, v3 C, v3 P, u8 ColorR, u8 ColorG, u8 ColorB) {
-  DrawFilledTriangle(
-    FrameBuffer,
-    ZBuffer,
-    V3(P.X + A.X, P.Y + A.Y, P.Z + A.Z),
-    V3(P.X + B.X, P.Y + B.Y, P.Z + B.Z),
-    V3(P.X + C.X, P.Y + C.Y, P.Z + C.Z),
-    ColorR, ColorG, ColorB);
 }
 
 #define LightStrength 1.5f
@@ -173,12 +164,17 @@ static void DrawMesh(framebuffer* FrameBuffer, i32* ZBuffer, mesh* Mesh, image* 
     if (DotValue < 0) {
       continue;
     }
-
-    DrawFilledTriangle(FrameBuffer, ZBuffer, V[0], V[1], V[2],
-      255 * LightFactor,
-      255 * LightFactor,
-      255 * LightFactor
-    );
+    u8* At = &Texture->PixelBuffer[0 * 4];
+    color Color = {
+      *(At + 2),
+      *(At + 1),
+      *(At + 0),
+      *(At + 3),
+    };
+    Color.R *= LightFactor;
+    Color.G *= LightFactor;
+    Color.B *= LightFactor;
+    DrawFilledTriangle(FrameBuffer, ZBuffer, V[0], V[1], V[2], Color);
   }
 }
 

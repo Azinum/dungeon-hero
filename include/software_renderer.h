@@ -10,7 +10,7 @@ typedef struct color {
 
 typedef struct framebuffer {
   union {
-    i8* Data;
+    u8* Data;
     color* Color;
   };
   u32 Width;

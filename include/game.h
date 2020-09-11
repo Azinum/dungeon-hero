@@ -9,7 +9,6 @@
 #include "misc.h"
 #include "image.h"
 #include "mesh.h"
-#include "framebuffer.h"
 #include "window.h"
 #include "software_renderer.h"
 #include "entity.h"

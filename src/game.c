@@ -5,7 +5,6 @@
 #include "misc.c"
 #include "image.c"
 #include "mesh.c"
-#include "framebuffer.c"
 #include "window.c"
 #include "software_renderer.c"
 #include "entity.c"

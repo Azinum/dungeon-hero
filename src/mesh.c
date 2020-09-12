@@ -55,9 +55,6 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
     else if (!strncmp(Word, "vt", WORD_SIZE)) {
       v2 V;
       SScanf(Result, Iter, "%f %f", &V.X, &V.Y);
-      // NOTE(lucas): We are normalizing the texture coordinates so that we are dealing with numbers from 0.0 to 1.0
-      V.X = (V.X + 1.0f) / 2.0f;
-      V.Y = (V.Y + 1.0f) / 2.0f;
       ListPush(Mesh->UV, Mesh->UVCount, V);
     }
     // Vertex Normal

@@ -166,8 +166,8 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
             T0, T1, T2,
             W0, W1, W2
           );
-          i32 XCoord = Texture->Width * UV.U;
-          i32 YCoord = Texture->Height * UV.V;
+          i32 XCoord = (Texture->Width * Abs(UV.U));
+          i32 YCoord = (Texture->Height * Abs(UV.V));
           color Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Height) + XCoord)]);
           Texel.R *= LightFactor;
           Texel.G *= LightFactor;
@@ -179,7 +179,7 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
   }
 }
 
-#define LightStrength 4.0f
+#define LightStrength 7.0f
 #define MODEL_SCALE 50
 
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {

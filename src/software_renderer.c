@@ -124,7 +124,7 @@ inline color RGBToBGR(u8* A) {
 }
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
-inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, color Color, v2 T0, v2 T1, v2 T2, v3 V0, v3 V1, v3 V2, image* Texture) {
+inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, v3 V0, v3 V1, v3 V2, image* Texture, float LightFactor) {
   u32 Width = FrameBuffer->Width;
   u32 Height = FrameBuffer->Height;
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
@@ -169,8 +169,10 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
           i32 XCoord = Texture->Width * UV.U;
           i32 YCoord = Texture->Height * UV.V;
           color Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Height) + XCoord)]);
-          Color = Texel;
-          DrawPixel(FrameBuffer, P.X, P.Y, Color);
+          Texel.R *= LightFactor;
+          Texel.G *= LightFactor;
+          Texel.B *= LightFactor;
+          DrawPixel(FrameBuffer, P.X, P.Y, Texel);
         }
       }
     }
@@ -221,12 +223,7 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     if (DotValue < 0.0f) {
       continue;
     }
-    color Color;
-    Color.R = 255 * LightFactor;
-    Color.G = 255 * LightFactor;
-    Color.B = 255 * LightFactor;
-    Color.A = 255;
-    DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], Color, T[0], T[1], T[2], V[0], V[1], V[2], Texture);
+    DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], T[0], T[1], T[2], V[0], V[1], V[2], Texture, LightFactor);
   }
 }
 

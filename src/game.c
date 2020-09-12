@@ -10,10 +10,12 @@
 #include "entity.c"
 
 static game_state GameState;
-static v3 Light = V3(400, 300.0f, -40.0f);
+static v3 Light = V3(400, 350.0f, -80.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
+  Game->Time = 0;
+  Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
 #if 0
@@ -22,8 +24,8 @@ static void GameStateInit(game_state* Game) {
     Entity->Speed = V2(0, 0.005f);
   }
 #else
-  for (i32 Y = -3; Y < 6; ++Y) {
-    for (i32 X = -3; X < 4; ++X) {
+  for (i32 Y = -3; Y < 3; ++Y) {
+    for (i32 X = -2; X < 3; ++X) {
       GameAddEntity(V3(X, Y, 10.0f));
     }
   }

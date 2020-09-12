@@ -4,8 +4,10 @@ static render_state RenderState;
 
 static mat4 Proj;
 
-#define LightStrength 120.0f
+#define LightStrength 145.0f
 #define AMBIENT_LIGHT 0.1f
+#define DRAW_SOLID 0
+#define DRAW_BOUNDING_BOX 1
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
@@ -72,7 +74,7 @@ inline v2 Cartesian(v2 V0, v2 V1, v2 V2, float W0, float W1, float W2) {
 }
 
 inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
-  if (X < 0 || Y < 0 || X >= FrameBuffer->Width || Y >= FrameBuffer->Height) {
+  if (X < 0 || Y < 0 || X >= (i32)FrameBuffer->Width || Y >= (i32)FrameBuffer->Height) {
     return;
   }
 
@@ -81,8 +83,8 @@ inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   *Pixel = Color;
 }
 
-inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG, u8 ColorB) {
-#if 0
+static void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
+#if 1
   u8 Steep = 0;
   if (Abs(A.X - B.X) < Abs(A.Y - B.Y)) {
     Steep = 1;
@@ -98,10 +100,10 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG,
     float T = (X - A.X) / (float)(B.X - A.X);
     i32 Y = A.Y * (1.0f - T) + (B.Y * T);
     if (Steep) {
-      // DrawPixel(FrameBuffer, Y, X, ColorR, ColorG, ColorB);
+      DrawPixel(FrameBuffer, Y, X, Color);
     }
     else {
-      // DrawPixel(FrameBuffer, X, Y, ColorR, ColorG, ColorB);
+      DrawPixel(FrameBuffer, X, Y, Color);
     }
   }
 #endif
@@ -119,7 +121,7 @@ inline color RGBToBGR(u8* A) {
 }
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
-inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, image* Texture, float LightFactor) {
+static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, image* Texture, float LightFactor) {
   u32 Width = FrameBuffer->Width;
   u32 Height = FrameBuffer->Height;
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
@@ -129,10 +131,10 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
     return;
   }
 
-  i32 MinX = Min3(A.X, B.X, C.X);
-  i32 MinY = Min3(A.Y, B.Y, C.Y);
-  i32 MaxX = Max3(A.X, B.X, C.X);
-  i32 MaxY = Max3(A.Y, B.Y, C.Y);
+  float MinX = Min3(A.X, B.X, C.X);
+  float MinY = Min3(A.Y, B.Y, C.Y);
+  float MaxX = Max3(A.X, B.X, C.X);
+  float MaxY = Max3(A.Y, B.Y, C.Y);
 
   MinX = Max(MinX, 0);
   MinY = Max(MinY, 0);
@@ -158,15 +160,17 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
         i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) - P.X;
         if (ZBuffer[Index] < Z) {
           ZBuffer[Index] = Z;
+          color Texel;
+#if DRAW_SOLID
+          Texel = (color) {255, 255, 255, 255};
+#else
           v2 UV = Cartesian(
             T0, T1, T2,
             W0, W1, W2
           );
-          i32 XCoord = (Texture->Width * Abs(UV.U));
-          i32 YCoord = (Texture->Height * Abs(UV.V));
-          color Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Height) + XCoord)]);
-#if DRAW_SOLID
-          Texel = (color) {255, 255, 255, 255};
+          i32 XCoord = Abs((float)Texture->Width * UV.U);
+          i32 YCoord = Abs((float)Texture->Height * UV.V);
+          Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Width) + XCoord)]);
 #endif
           Texel.R = Clamp(Texel.R * LightFactor, AMBIENT_LIGHT, 0xff);
           Texel.G = Clamp(Texel.G * LightFactor, AMBIENT_LIGHT, 0xff);
@@ -176,6 +180,20 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
       }
     }
   }
+
+#if DRAW_BOUNDING_BOX
+  color LineColor = (color) {
+    .R = 255,
+    .G = 50,
+    .B = 50,
+    .A = 255
+  };
+
+  DrawLine(FrameBuffer, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
+  DrawLine(FrameBuffer, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
+  DrawLine(FrameBuffer, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
+  DrawLine(FrameBuffer, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
+#endif
 }
 
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
@@ -211,16 +229,19 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
     R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
 
+#if 1
     v3 LightDelta = DifferenceV3(Light, R[0]);
     float LightDistance = DistanceV3(Light, R[0]);
     v3 LightNormal = NormalizeVec3(LightDelta);
     float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
+#endif
 
     v3 CameraNormal = V3(0, 0, -1.0f);
     float DotValue = DotVec3(CameraNormal, Normal);
     if (DotValue < 0.0f) {
       continue;
     }
+
     DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], T[0], T[1], T[2], Texture, LightFactor);
   }
 }
@@ -232,8 +253,7 @@ i32 RendererInit(u32 Width, u32 Height) {
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
-  Proj = Perspective(50, (float)Win.Width / Win.Height, 0.1f, 500);
-
+  Proj = Perspective(35, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 

@@ -119,7 +119,7 @@ inline color RGBToBGR(u8* A) {
 }
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
-inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, v3 V0, v3 V1, v3 V2, image* Texture, float LightFactor) {
+inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, image* Texture, float LightFactor) {
   u32 Width = FrameBuffer->Width;
   u32 Height = FrameBuffer->Height;
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
@@ -221,12 +221,11 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     if (DotValue < 0.0f) {
       continue;
     }
-    DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], T[0], T[1], T[2], V[0], V[1], V[2], Texture, LightFactor);
+    DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], T[0], T[1], T[2], Texture, LightFactor);
   }
 }
 
 i32 RendererInit(u32 Width, u32 Height) {
-  (void)LoadImage; (void)StoreImage; (void)DrawLine;
   render_state* State = &RenderState;
   FrameBufferCreate(&State->FrameBuffer, Width, Height);
   State->ZBuffer = calloc(Width * Height, sizeof(float));

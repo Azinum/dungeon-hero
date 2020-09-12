@@ -14,8 +14,7 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
     Entity->P.X += Entity->Speed.X;
     Entity->P.Y += Entity->Speed.Y;
 
-#define YMax 8
-
+#define YMax 4
     if (P.Y < -YMax) {
       Entity->P.Y = -YMax;
       Entity->Speed.Y = -Entity->Speed.Y;

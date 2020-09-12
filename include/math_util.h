@@ -77,7 +77,7 @@ inline float DistanceV2(v3 A, v3 B) {
   float Result = 0;
   v3 Delta = DifferenceV3(A, B);
 
-  Result = SquareRoot(Power(Delta.X, 2) + Power(Delta.Y, 2));
+  Result = SquareRoot(Power(Delta.X, 2.0f) + Power(Delta.Y, 2.0f));
 
   return Result;
 }
@@ -86,7 +86,7 @@ inline float DistanceV3(v3 A, v3 B) {
   float Result = 0;
 
   v3 Delta = DifferenceV3(A, B);
-  Result = SquareRoot(Power(Delta.X, 2) + Power(Delta.Y, 2) + Power(Delta.Z, 2));
+  Result = SquareRoot(Power(Delta.X, 2.0f) + Power(Delta.Y, 2.0f) + Power(Delta.Z, 2.0f));
 
   return Result;
 }

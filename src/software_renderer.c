@@ -4,6 +4,9 @@ static render_state RenderState;
 
 static mat4 Proj;
 
+#define LightStrength 120.0f
+#define AMBIENT_LIGHT 0.1f
+
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
   FrameBuffer->Width = Width;
@@ -30,15 +33,7 @@ static void FrameBufferDestroy(framebuffer* FrameBuffer) {
   }
 }
 
-inline i32 Barycentric(v3 A, v3 B, v3 C) {
-  i32 Result = 0;
-
-  Result = (C.X - A.X) * (B.Y - A.Y) - (C.Y - A.Y) * (B.X - A.X);
-
-  return Result;
-}
-
-inline void Barycentric_(v3 P, v3 A, v3 B, v3 C, float* W0, float* W1, float* W2) {
+inline void Barycentric(v3 P, v3 A, v3 B, v3 C, float* W0, float* W1, float* W2) {
   v3 V0 = DifferenceV3(B, A);
   v3 V1 = DifferenceV3(C, A);
   v3 V2 = DifferenceV3(P, A);
@@ -150,8 +145,8 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
       float W0 = 0.0f;
       float W1 = 0.0f;
       float W2 = 0.0f;
+      Barycentric(P, A, B, C, &W0, &W1, &W2);
       float WSum = W0 + W1;
-      Barycentric_(P, A, B, C, &W0, &W1, &W2);
 
       // NOTE(lucas): Are we inside the triangle?
       if (W0 >= 0 && W1 >= 0 && W2 >= 0 && WSum <= 1.0f) {
@@ -159,6 +154,7 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
         Z += A.Z * W0;
         Z += B.Z * W1;
         Z += C.Z * W2;
+
         i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) - P.X;
         if (ZBuffer[Index] < Z) {
           ZBuffer[Index] = Z;
@@ -169,18 +165,18 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
           i32 XCoord = (Texture->Width * Abs(UV.U));
           i32 YCoord = (Texture->Height * Abs(UV.V));
           color Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Height) + XCoord)]);
-          Texel.R *= LightFactor;
-          Texel.G *= LightFactor;
-          Texel.B *= LightFactor;
+#if DRAW_SOLID
+          Texel = (color) {255, 255, 255, 255};
+#endif
+          Texel.R = Clamp(Texel.R * LightFactor, AMBIENT_LIGHT, 0xff);
+          Texel.G = Clamp(Texel.G * LightFactor, AMBIENT_LIGHT, 0xff);
+          Texel.B = Clamp(Texel.B * LightFactor, AMBIENT_LIGHT, 0xff);
           DrawPixel(FrameBuffer, P.X, P.Y, Texel);
         }
       }
     }
   }
 }
-
-#define LightStrength 7.0f
-#define MODEL_SCALE 50
 
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
@@ -215,8 +211,10 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
     R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
 
-    v3 LightNormal = NormalizeVec3(DifferenceV3(Light, R[0]));
-    float LightFactor = Clamp(DotVec3(Normal, LightNormal) * LightStrength, 0, 1.0f);
+    v3 LightDelta = DifferenceV3(Light, R[0]);
+    float LightDistance = DistanceV3(Light, R[0]);
+    v3 LightNormal = NormalizeVec3(LightDelta);
+    float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
 
     v3 CameraNormal = V3(0, 0, -1.0f);
     float DotValue = DotVec3(CameraNormal, Normal);

@@ -10,19 +10,24 @@
 #include "entity.c"
 
 static game_state GameState;
-static v3 Light = V3(0, 300, -20);
+static v3 Light = V3(400, 300.0f, -40.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
   Game->EntityCount = 0;
 
-  for (u32 Index = 0; Index < MAX_ENTITY; ++Index) {
-    entity* Entity = GameAddEntity(V3(-6.0f + ((1 + Index) * 2.0f), (Index * 2.0f), 10.0f + 4*Index)); // GameAddEntity(V3(Random(-15, 15), Random(-15, 15), 20));
-    if (!Entity) {
-      break;
-    }
+#if 0
+  for (u32 Index = 0; Index < 6; ++Index) {
+    entity* Entity = GameAddEntity(V3(Index - 3.0f, Index - 4.0f, 10.0f));
     Entity->Speed = V2(0, 0.005f);
   }
+#else
+  for (i32 Y = -3; Y < 6; ++Y) {
+    for (i32 X = -3; X < 4; ++X) {
+      GameAddEntity(V3(X, Y, 10.0f));
+    }
+  }
+#endif
 }
 
 static void OutputZBufferToFile(const char* Path) {
@@ -54,7 +59,8 @@ static void GameRun(game_state* Game) {
   u32 Tick = 0;
   while (IsRunning) {
     ++Tick;
-    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 4.0f) + 400;
+    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
+    // Light.Z = -2.0f + (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 300.0f)) / 2.0f) - 200;
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
 
@@ -63,7 +69,7 @@ static void GameRun(game_state* Game) {
     }
 
     RendererSwapBuffers();
-    RendererClear(2, 15, 40);
+    RendererClear(0, 0, 0);
   }
 
   OutputZBufferToFile("zbuffer.png");

@@ -11,16 +11,23 @@ typedef uint8_t u8;
 typedef float r32;
 typedef double r64;
 
-typedef struct v4 {
-  float X, Y, Z, W;
+typedef union v4 {
+  struct {
+    float X, Y, Z, W;
+  };
 } v4;
 
 typedef struct v3 {
   float X, Y, Z;
 } v3;
 
-typedef struct v2 {
-  float X, Y;
+typedef union v2 {
+  struct {
+    float X, Y;
+  };
+  struct {
+    float U, V;
+  };
 } v2;
 
 typedef struct v3i {

@@ -49,14 +49,35 @@ inline void Barycentric_(v3 P, v3 A, v3 B, v3 C, float* W0, float* W1, float* W2
   float D20 = DotVec3(V2, V0);
   float D21 = DotVec3(V2, V1);
 
-  float Denom = D00 * D11 - D01 * D01;
-  *W1 = (D11 * D20 - D01 * D21) / Denom;
-  *W2 = (D00 * D21 - D01 * D20) / Denom;
+  float Denominator = D00 * D11 - D01 * D01;
+  if (Denominator != 0.0f) {
+    *W1 = (D11 * D20 - D01 * D21) / Denominator;
+    *W2 = (D00 * D21 - D01 * D20) / Denominator;
+  }
   *W0 = 1.0f - *W1 - *W2;
 }
 
+inline v3 CartesianV3(v3 A, v3 B, v3 C, float W0, float W1, float W2) {
+  v3 Result;
+
+  Result.X = (A.X * W0) + (B.X * W0) + (C.X * W0);
+  Result.Y = (A.Y * W1) + (B.Y * W1) + (C.Y * W1);
+  Result.Z = (A.Z * W2) + (B.Z * W2) + (C.Z * W2);
+
+  return Result;
+}
+
+inline v2 Cartesian(v2 V0, v2 V1, v2 V2, float W0, float W1, float W2) {
+  v2 Result;
+
+  Result.X = (V0.X * W0) + (V1.X * W1) + (V2.X * W2);
+  Result.Y = (V0.Y * W0) + (V1.Y * W1) + (V2.Y * W2);
+
+  return Result;
+}
+
 inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
-  if (X <= 0 || Y <= 0 || X > FrameBuffer->Width || Y > FrameBuffer->Height) {
+  if (X < 0 || Y < 0 || X >= FrameBuffer->Width || Y >= FrameBuffer->Height) {
     return;
   }
 
@@ -91,6 +112,17 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, u8 ColorR, u8 ColorG,
 #endif
 }
 
+inline color RGBToBGR(u8* A) {
+  color Result = {0};
+
+  Result.R = *(A + 0);
+  Result.G = *(A + 1);
+  Result.B = *(A + 2);
+  Result.A = *(A + 3);
+
+  return Result;
+}
+
 // NOTE(lucas): Triangles are drawn in counterclockwise order
 inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, color Color, v2 T0, v2 T1, v2 T2, v3 V0, v3 V1, v3 V2, image* Texture) {
   u32 Width = FrameBuffer->Width;
@@ -118,10 +150,11 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
       float W0 = 0.0f;
       float W1 = 0.0f;
       float W2 = 0.0f;
+      float WSum = W0 + W1;
       Barycentric_(P, A, B, C, &W0, &W1, &W2);
 
       // NOTE(lucas): Are we inside the triangle?
-      if (W0 >= 0 && W1 >= 0 && W2 >= 0) {
+      if (W0 >= 0 && W1 >= 0 && W2 >= 0 && WSum <= 1.0f) {
         float Z = 0;
         Z += A.Z * W0;
         Z += B.Z * W1;
@@ -129,10 +162,14 @@ inline void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
         i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) - P.X;
         if (ZBuffer[Index] < Z) {
           ZBuffer[Index] = Z;
-
-          Color.R = W0 * 255;
-          Color.G = W1 * 255;
-          Color.B = (1.0f - W0 - W1) * 255;
+          v2 UV = Cartesian(
+            T0, T1, T2,
+            W0, W1, W2
+          );
+          i32 XCoord = Texture->Width * UV.U;
+          i32 YCoord = Texture->Height * UV.V;
+          color Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Height) + XCoord)]);
+          Color = Texel;
           DrawPixel(FrameBuffer, P.X, P.Y, Color);
         }
       }
@@ -181,20 +218,14 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
 
     v3 CameraNormal = V3(0, 0, -1.0f);
     float DotValue = DotVec3(CameraNormal, Normal);
-    if (DotValue < 0) {
+    if (DotValue < 0.0f) {
       continue;
     }
-
-    u8* At = &Texture->PixelBuffer[0 * 4];
-    color Color = {
-      *(At + 2),
-      *(At + 1),
-      *(At + 0),
-      *(At + 3),
-    };
-    Color.R *= LightFactor;
-    Color.G *= LightFactor;
-    Color.B *= LightFactor;
+    color Color;
+    Color.R = 255 * LightFactor;
+    Color.G = 255 * LightFactor;
+    Color.B = 255 * LightFactor;
+    Color.A = 255;
     DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], Color, T[0], T[1], T[2], V[0], V[1], V[2], Texture);
   }
 }
@@ -208,6 +239,7 @@ i32 RendererInit(u32 Width, u32 Height) {
   WindowOpen(Width, Height, WINDOW_TITLE);
  
   Proj = Perspective(50, (float)Win.Width / Win.Height, 0.1f, 500);
+
   return 0;
 }
 

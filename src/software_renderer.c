@@ -4,9 +4,9 @@ static render_state RenderState;
 
 static mat4 Proj;
 
-#define LightStrength 120.0f
+#define LightStrength 160.0f
 #define AMBIENT_LIGHT 3
-#define DRAW_SOLID 1
+#define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
 
@@ -16,14 +16,44 @@ static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Height = Height;
 }
 
-static void FrameBufferClear(framebuffer* FrameBuffer, u8 ColorR, u8 ColorG, u8 ColorB) {
-  color Zero = {ColorB, ColorG, ColorR, 0};
-  color* Iter = FrameBuffer->Color;
+static void FrameBufferClear(framebuffer* FrameBuffer, color Color) {
   u32 Count = FrameBuffer->Width * FrameBuffer->Height;
+#if USE_SSE
+  __m128i* Dest = (__m128i*)FrameBuffer->Color;
+  __m128i Value = _mm_setr_epi8(
+    Color.R, Color.G, Color.B, Color.A,
+    Color.R, Color.G, Color.B, Color.A,
+    Color.R, Color.G, Color.B, Color.A,
+    Color.R, Color.G, Color.B, Color.A
+  );
+
+  for (u32 Index = 0; Index < (Count / 4); ++Index) {
+    *(Dest)++ = Value;
+  }
+#else
+  color* Dest = FrameBuffer->Color;
 
   for (u32 Index = 0; Index < Count; ++Index) {
-    *(Iter)++ = Zero;
+    *(Dest)++ = Color;
   }
+#endif
+}
+
+static void ZBufferClear(float* ZBuffer, u32 Width, u32 Height) {
+  u32 Count = Width * Height;
+  float FillValue = -1.0f;
+#if USE_SSE
+  __m128* Dest = (__m128*)ZBuffer;
+  __m128 Value = _mm_set_ps1(FillValue);
+
+  for (u32 Index = 0; Index < (Count / 4); ++Index) {
+    *(Dest++) = Value;
+  }
+#else
+  for (u32 Index = 0; Index < Count; ++Index) {
+    *(ZBuffer++) = FillValue;
+  }
+#endif
 }
 
 static void FrameBufferDestroy(framebuffer* FrameBuffer) {
@@ -194,12 +224,7 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
   }
 
 #if DRAW_BOUNDING_BOX
-  color LineColor = (color) {
-    .R = 25,
-    .G = 50,
-    .B = 255,
-    .A = 255
-  };
+  color LineColor = COLOR(50, 50, 255);
 
   DrawLine(FrameBuffer, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
   DrawLine(FrameBuffer, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
@@ -208,8 +233,8 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 
 #if DRAW_BOUNDING_BOX_POINTS
-  DrawRect(FrameBuffer, MinX, MinY, 4, 4, (color) { .G = 255, });
-  DrawRect(FrameBuffer, MaxX, MaxY, 4, 4, (color) { .R = 255, });
+  DrawRect(FrameBuffer, MinX, MinY, 4, 4, COLOR(50, 255, 50));
+  DrawRect(FrameBuffer, MaxX, MaxY, 4, 4, COLOR(255, 50, 50));
 #endif
 }
 
@@ -280,26 +305,8 @@ static void RendererSwapBuffers() {
   WindowSwapBuffers(&RenderState.FrameBuffer);
 }
 
-static void ZBufferClear(float* ZBuffer, u32 Width, u32 Height) {
-  u32 Count = Width * Height;
-  float FillValue = -10000;
-#if USE_SSE
-  __m128* Dest = (__m128*)ZBuffer;
-  __m128 Value = _mm_set_ps1(FillValue);
-  u32 ChunkSize = 4;
-  Count /= ChunkSize;
-  for (u32 Index = 0; Index < Count; ++Index) {
-    *(Dest++) = Value;
-  }
-#else
-  for (u32 Index = 0; Index < Count; ++Index) {
-    *(ZBuffer++) = FillValue;
-  }
-#endif
-}
-
 static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
-  FrameBufferClear(&RenderState.FrameBuffer, ColorR, ColorG, ColorB);
+  FrameBufferClear(&RenderState.FrameBuffer, COLOR(ColorR, ColorG, ColorB));
   ZBufferClear(RenderState.ZBuffer, RenderState.FrameBuffer.Width, RenderState.FrameBuffer.Height);
 }
 

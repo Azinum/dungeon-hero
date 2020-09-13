@@ -10,7 +10,7 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
   for (u32 EntityIndex = 0; EntityIndex < EntityCount; ++EntityIndex) {
     entity* Entity = &Entities[EntityIndex];
     v3 P = Entity->P;
-#if 1
+#if 0
     Entity->P.X += Entity->Speed.X * GameState.DeltaTime;
     Entity->P.Y += Entity->Speed.Y * GameState.DeltaTime;
 

@@ -27,10 +27,8 @@ static void GameStateInit(game_state* Game) {
     Entity->Speed = V2(0, 1.0f);
   }
 #else
-  for (i32 Z = 0; Z < 10; ++Z) {
-    for (i32 X = -2; X < 3; ++X) {
-      GameAddEntity(V3(X, -2.5f, 12.0f + Z));
-    }
+  for (i32 X = -2; X < 3; ++X) {
+    GameAddEntity(V3(X, -1.0f, 5.0f));
   }
 #endif
 }
@@ -85,7 +83,7 @@ static void GameRun(game_state* Game) {
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
 
     DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));
-    DrawTexture2D(&RenderState.FrameBuffer, 5, 5, 64, 64, 0.0f, 0.0f, 0.25f, 0.25f, &Texture, COLOR(1, 1, 1));
+    DrawTexture2D(&RenderState.FrameBuffer, 5, 5, 128, 128, 0.0f, 0.0f, 0.25f, 0.25f, &Texture, COLOR(1, 1, 1));
 
     if (WindowEvents() != 0) {
       break;
@@ -94,7 +92,7 @@ static void GameRun(game_state* Game) {
     if (LastFrame > (1.0f / TARGET_FPS)) {
       snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
       WindowSetTitle(Title);
-      LastFrame -= (1.0f / TARGET_FPS);
+      LastFrame = 0; //(1.0f / TARGET_FPS);
       RendererSwapBuffers();
     }
     RendererClear(0, 0, 0);

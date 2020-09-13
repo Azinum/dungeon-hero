@@ -9,11 +9,12 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-#define LightStrength 160.0f
+#define LightStrength 200.0f
 #define AMBIENT_LIGHT 3
 #define DRAW_SOLID 1
 #define DRAW_BOUNDING_BOX 0
-#define DRAW_BOUNDING_BOX_POINTS 1
+#define DRAW_BOUNDING_BOX_POINTS 0
+#define DRAW_VERTICES 0
 #define DITHERING 1
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
@@ -204,9 +205,11 @@ inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, 
   i32 XDiff = 0;
   i32 YDiff = 0;
 
+  // TODO(lucas): Cleanup sampling!
   for (Y = MinY; Y < MaxY - 1; ++Y) {
     YDiff = MaxY - Y;
     YCoord = Texture->Height * ((float)YDiff / H) * YRange + (YOffset * Texture->Height);
+
     for (X = MinX; X < MaxX - 1; ++X) {
       XDiff = X - MaxX;
       XCoord = Texture->Width * ((float)(XDiff) / W) * XRange + (XOffset * Texture->Width);
@@ -216,12 +219,11 @@ inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, 
         continue;
       }
 
-      // TODO(lucas): Fix full color tint
-#if 1
+      // TODO(lucas): Add full color tint
       Texel.R *= Tint.R;
       Texel.G *= Tint.G;
       Texel.B *= Tint.B;
-#endif
+
       DrawPixel(FrameBuffer, X, Y, Texel);
     }
   }
@@ -291,7 +293,7 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
           ZBuffer[Index] = Z;
           color Texel;
 #if DRAW_SOLID
-          Texel = (color) {255, 255, 255, 255};
+          Texel = COLOR(255, 255, 255);
 #else
           v2 UV = Cartesian(
             T0, T1, T2,
@@ -322,6 +324,12 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #if DRAW_BOUNDING_BOX_POINTS
   DrawRect(FrameBuffer, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
   DrawRect(FrameBuffer, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
+#endif
+
+#if DRAW_VERTICES
+  DrawRect(FrameBuffer, A.X, A.Y, 4, 4, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(FrameBuffer, B.X, B.Y, 4, 4, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(FrameBuffer, C.X, C.Y, 4, 4, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
 #endif
 }
 
@@ -358,13 +366,12 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
     R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
 
-    float LightFactor = 1.0f;
-#if 1
     v3 LightDelta = DifferenceV3(Light, R[0]);
+    LightDelta.X = -LightDelta.X; // Why doe?
+
     float LightDistance = DistanceV3(Light, R[0]);
     v3 LightNormal = NormalizeVec3(LightDelta);
-    LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
-#endif
+    float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
 
     v3 CameraNormal = V3(0, 0, -1.0f);
     float DotValue = DotVec3(CameraNormal, Normal);
@@ -383,7 +390,7 @@ i32 RendererInit(u32 Width, u32 Height) {
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
-  Proj = Perspective(45, (float)Win.Width / Win.Height, 0.1f, 500);
+  Proj = Perspective(60, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 

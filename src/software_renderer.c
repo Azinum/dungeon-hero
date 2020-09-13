@@ -4,10 +4,11 @@ static render_state RenderState;
 
 static mat4 Proj;
 
-#define LightStrength 145.0f
-#define AMBIENT_LIGHT 0.1f
-#define DRAW_SOLID 0
-#define DRAW_BOUNDING_BOX 1
+#define LightStrength 120.0f
+#define AMBIENT_LIGHT 3
+#define DRAW_SOLID 1
+#define DRAW_BOUNDING_BOX 0
+#define DRAW_BOUNDING_BOX_POINTS 0
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
@@ -79,12 +80,12 @@ inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   }
 
   // NOTE(lucas): Origin is at the bottom left corner!
-  color* Pixel = (color*)&FrameBuffer->Color[(((FrameBuffer->Height - Y) * FrameBuffer->Width) + X)];
+  color* Pixel = (color*)&FrameBuffer->Color[(((FrameBuffer->Height) - Y - 1) * FrameBuffer->Width) + X];
   *Pixel = Color;
 }
 
-static void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
-#if 1
+// NOTE(lucas): Bresenham!
+inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
   u8 Steep = 0;
   if (Abs(A.X - B.X) < Abs(A.Y - B.Y)) {
     Steep = 1;
@@ -97,7 +98,7 @@ static void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
   }
 
   for (i32 X = A.X; X < B.X; X++) {
-    float T = (X - A.X) / (float)(B.X - A.X);
+    i32 T = (X - A.X) / (float)(B.X - A.X);
     i32 Y = A.Y * (1.0f - T) + (B.Y * T);
     if (Steep) {
       DrawPixel(FrameBuffer, Y, X, Color);
@@ -106,7 +107,18 @@ static void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
       DrawPixel(FrameBuffer, X, Y, Color);
     }
   }
-#endif
+}
+
+inline void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color Color) {
+  i32 MinX = X;
+  i32 MinY = Y;
+  i32 MaxX = X + W;
+  i32 MaxY = Y + H;
+  for (Y = MinY; Y <= MaxY; ++Y) {
+    for (X = MinX; X <= MaxX; ++X) {
+      DrawPixel(FrameBuffer, X, Y, Color);
+    }
+  }
 }
 
 inline color RGBToBGR(u8* A) {
@@ -122,19 +134,19 @@ inline color RGBToBGR(u8* A) {
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
 static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, image* Texture, float LightFactor) {
-  u32 Width = FrameBuffer->Width;
-  u32 Height = FrameBuffer->Height;
+#if 1
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
     return;
   }
-  if (A.X >= Width || A.Y >= Height || B.X >= Width || B.Y >= Height || C.X >= Width || C.Y >= Height) {
+  if (A.X >= FrameBuffer->Width || A.Y >= FrameBuffer->Height || B.X >= FrameBuffer->Width || B.Y >= FrameBuffer->Height || C.X >= FrameBuffer->Width || C.Y >= FrameBuffer->Height) {
     return;
   }
+#endif
 
-  float MinX = Min3(A.X, B.X, C.X);
-  float MinY = Min3(A.Y, B.Y, C.Y);
-  float MaxX = Max3(A.X, B.X, C.X);
-  float MaxY = Max3(A.Y, B.Y, C.Y);
+  i32 MinX = Min3(A.X, B.X, C.X);
+  i32 MinY = Min3(A.Y, B.Y, C.Y);
+  i32 MaxX = Max3(A.X, B.X, C.X);
+  i32 MaxY = Max3(A.Y, B.Y, C.Y);
 
   MinX = Max(MinX, 0);
   MinY = Max(MinY, 0);
@@ -151,7 +163,7 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
       float WSum = W0 + W1;
 
       // NOTE(lucas): Are we inside the triangle?
-      if (W0 >= 0 && W1 >= 0 && W2 >= 0 && WSum <= 1.0f) {
+      if (W0 >= 0.0f && W1 >= 0.0f && W2 >= 0.0f && WSum <= 1.0f) {
         float Z = 0;
         Z += A.Z * W0;
         Z += B.Z * W1;
@@ -183,9 +195,9 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 
 #if DRAW_BOUNDING_BOX
   color LineColor = (color) {
-    .R = 255,
+    .R = 25,
     .G = 50,
-    .B = 50,
+    .B = 255,
     .A = 255
   };
 
@@ -193,6 +205,11 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
   DrawLine(FrameBuffer, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
   DrawLine(FrameBuffer, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
   DrawLine(FrameBuffer, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
+#endif
+
+#if DRAW_BOUNDING_BOX_POINTS
+  DrawRect(FrameBuffer, MinX, MinY, 4, 4, (color) { .G = 255, });
+  DrawRect(FrameBuffer, MaxX, MaxY, 4, 4, (color) { .R = 255, });
 #endif
 }
 
@@ -229,11 +246,12 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
     R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
 
+    float LightFactor = 1.0f;
 #if 1
     v3 LightDelta = DifferenceV3(Light, R[0]);
     float LightDistance = DistanceV3(Light, R[0]);
     v3 LightNormal = NormalizeVec3(LightDelta);
-    float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
+    LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
 #endif
 
     v3 CameraNormal = V3(0, 0, -1.0f);

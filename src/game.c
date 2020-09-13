@@ -10,7 +10,7 @@
 #include "entity.c"
 
 static game_state GameState;
-static v3 Light = V3(400, 350.0f, -80.0f);
+static v3 Light = V3(400, 350.0f, -150.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -21,11 +21,11 @@ static void GameStateInit(game_state* Game) {
 #if 0
   for (u32 Index = 0; Index < 6; ++Index) {
     entity* Entity = GameAddEntity(V3(Index - 3.0f, Index - 4.0f, 10.0f));
-    Entity->Speed = V2(0, 0.005f);
+    Entity->Speed = V2(0, 0.002f);
   }
 #else
-  for (i32 Y = -3; Y < 3; ++Y) {
-    for (i32 X = -2; X < 3; ++X) {
+  for (i32 Y = 0; Y < 2; ++Y) {
+    for (i32 X = -1; X < 4; ++X) {
       GameAddEntity(V3(X, Y, 10.0f));
     }
   }
@@ -53,7 +53,7 @@ static void OutputZBufferToFile(const char* Path) {
 
 static void GameRun(game_state* Game) {
   mesh Mesh;
-  MeshLoadOBJ("resource/mesh/test.obj", &Mesh);
+  MeshLoadOBJ("resource/mesh/stone.obj", &Mesh);
   image Texture;
   LoadImage("resource/texture/test.png", &Texture);
 
@@ -62,7 +62,6 @@ static void GameRun(game_state* Game) {
   while (IsRunning) {
     ++Tick;
     Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
-    // Light.Z = -2.0f + (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 300.0f)) / 2.0f) - 200;
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
 

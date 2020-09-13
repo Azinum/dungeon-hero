@@ -13,7 +13,7 @@
 #define MAX_DELTA_TIME 0.2f
 
 game_state GameState;
-static v3 Light = V3(400, 400.0f, -150.0f);
+static v3 Light = V3(400, 350.0f, -100.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -22,9 +22,9 @@ static void GameStateInit(game_state* Game) {
   Game->EntityCount = 0;
 
 #if 1
-  for (u32 Index = 0; Index < 6; ++Index) {
-    entity* Entity = GameAddEntity(V3(Index - 3.0f, Index - 4.0f, 10.0f));
-    Entity->Speed = V2(0, 2.0f);
+  for (u32 Index = 0; Index < 5; ++Index) {
+    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f));
+    Entity->Speed = V2(0, 1.0f);
   }
 #else
   for (i32 Z = 0; Z < 10; ++Z) {
@@ -56,9 +56,11 @@ static void OutputZBufferToFile(const char* Path) {
 
 static void GameRun(game_state* Game) {
   mesh Mesh;
-  MeshLoadOBJ("resource/mesh/stone.obj", &Mesh);
+  MeshLoadOBJ("resource/mesh/test.obj", &Mesh);
   image Texture;
   LoadImage("resource/texture/test.png", &Texture);
+  image SunTexture;
+  LoadImage("resource/texture/sun-icon.png", &SunTexture);
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};
@@ -78,28 +80,28 @@ static void GameRun(game_state* Game) {
     Game->Time += Game->DeltaTime;
     LastFrame += Game->DeltaTime;
 
-    if (!(Tick % 250)) {
-      snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
-      WindowSetTitle(Title);
-    }
-    // Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
+    Light.X = 400 + (200.0f * sin(Game->Time * PI32 * 0.25f));
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
+    DrawTexture(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture);
 
     if (WindowEvents() != 0) {
       break;
     }
 
-    if (LastFrame > (1.0f / 60.0f)) {
-      LastFrame -= (1.0f / 60.0f);
+    if (LastFrame > (1.0f / TARGET_FPS)) {
+      snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
+      WindowSetTitle(Title);
+      LastFrame -= (1.0f / TARGET_FPS);
       RendererSwapBuffers();
-      RendererClear(0, 30, 100);
+      RendererClear(0, 0, 0);
     }
   }
 
   OutputZBufferToFile("zbuffer.png");
   MeshUnload(&Mesh);
   UnloadImage(&Texture);
+  UnloadImage(&SunTexture);
 }
 
 static entity* GameAddEntity(v3 Position) {

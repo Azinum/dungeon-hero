@@ -14,7 +14,7 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
     Entity->P.X += Entity->Speed.X * GameState.DeltaTime;
     Entity->P.Y += Entity->Speed.Y * GameState.DeltaTime;
 
-#define YMax 4
+#define YMax 1
     if (P.Y < -YMax) {
       Entity->P.Y = -YMax;
       Entity->Speed.Y = -Entity->Speed.Y;

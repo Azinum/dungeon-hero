@@ -8,8 +8,8 @@ static mat4 Proj;
 #define AMBIENT_LIGHT 3
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
-#define DRAW_BOUNDING_BOX_POINTS 0
-#define SSE_DITHERING 1
+#define DRAW_BOUNDING_BOX_POINTS 1
+#define DITHERING 0
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
@@ -22,7 +22,7 @@ static void FrameBufferClear(framebuffer* FrameBuffer, color Color) {
 #if USE_SSE
   __m128i* Dest = (__m128i*)FrameBuffer->Color;
 
-#if SSE_DITHERING
+#if DITHERING
   __m128i Value = _mm_setr_epi8(
     Color.B, Color.G, Color.R, Color.A,
     Color.B >> 2, Color.G >> 2, Color.R >> 2, Color.A,
@@ -114,13 +114,31 @@ inline v2 Cartesian(v2 V0, v2 V1, v2 V2, float W0, float W1, float W2) {
   return Result;
 }
 
+inline color RGBToBGR(u8* A) {
+  color Result;
+
+  Result.R = *(A + 0);
+  Result.G = *(A + 1);
+  Result.B = *(A + 2);
+  Result.A = 255;
+
+  return Result;
+}
+
 inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   if (X < 0 || Y < 0 || X >= (i32)FrameBuffer->Width || Y >= (i32)FrameBuffer->Height) {
     return;
   }
 
   // NOTE(lucas): Origin is at the bottom left corner!
-  color* Pixel = (color*)&FrameBuffer->Color[(((FrameBuffer->Height) - Y - 1) * FrameBuffer->Width) + X];
+  color* Pixel = (color*)&FrameBuffer->Color[(FrameBuffer->Height - Y - 1) * FrameBuffer->Width + X];
+#if DITHERING
+  if (!(X % 2) && !(Y % 2)) {
+    Color.R >>= 2;
+    Color.G >>= 2;
+    Color.B >>= 2;
+  }
+#endif
   *Pixel = Color;
 }
 
@@ -149,27 +167,41 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
   }
 }
 
-inline void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color Color) {
+inline void DrawTexture(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, image* Texture) {
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
   i32 MaxY = Y + H;
-  for (Y = MinY; Y <= MaxY; ++Y) {
-    for (X = MinX; X <= MaxX; ++X) {
-      DrawPixel(FrameBuffer, X, Y, Color);
+  i32 XCoord = 0;
+  i32 YCoord = 0;
+  i32 XDiff = 0;
+  i32 YDiff = 0;
+  for (Y = MinY; Y < MaxY; ++Y) {
+    YDiff = MaxY - Y;
+    YCoord = Texture->Height * ((float)YDiff / H);
+    for (X = MinX; X < MaxX; ++X) {
+      XDiff = X - MaxX;
+      XCoord = Texture->Width * ((float)(XDiff) / W);
+      color Texel = RGBToBGR(&Texture->PixelBuffer[(i32)(4 * ((YCoord * Texture->Width) + XCoord))]);
+
+      if (Texel.R == 255 && Texel.G == 0 && Texel.B == 255) {
+        continue;
+      }
+      DrawPixel(FrameBuffer, X, Y, Texel);
     }
   }
 }
 
-inline color RGBToBGR(u8* A) {
-  color Result;
-
-  Result.R = *(A + 0);
-  Result.G = *(A + 1);
-  Result.B = *(A + 2);
-  Result.A = 255;
-
-  return Result;
+static void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color Color) {
+  i32 MinX = X;
+  i32 MinY = Y;
+  i32 MaxX = X + W;
+  i32 MaxY = Y + H;
+  for (Y = MinY; Y < MaxY; ++Y) {
+    for (X = MinX; X < MaxX; ++X) {
+      DrawPixel(FrameBuffer, X, Y, Color);
+    }
+  }
 }
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order

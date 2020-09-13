@@ -83,7 +83,7 @@ static void GameRun(game_state* Game) {
     Light.X = 400 + (200.0f * sin(Game->Time * PI32 * 0.25f));
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
-    DrawTexture(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture);
+    DrawTexture(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(255, 220, 0));
 
     if (WindowEvents() != 0) {
       break;

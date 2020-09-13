@@ -8,8 +8,8 @@ static mat4 Proj;
 #define AMBIENT_LIGHT 3
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
-#define DRAW_BOUNDING_BOX_POINTS 1
-#define DITHERING 0
+#define DRAW_BOUNDING_BOX_POINTS 0
+#define DITHERING 1
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
@@ -167,7 +167,7 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
   }
 }
 
-inline void DrawTexture(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, image* Texture) {
+inline void DrawTexture(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, image* Texture, color Tint) {
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
@@ -187,6 +187,9 @@ inline void DrawTexture(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, im
       if (Texel.R == 255 && Texel.G == 0 && Texel.B == 255) {
         continue;
       }
+      Texel.R *= (float)Tint.R / (1 + Texel.R);
+      Texel.G *= (float)Tint.G / (1 + Texel.G);
+      Texel.B *= (float)Tint.B / (1 + Texel.B);
       DrawPixel(FrameBuffer, X, Y, Texel);
     }
   }

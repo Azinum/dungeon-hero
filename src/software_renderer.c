@@ -152,12 +152,12 @@ inline void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color
 }
 
 inline color RGBToBGR(u8* A) {
-  color Result = {0};
+  color Result;
 
   Result.R = *(A + 0);
   Result.G = *(A + 1);
   Result.B = *(A + 2);
-  Result.A = *(A + 3);
+  Result.A = 255;
 
   return Result;
 }

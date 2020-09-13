@@ -96,8 +96,8 @@ static void GameRun(game_state* Game) {
       WindowSetTitle(Title);
       LastFrame -= (1.0f / TARGET_FPS);
       RendererSwapBuffers();
-      RendererClear(0, 0, 0);
     }
+    RendererClear(0, 0, 0);
   }
 
   OutputZBufferToFile("zbuffer.png");

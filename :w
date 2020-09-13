@@ -4,11 +4,6 @@ static render_state RenderState;
 
 static mat4 Proj;
 
-typedef enum blend_mode {
-  BLEND_MODE_NORMAL = 0,
-  BLEND_MODE_ADD,
-} blend_mode;
-
 #define LightStrength 160.0f
 #define AMBIENT_LIGHT 3
 #define DRAW_SOLID 1
@@ -151,7 +146,6 @@ inline void DrawPixelAdd(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   if (X < 0 || Y < 0 || X >= (i32)FrameBuffer->Width || Y >= (i32)FrameBuffer->Height) {
     return;
   }
-
   float Opacity = 0.0f;
   if (Color.A != 0.0f) {
     Opacity = Color.A / 255.0f;
@@ -167,6 +161,7 @@ inline void DrawPixelAdd(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   Pixel->R = Clamp(Pixel->R + (Opacity * Color.R), 0, 255);
   Pixel->G = Clamp(Pixel->G + (Opacity * Color.G), 0, 255);
   Pixel->B = Clamp(Pixel->B + (Opacity * Color.B), 0, 255);
+  *Pixel = Color;
 }
 
 // NOTE(lucas): Bresenham!
@@ -230,21 +225,14 @@ inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, 
 #define DrawSimpleTexture2D(FrameBuffer, X, Y, W, H, TEXTURE, TINT) \
   DrawTexture2D(FrameBuffer, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
 
-static void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color Color, blend_mode BlendMode) {
+static void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color Color) {
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
   i32 MaxY = Y + H;
   for (Y = MinY; Y < MaxY; ++Y) {
     for (X = MinX; X < MaxX; ++X) {
-      switch (BlendMode) {
-        case BLEND_MODE_NORMAL:
-          DrawPixel(FrameBuffer, X, Y, Color);
-          break;
-        case BLEND_MODE_ADD:
-          DrawPixelAdd(FrameBuffer, X, Y, Color);
-          break;
-      }
+      DrawPixelAdd(FrameBuffer, X, Y, Color);
     }
   }
 }
@@ -320,8 +308,8 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 
 #if DRAW_BOUNDING_BOX_POINTS
-  DrawRect(FrameBuffer, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
-  DrawRect(FrameBuffer, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
+  DrawRect(FrameBuffer, MinX, MinY, 4, 4, COLORA(50, 255, 50, 0));
+  DrawRect(FrameBuffer, MaxX, MaxY, 4, 4, COLORA(255, 50, 50, 1));
 #endif
 }
 

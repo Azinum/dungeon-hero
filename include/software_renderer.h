@@ -9,6 +9,7 @@ typedef struct color {
 } color;
 
 #define COLOR(R, G, B) (color) {B, G, R, .A = 255}
+#define COLORA(R, G, B, ColorA) (color) {B, G, R, .A = ColorA}
 
 typedef struct framebuffer {
   union {

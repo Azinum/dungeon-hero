@@ -9,7 +9,7 @@ static mat4 Proj;
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
-#define DITHERING 1
+#define DITHERING 0
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
@@ -167,7 +167,7 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
   }
 }
 
-inline void DrawTexture(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, image* Texture, color Tint) {
+inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
@@ -176,24 +176,32 @@ inline void DrawTexture(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, im
   i32 YCoord = 0;
   i32 XDiff = 0;
   i32 YDiff = 0;
-  for (Y = MinY; Y < MaxY; ++Y) {
+
+  for (Y = MinY; Y < MaxY - 1; ++Y) {
     YDiff = MaxY - Y;
-    YCoord = Texture->Height * ((float)YDiff / H);
-    for (X = MinX; X < MaxX; ++X) {
+    YCoord = Texture->Height * ((float)YDiff / H) * YRange + (YOffset * Texture->Height);
+    for (X = MinX; X < MaxX - 1; ++X) {
       XDiff = X - MaxX;
-      XCoord = Texture->Width * ((float)(XDiff) / W);
+      XCoord = Texture->Width * ((float)(XDiff) / W) * XRange + (XOffset * Texture->Width);
       color Texel = RGBToBGR(&Texture->PixelBuffer[(i32)(4 * ((YCoord * Texture->Width) + XCoord))]);
 
       if (Texel.R == 255 && Texel.G == 0 && Texel.B == 255) {
         continue;
       }
-      Texel.R *= (float)Tint.R / (1 + Texel.R);
-      Texel.G *= (float)Tint.G / (1 + Texel.G);
-      Texel.B *= (float)Tint.B / (1 + Texel.B);
+
+      // TODO(lucas): Fix full color tint
+#if 1
+      Texel.R *= Tint.R;
+      Texel.G *= Tint.G;
+      Texel.B *= Tint.B;
+#endif
       DrawPixel(FrameBuffer, X, Y, Texel);
     }
   }
 }
+
+#define DrawSimpleTexture2D(FrameBuffer, X, Y, W, H, TEXTURE, TINT) \
+  DrawTexture2D(FrameBuffer, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
 
 static void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color Color) {
   i32 MinX = X;

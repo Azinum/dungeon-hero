@@ -9,6 +9,7 @@ static mat4 Proj;
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
+#define SSE_DITHERING 1
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
@@ -20,13 +21,22 @@ static void FrameBufferClear(framebuffer* FrameBuffer, color Color) {
   u32 Count = FrameBuffer->Width * FrameBuffer->Height;
 #if USE_SSE
   __m128i* Dest = (__m128i*)FrameBuffer->Color;
-  __m128i Value = _mm_setr_epi8(
-    Color.R, Color.G, Color.B, Color.A,
-    Color.R, Color.G, Color.B, Color.A,
-    Color.R, Color.G, Color.B, Color.A,
-    Color.R, Color.G, Color.B, Color.A
-  );
 
+#if SSE_DITHERING
+  __m128i Value = _mm_setr_epi8(
+    Color.B, Color.G, Color.R, Color.A,
+    Color.B >> 2, Color.G >> 2, Color.R >> 2, Color.A,
+    Color.B, Color.G, Color.R, Color.A,
+    Color.B >> 2, Color.G >> 2, Color.R >> 2, Color.A
+  );
+#else
+  __m128i Value = _mm_setr_epi8(
+    Color.B, Color.G, Color.R, Color.A,
+    Color.B, Color.G, Color.R, Color.A,
+    Color.B, Color.G, Color.R, Color.A,
+    Color.B, Color.G, Color.R, Color.A
+  );
+#endif
   for (u32 Index = 0; Index < (Count / 4); ++Index) {
     *(Dest)++ = Value;
   }
@@ -296,7 +306,7 @@ i32 RendererInit(u32 Width, u32 Height) {
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
-  Proj = Perspective(35, (float)Win.Width / Win.Height, 0.1f, 500);
+  Proj = Perspective(45, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 

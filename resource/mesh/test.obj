@@ -1,7 +1,7 @@
 # Blender v2.90.0 OBJ File: 'test.blend'
 # www.blender.org
 mtllib test.mtl
-o Plane.001
+o Main_Cube_Plane.001
 v -0.500000 0.500000 -0.500000
 v -0.500000 -0.500000 -0.500000
 v -0.500000 0.500000 0.500000

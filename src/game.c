@@ -9,8 +9,11 @@
 #include "software_renderer.c"
 #include "entity.c"
 
-static game_state GameState;
-static v3 Light = V3(400, 350.0f, -150.0f);
+#define BUFFER_SIZE 512
+#define MAX_DELTA_TIME 0.2f
+
+game_state GameState;
+static v3 Light = V3(400, 400.0f, -150.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -18,15 +21,15 @@ static void GameStateInit(game_state* Game) {
   Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
-#if 0
+#if 1
   for (u32 Index = 0; Index < 6; ++Index) {
     entity* Entity = GameAddEntity(V3(Index - 3.0f, Index - 4.0f, 10.0f));
-    Entity->Speed = V2(0, 0.002f);
+    Entity->Speed = V2(0, 2.0f);
   }
 #else
-  for (i32 Y = 0; Y < 2; ++Y) {
-    for (i32 X = -1; X < 4; ++X) {
-      GameAddEntity(V3(X, Y, 10.0f));
+  for (i32 Z = 0; Z < 10; ++Z) {
+    for (i32 X = -2; X < 3; ++X) {
+      GameAddEntity(V3(X, -2.5f, 12.0f + Z));
     }
   }
 #endif
@@ -57,11 +60,29 @@ static void GameRun(game_state* Game) {
   image Texture;
   LoadImage("resource/texture/test.png", &Texture);
 
+  char Title[BUFFER_SIZE] = {0};
+  struct timeval TimeNow = {0};
+  struct timeval TimeLast = {0};
+  float LastFrame = 0;
+
   u8 IsRunning = 1;
   u32 Tick = 0;
   while (IsRunning) {
     ++Tick;
-    Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
+    TimeLast = TimeNow;
+    gettimeofday(&TimeNow, NULL);
+    Game->DeltaTime = ((((TimeNow.tv_sec - TimeLast.tv_sec) * 1000000.0f) + TimeNow.tv_usec) - (TimeLast.tv_usec)) / 1000000.0f;
+    if (Game->DeltaTime > MAX_DELTA_TIME) {
+      Game->DeltaTime = MAX_DELTA_TIME;
+    }
+    Game->Time += Game->DeltaTime;
+    LastFrame += Game->DeltaTime;
+
+    if (!(Tick % 250)) {
+      snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
+      WindowSetTitle(Title);
+    }
+    // Light.X = (((RenderState.FrameBuffer.Width >> 1) * sin(Tick / 400.0f)) / 2.0f) + 400;
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
 
@@ -69,8 +90,11 @@ static void GameRun(game_state* Game) {
       break;
     }
 
-    RendererSwapBuffers();
-    RendererClear(0, 0, 0);
+    if (LastFrame > (1.0f / 60.0f)) {
+      LastFrame -= (1.0f / 60.0f);
+      RendererSwapBuffers();
+      RendererClear(0, 30, 100);
+    }
   }
 
   OutputZBufferToFile("zbuffer.png");

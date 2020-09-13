@@ -22,6 +22,8 @@ typedef struct game_state {
   u32 EntityCount;
 } game_state;
 
+extern game_state GameState;
+
 static entity* GameAddEntity(v3 Position);
 
 void GameStart();

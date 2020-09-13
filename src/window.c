@@ -87,6 +87,10 @@ static i32 WindowEvents() {
   return 0;
 }
 
+static void WindowSetTitle(const char* Title) {
+  XStoreName(Win.Disp, Win.Win, Title);
+}
+
 static void WindowClose() {
   XDestroyImage(Win.Image);
   XFreeGC(Win.Disp, Win.Gc);

@@ -13,9 +13,13 @@ typedef enum blend_mode {
 #define AMBIENT_LIGHT 3
 #define DRAW_SOLID 1
 #define DRAW_BOUNDING_BOX 0
-#define DRAW_BOUNDING_BOX_POINTS 0
-#define DRAW_VERTICES 0
+#define DRAW_BOUNDING_BOX_POINTS 1
+#define DRAW_VERTICES 1
 #define DITHERING 1
+
+#define Degenerate(V0, V1, V2) \
+  ((V0.X == V1.X && V0.Y == V1.Y) || \
+  ((V1.X == V2.X && V1.Y == V2.Y)))
 
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
@@ -136,15 +140,15 @@ inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
     return;
   }
 
+#if DITHERING
+  u8 Dither = (X % 2) * (Y % 2);
+  Color.R >>= 2 * Dither;
+  Color.G >>= 2 * Dither;
+  Color.B >>= 2 * Dither;
+#endif
+
   // NOTE(lucas): Origin is at the bottom left corner!
   color* Pixel = (color*)&FrameBuffer->Color[(FrameBuffer->Height - Y - 1) * FrameBuffer->Width + X];
-#if DITHERING
-  if (!(X % 2) && !(Y % 2)) {
-    Color.R >>= 2;
-    Color.G >>= 2;
-    Color.B >>= 2;
-  }
-#endif
   *Pixel = Color;
 }
 
@@ -253,14 +257,12 @@ static void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
 static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, image* Texture, float LightFactor) {
-#if 1
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
     return;
   }
   if (A.X >= FrameBuffer->Width || A.Y >= FrameBuffer->Height || B.X >= FrameBuffer->Width || B.Y >= FrameBuffer->Height || C.X >= FrameBuffer->Width || C.Y >= FrameBuffer->Height) {
     return;
   }
-#endif
 
   i32 MinX = Min3(A.X, B.X, C.X);
   i32 MinY = Min3(A.Y, B.Y, C.Y);
@@ -299,8 +301,8 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
             T0, T1, T2,
             W0, W1, W2
           );
-          i32 XCoord = Abs((float)Texture->Width * UV.U);
-          i32 YCoord = Abs((float)Texture->Height * UV.V);
+          i32 XCoord = (i32)Abs(Texture->Width * UV.U) % Texture->Width;
+          i32 YCoord = (i32)Abs(Texture->Height * UV.V) % Texture->Height;
           Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Width) + XCoord)]);
 #endif
           Texel.R = Clamp(Texel.R * LightFactor, AMBIENT_LIGHT, 0xff);
@@ -333,7 +335,15 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 }
 
+float Angle = 0;
+
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
+  mat4 Model = Translate(P);
+  // Model = MultiplyMat4(Model, Rotate(45, V3(0, 0, 1)));
+  Angle += 30.0f * GameState.DeltaTime;
+  Model = MultiplyMat4(Model, Rotate(Angle, V3(0, 0, 1)));
+  mat4 Mat = MultiplyMat4(Proj, Model);
+
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];  // Vertices
     v2 T[3];  // UV coords
@@ -350,13 +360,10 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
 
     Normal = Mesh->Normals[Mesh->NormalIndices[Index + 0]];
 
-    R[0] = AddToV3(V[0], P);
-    R[1] = AddToV3(V[1], P);
-    R[2] = AddToV3(V[2], P);
+    R[0] = MultiplyMatrixVector(Mat, V[0]);
+    R[1] = MultiplyMatrixVector(Mat, V[1]);
+    R[2] = MultiplyMatrixVector(Mat, V[2]);
 
-    R[0] = MultiplyMatrixVector(Proj, R[0]);
-    R[1] = MultiplyMatrixVector(Proj, R[1]);
-    R[2] = MultiplyMatrixVector(Proj, R[2]);
 
     R[0].X += 1.0f; R[0].Y += 1.0f;
     R[1].X += 1.0f; R[1].Y += 1.0f;
@@ -366,9 +373,9 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
     R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
 
+    // TODO(lucas): Is this the correct way to calculate point light normals?
     v3 LightDelta = DifferenceV3(Light, R[0]);
-    LightDelta.X = -LightDelta.X; // Why doe?
-
+    LightDelta.X = -LightDelta.X;
     float LightDistance = DistanceV3(Light, R[0]);
     v3 LightNormal = NormalizeVec3(LightDelta);
     float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
@@ -378,7 +385,9 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     if (DotValue < 0.0f) {
       continue;
     }
-
+    if (Degenerate(R[0], R[1], R[2])) {
+      continue;
+    }
     DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], T[0], T[1], T[2], Texture, LightFactor);
   }
 }

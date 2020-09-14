@@ -13,7 +13,7 @@
 #define MAX_DELTA_TIME 0.2f
 
 game_state GameState;
-static v3 Light = V3(400, 350.0f, -100.0f);
+static v3 Light = V3(100, 350.0f, -100.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -27,9 +27,10 @@ static void GameStateInit(game_state* Game) {
     Entity->Speed = V2(0, 1.0f);
   }
 #else
-  for (i32 X = -2; X < 3; ++X) {
-    GameAddEntity(V3(X, -1.0f, 5.0f));
-  }
+  GameAddEntity(V3(0.0f, 0.0f, 10.0f));
+  // for (i32 X = -2; X < 3; ++X) {
+  //   GameAddEntity(V3(X, -1.0f, 5.0f));
+  // }
 #endif
 }
 
@@ -78,12 +79,11 @@ static void GameRun(game_state* Game) {
     Game->Time += Game->DeltaTime;
     LastFrame += Game->DeltaTime;
 
-    Light.X = 400 + (200.0f * sin(Game->Time * PI32 * 0.25f));
+    Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
 
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
 
     DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));
-    DrawTexture2D(&RenderState.FrameBuffer, 5, 5, 128, 128, 0.0f, 0.0f, 0.25f, 0.25f, &Texture, COLOR(1, 1, 1));
 
     if (WindowEvents() != 0) {
       break;

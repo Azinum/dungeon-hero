@@ -98,9 +98,9 @@ inline float ToRadians(float Degrees) {
 inline mat4 Translate(v3 T) {
   mat4 Result = Mat4D(1.0f);
 
-  Result.Elements[3][0] = T.X;
-  Result.Elements[3][1] = T.X;
-  Result.Elements[3][2] = T.X;
+  Result.Elements[3][0] += T.X;
+  Result.Elements[3][1] += T.Y;
+  Result.Elements[3][2] += T.Z;
 
   return Result;
 }
@@ -162,7 +162,7 @@ inline v3 NormalizeVec3(v3 A) {
 
   float Length = LengthVec3(A);
 
-  if (Length != 0) {
+  if (Length != 0.0) {
     Result.X = A.X * (1.0f / Length);
     Result.Y = A.Y * (1.0f / Length);
     Result.Z = A.Z * (1.0f / Length);
@@ -270,8 +270,7 @@ inline mat4 Mat4D(float Diagonal) {
 inline mat4 MultiplyMat4(mat4 A, mat4 B) {
   mat4 Result;
 
-#if USE_SSE
-
+#if USE_SSE && 0
   mat4 Left = Transpose(A);
   mat4 Right = Transpose(B);
 
@@ -292,6 +291,18 @@ inline mat4 MultiplyMat4(mat4 A, mat4 B) {
     }
   }
 #endif
+  return Result;
+}
+
+inline mat4 MultiplyMat4f(mat4 A, float B) {
+  mat4 Result;
+
+  __m128 Scalar = _mm_set1_ps(B);
+  Result.Rows[0] = _mm_mul_ps(A.Rows[0], Scalar);
+  Result.Rows[1] = _mm_mul_ps(A.Rows[1], Scalar);
+  Result.Rows[2] = _mm_mul_ps(A.Rows[2], Scalar);
+  Result.Rows[3] = _mm_mul_ps(A.Rows[3], Scalar);
+
   return Result;
 }
 

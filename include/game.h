@@ -9,6 +9,7 @@
 #include "misc.h"
 #include "image.h"
 #include "mesh.h"
+#include "asset.h"
 #include "window.h"
 #include "entity.h"
 #include "software_renderer.h"
@@ -24,6 +25,6 @@ typedef struct game_state {
 
 extern game_state GameState;
 
-static entity* GameAddEntity(v3 Position);
+static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId);
 
 void GameStart();

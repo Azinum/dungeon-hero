@@ -1,0 +1,55 @@
+// asset.c
+
+static const char* MeshFileNames[MAX_MESH] = {
+  "test",
+  "stone",
+};
+
+static const char* TextureFileNames[MAX_TEXTURE] = {
+  "test",
+  "uv_test",
+  "sun_icon"
+};
+
+void AssetsInit(assets* Assets) {
+  memset(Assets, 0, sizeof(assets));
+  Assets->MeshCount = 0;
+  Assets->TextureCount = 0;
+}
+
+void AssetsLoadAll(assets* Assets) {
+  char Path[MAX_PATH_SIZE] = {0};
+  AssetsInit(Assets);
+
+  for (u32 Index = 0; Index < MAX_MESH; ++Index) {
+    snprintf(Path, MAX_PATH_SIZE, "%s/%s.obj", MESH_PATH, MeshFileNames[Index]);
+    mesh Mesh;
+    MeshInit(&Mesh);
+    if (MeshLoadOBJ(Path, &Mesh) != 0) {
+      continue;
+    }
+    Assets->Meshes[Index] = Mesh;
+    ++Assets->MeshCount;
+  }
+
+  for (u32 Index = 0; Index < MAX_TEXTURE; ++Index) {
+    snprintf(Path, MAX_PATH_SIZE, "%s/%s.png", TEXTURE_PATH, TextureFileNames[Index]);
+    image Texture;
+    if (LoadImage(Path, &Texture) != 0) {
+      continue;  
+    }
+    Assets->Textures[Index] = Texture;
+    ++Assets->TextureCount;
+  }
+}
+
+void AssetsUnloadAll(assets* Assets) {
+  for (u32 Index = 0; Index < Assets->MeshCount; ++Index) {
+    mesh* Mesh = &Assets->Meshes[Index];
+    MeshUnload(Mesh);
+  }
+  for (u32 Index = 0; Index < Assets->TextureCount; ++Index) {
+    image* Texture = &Assets->Textures[Index];
+    UnloadImage(Texture);
+  }
+}

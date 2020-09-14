@@ -20,10 +20,12 @@ static void MeshUnload(mesh* Mesh) {
 
 static void MeshInit(mesh* Mesh) {
   memset(Mesh, 0, sizeof(mesh));
-  Mesh->Vertices = NULL;
   Mesh->VertexCount = 0;
-  Mesh->Indices = NULL;
   Mesh->IndexCount = 0;
+  Mesh->NormalCount = 0;
+  Mesh->NormalIndexCount = 0;
+  Mesh->UVCount = 0;
+  Mesh->UVIndexCount = 0;
 }
 
 #define WORD_SIZE 128
@@ -35,6 +37,9 @@ static i32 MeshLoadOBJ(const char* Path, mesh* Mesh) {
   MeshInit(Mesh);
 
   ReadFile(Path, &Buffer);
+  if (!Buffer.Data) {
+    return -1;
+  }
   char Word[WORD_SIZE] = {0};
   char* Iter = Buffer.Data;
   i32 Result = 0;

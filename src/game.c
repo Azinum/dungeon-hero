@@ -5,6 +5,7 @@
 #include "misc.c"
 #include "image.c"
 #include "mesh.c"
+#include "asset.c"
 #include "window.c"
 #include "software_renderer.c"
 #include "entity.c"
@@ -21,14 +22,14 @@ static void GameStateInit(game_state* Game) {
   Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
-#if 0
+#if 1
   for (u32 Index = 0; Index < 5; ++Index) {
-    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f));
-    Entity->Speed = V2(0, 1.0f);
+    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), MESH_CUBE, TEXTURE_UV);
+    Entity->Speed = V3(0, 1.0f, 0);
   }
 #else
   for (i32 X = -2; X < 3; ++X) {
-    GameAddEntity(V3(X, -1.0f, 5.0f));
+    GameAddEntity(V3(X, -1.0f, 5.0f), MESH_STONE, TEXTURE_UV);
   }
 #endif
 }
@@ -53,12 +54,11 @@ static void OutputZBufferToFile(const char* Path) {
 }
 
 static void GameRun(game_state* Game) {
-  mesh Mesh;
-  MeshLoadOBJ("resource/mesh/test.obj", &Mesh);
-  image Texture;
-  LoadImage("resource/texture/test.png", &Texture);
+  assets Assets;
+  AssetsLoadAll(&Assets);
+
   image SunTexture;
-  LoadImage("resource/texture/sun-icon.png", &SunTexture);
+  LoadImage("resource/texture/sun_icon.png", &SunTexture);
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};
@@ -80,7 +80,7 @@ static void GameRun(game_state* Game) {
 
     Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
 
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Mesh, &Texture, Light);
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light);
 
     DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));
 
@@ -91,24 +91,23 @@ static void GameRun(game_state* Game) {
     if (LastFrame > (1.0f / TARGET_FPS)) {
       snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
       WindowSetTitle(Title);
-      LastFrame = 0; //(1.0f / TARGET_FPS);
+      LastFrame -= (1.0f / TARGET_FPS);
       RendererSwapBuffers();
     }
-    RendererClear(0, 0, 0);
+    RendererClear(10, 30, 80);
   }
 
   OutputZBufferToFile("zbuffer.png");
-  MeshUnload(&Mesh);
-  UnloadImage(&Texture);
   UnloadImage(&SunTexture);
+  AssetsUnloadAll(&Assets);
 }
 
-static entity* GameAddEntity(v3 Position) {
+static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) {
   if (GameState.EntityCount >= MAX_ENTITY) {
     return NULL;
   }
   entity* Entity = &GameState.Entities[GameState.EntityCount++];
-  EntityInit(Entity, Position);
+  EntityInit(Entity, Position, MeshId, TextureId);
   return Entity;
 }
 

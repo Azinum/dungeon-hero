@@ -2,7 +2,7 @@
 
 static render_state RenderState;
 
-static mat4 Proj;
+static mat4 Projection;
 
 typedef enum blend_mode {
   BLEND_MODE_NORMAL = 0,
@@ -11,10 +11,10 @@ typedef enum blend_mode {
 
 #define LightStrength 200.0f
 #define AMBIENT_LIGHT 3
-#define DRAW_SOLID 1
+#define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
-#define DRAW_VERTICES 1
+#define DRAW_VERTICES 0
 #define DITHERING 1
 
 #define Degenerate(V0, V1, V2) \
@@ -337,7 +337,7 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
   mat4 Model = Translate(P);
-  mat4 Mat = MultiplyMat4(Proj, Model);
+  mat4 Mat = MultiplyMat4(Projection, Model);
 
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];  // Vertices
@@ -370,8 +370,8 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     // TODO(lucas): Is this the correct way to calculate point light normals?
     v3 LightDelta = DifferenceV3(Light, R[0]);
     LightDelta.X = -LightDelta.X;
-    float LightDistance = DistanceV3(Light, R[0]);
     v3 LightNormal = NormalizeVec3(LightDelta);
+    float LightDistance = DistanceV3(Light, R[0]);
     float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
 
     v3 CameraNormal = V3(0, 0, -1.0f);
@@ -393,7 +393,7 @@ i32 RendererInit(u32 Width, u32 Height) {
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
-  Proj = Perspective(60, (float)Win.Width / Win.Height, 0.1f, 500);
+  Projection = Perspective(60, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 

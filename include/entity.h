@@ -2,5 +2,8 @@
 
 typedef struct entity {
   v3 P;
-  v2 Speed;
+  v3 Speed;
+
+  u32 MeshId;
+  u32 TextureId;
 } entity;

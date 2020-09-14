@@ -2,6 +2,7 @@
 
 #include "game.h"
 
+#include "camera.c"
 #include "misc.c"
 #include "image.c"
 #include "mesh.c"
@@ -22,16 +23,24 @@ static void GameStateInit(game_state* Game) {
   Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
-#if 1
+#if 0
   for (u32 Index = 0; Index < 5; ++Index) {
     entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_TEST);
     Entity->Speed = V3(0, 1.0f, 0);
   }
 #else
-  for (i32 X = -2; X < 3; ++X) {
-    GameAddEntity(V3(X, -1.0f, 5.0f), MESH_STONE, TEXTURE_UV);
+  for (i32 X = -3; X <= 3; ++X) {
+    if (X == 1) {
+      GameAddEntity(V3(X, 1, 4), MESH_COOKING_POT, TEXTURE_UV);
+    }
+    if (X == 2) {
+      GameAddEntity(V3(X, 1, 4), MESH_CUBE, TEXTURE_BOX);
+    }
+
+    GameAddEntity(V3(X, 0, 4), MESH_CUBE, TEXTURE_TEST);
   }
 #endif
+  CameraInit(&Camera, V3(0, -2, 0));
 }
 
 static void OutputZBufferToFile(const char* Path) {
@@ -77,8 +86,8 @@ static void GameRun(game_state* Game) {
     Game->Time += Game->DeltaTime;
     LastFrame += Game->DeltaTime;
 
-    Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
-
+    // Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
+    Camera.P.Z = 2.0f * sin(Game->Time * PI32 * 0.2f);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light);
 
     DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));

@@ -6,6 +6,7 @@
 #include "math_util.h"
 #include "list.h"
 
+#include "camera.h"
 #include "misc.h"
 #include "image.h"
 #include "mesh.h"

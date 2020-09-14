@@ -209,11 +209,12 @@ inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, 
   i32 YDiff = 0;
 
   // TODO(lucas): Cleanup sampling!
-  for (Y = MinY; Y < MaxY - 1; ++Y) {
+  // TODO(lucas): There is an error in the sampling in which we sample more pixels than we need
+  for (Y = MinY; Y < MaxY; ++Y) {
     YDiff = MaxY - Y;
     YCoord = Texture->Height * ((float)YDiff / H) * YRange + (YOffset * Texture->Height);
 
-    for (X = MinX; X < MaxX - 1; ++X) {
+    for (X = MinX; X < MaxX; ++X) {
       XDiff = X - MaxX;
       XCoord = Texture->Width * ((float)(XDiff) / W) * XRange + (XOffset * Texture->Width);
       color Texel = RGBToBGR(&Texture->PixelBuffer[(i32)(4 * ((YCoord * Texture->Width) + XCoord))]);
@@ -334,9 +335,11 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 }
 
+
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
   mat4 Model = Translate(P);
-  mat4 Mat = MultiplyMat4(Projection, Model);
+  mat4 View = Translate(Camera.P);
+  mat4 Mat = MultiplyMat4(Projection, MultiplyMat4(Model, View));
 
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];  // Vertices
@@ -376,7 +379,7 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     v3 CameraNormal = V3(0, 0, -1.0f);
     float DotValue = DotVec3(CameraNormal, Normal);
     if (DotValue < 0.0f) {
-      continue;
+      // continue;
     }
     if (Degenerate(R[0], R[1], R[2])) {
       continue;
@@ -392,7 +395,7 @@ i32 RendererInit(u32 Width, u32 Height) {
 
   WindowOpen(Width, Height, WINDOW_TITLE);
  
-  Projection = Perspective(60, (float)Win.Width / Win.Height, 0.1f, 500);
+  Projection = Perspective(70, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 

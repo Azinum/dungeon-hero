@@ -1,16 +1,5 @@
 // asset.c
 
-static const char* MeshFileNames[MAX_MESH] = {
-  "test",
-  "stone",
-};
-
-static const char* TextureFileNames[MAX_TEXTURE] = {
-  "test",
-  "uv_test",
-  "sun_icon"
-};
-
 void AssetsInit(assets* Assets) {
   memset(Assets, 0, sizeof(assets));
   Assets->MeshCount = 0;

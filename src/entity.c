@@ -19,14 +19,10 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
 #if 1
 #define YMax 1
     if (P.Y < -YMax) {
-      Entity->TextureId = TEXTURE_UV;
-      Entity->MeshId = MESH_CUBE;
       Entity->P.Y = -YMax;
       Entity->Speed.Y = -Entity->Speed.Y;
     }
     else if (P.Y > YMax) {
-      Entity->TextureId = TEXTURE_TEST;
-      Entity->MeshId = MESH_STONE;
       Entity->P.Y = YMax;
       Entity->Speed.Y = -Entity->Speed.Y;
     }

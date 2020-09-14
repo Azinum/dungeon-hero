@@ -97,8 +97,8 @@ done:
 
 static i32 StorePNGFromSource(const char* Path, image* Image) {
   i32 Result = -1;
-  png_structp PNG;
-  png_infop Info;
+  png_structp PNG = {0};
+  png_infop Info = {0};
 
   FILE* File = fopen(Path, "wb");
   if (!File) {

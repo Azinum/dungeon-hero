@@ -10,11 +10,13 @@ RES_DIR=resource
 
 PROF_DIR=profile
 
+X11_LIB=/usr/X11R6/lib
+
 SRC=src/main.c
 
 BUILD_DIR=build
 
-LIBS=-lpng -lm -lX11
+LIBS=-lpng -lm -L${X11_LIB} -lX11
 
 FLAGS=-I${INCLUDE_DIR} ${SRC} -o ${BUILD_DIR}/${PROG_NAME} -Wall -Wno-missing-braces -std=c99
 

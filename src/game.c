@@ -24,7 +24,7 @@ static void GameStateInit(game_state* Game) {
 
 #if 1
   for (u32 Index = 0; Index < 5; ++Index) {
-    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), MESH_CUBE, TEXTURE_UV);
+    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_TEST);
     Entity->Speed = V3(0, 1.0f, 0);
   }
 #else
@@ -57,8 +57,7 @@ static void GameRun(game_state* Game) {
   assets Assets;
   AssetsLoadAll(&Assets);
 
-  image SunTexture;
-  LoadImage("resource/texture/sun_icon.png", &SunTexture);
+  image SunTexture = Assets.Textures[TEXTURE_SUN_ICON];
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};
@@ -98,7 +97,6 @@ static void GameRun(game_state* Game) {
   }
 
   OutputZBufferToFile("zbuffer.png");
-  UnloadImage(&SunTexture);
   AssetsUnloadAll(&Assets);
 }
 

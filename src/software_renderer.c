@@ -162,11 +162,10 @@ inline void DrawPixelAdd(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
     Opacity = Color.A / 255.0f;
   }
 #if DITHERING
-  if (!(X % 2) && !(Y % 2)) {
-    Color.R >>= 2;
-    Color.G >>= 2;
-    Color.B >>= 2;
-  }
+  u8 Dither = (X % 2) * (Y % 2);
+  Color.R >>= 2 * Dither;
+  Color.G >>= 2 * Dither;
+  Color.B >>= 2 * Dither;
 #endif
   color* Pixel = (color*)&FrameBuffer->Color[(FrameBuffer->Height - Y - 1) * FrameBuffer->Width + X];
   Pixel->R = Clamp(Pixel->R + (Opacity * Color.R), 0, 255);
@@ -302,7 +301,7 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
             W0, W1, W2
           );
           i32 XCoord = (i32)Abs(Texture->Width * UV.U) % Texture->Width;
-          i32 YCoord = (i32)Abs(Texture->Height * UV.V) % Texture->Height;
+          i32 YCoord = (i32)Abs(Texture->Height * (1.0f - UV.V)) % Texture->Height;
           Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Width) + XCoord)]);
 #endif
           Texel.R = Clamp(Texel.R * LightFactor, AMBIENT_LIGHT, 0xff);

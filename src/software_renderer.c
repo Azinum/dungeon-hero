@@ -13,7 +13,7 @@ typedef enum blend_mode {
 #define AMBIENT_LIGHT 3
 #define DRAW_SOLID 1
 #define DRAW_BOUNDING_BOX 0
-#define DRAW_BOUNDING_BOX_POINTS 1
+#define DRAW_BOUNDING_BOX_POINTS 0
 #define DRAW_VERTICES 1
 #define DITHERING 1
 
@@ -329,19 +329,14 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 
 #if DRAW_VERTICES
-  DrawRect(FrameBuffer, A.X, A.Y, 4, 4, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-  DrawRect(FrameBuffer, B.X, B.Y, 4, 4, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-  DrawRect(FrameBuffer, C.X, C.Y, 4, 4, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(FrameBuffer, A.X, A.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(FrameBuffer, B.X, B.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(FrameBuffer, C.X, C.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
 #endif
 }
 
-float Angle = 0;
-
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light) {
   mat4 Model = Translate(P);
-  // Model = MultiplyMat4(Model, Rotate(45, V3(0, 0, 1)));
-  Angle += 30.0f * GameState.DeltaTime;
-  Model = MultiplyMat4(Model, Rotate(Angle, V3(0, 0, 1)));
   mat4 Mat = MultiplyMat4(Proj, Model);
 
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
@@ -363,7 +358,6 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     R[0] = MultiplyMatrixVector(Mat, V[0]);
     R[1] = MultiplyMatrixVector(Mat, V[1]);
     R[2] = MultiplyMatrixVector(Mat, V[2]);
-
 
     R[0].X += 1.0f; R[0].Y += 1.0f;
     R[1].X += 1.0f; R[1].Y += 1.0f;

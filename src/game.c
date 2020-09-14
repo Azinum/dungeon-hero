@@ -21,16 +21,15 @@ static void GameStateInit(game_state* Game) {
   Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
-#if 1
+#if 0
   for (u32 Index = 0; Index < 5; ++Index) {
     entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f));
     Entity->Speed = V2(0, 1.0f);
   }
 #else
-  GameAddEntity(V3(0.0f, 0.0f, 10.0f));
-  // for (i32 X = -2; X < 3; ++X) {
-  //   GameAddEntity(V3(X, -1.0f, 5.0f));
-  // }
+  for (i32 X = -2; X < 3; ++X) {
+    GameAddEntity(V3(X, -1.0f, 5.0f));
+  }
 #endif
 }
 

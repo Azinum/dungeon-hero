@@ -270,7 +270,7 @@ inline mat4 Mat4D(float Diagonal) {
 inline mat4 MultiplyMat4(mat4 A, mat4 B) {
   mat4 Result;
 
-#if USE_SSE && 0
+#if USE_SSE
   mat4 Left = Transpose(A);
   mat4 Right = Transpose(B);
 
@@ -279,6 +279,7 @@ inline mat4 MultiplyMat4(mat4 A, mat4 B) {
   Result.Rows[2] = LinearCombineSSE(Left.Rows[2], Right);
   Result.Rows[3] = LinearCombineSSE(Left.Rows[3], Right);
 
+  Result = Transpose(Result);
 #else
   for (i32 Column = 0; Column < 4; ++Column) {
     for (i32 Row = 0; Row < 4; ++Row) {

@@ -3,6 +3,11 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/keysym.h>
+#include <X11/XKBlib.h>
+
+static i8 KeyDown[MAX_KEY];
+static i8 KeyPressed[MAX_KEY];
 
 typedef struct window {
   u32 Width;
@@ -70,14 +75,46 @@ static void WindowSwapBuffers(framebuffer* FrameBuffer) {
 
 static i32 WindowEvents() {
   XEvent E;
-  
-  if (XPending(Win.Disp)) {
+
+  for (u8 KeyIndex = 0; KeyIndex < MAX_KEY; ++KeyIndex) {
+    KeyPressed[KeyIndex] = 0;
+  }
+  for (u8 KeyIndex = 0; KeyIndex < MAX_KEY; ++KeyIndex) {
+    KeyDown[KeyIndex] = 0;
+  }
+
+  while (XPending(Win.Disp)) {
     XNextEvent(Win.Disp, &E);
     switch (E.type) {
       case KeyPress: {
-        switch (E.xkey.keycode) {
-          case 9: { // TEMP!
+        i64 KeyCode = XLookupKeysym(&E.xkey, 0);
+        switch (KeyCode) {
+          case XK_Escape:
             return -1;
+          default: {
+            if (KeyCode < MAX_KEY) {
+              KeyPressed[KeyCode] = 1;
+              KeyDown[KeyCode] = 1;
+            }
+            break;
+          }
+        }
+      }
+      // TODO(lucas): Fix key repeat
+      case KeyRelease: {
+        u8 IsHoldingDown = 0;
+        if (XEventsQueued(Win.Disp, QueuedAfterReading)) {
+          XEvent NewEvent;
+          XPeekEvent(Win.Disp, &NewEvent);
+          if (NewEvent.type == KeyPress && NewEvent.xkey.time == E.xkey.time && NewEvent.xkey.keycode == E.xkey.keycode) {
+            XNextEvent(Win.Disp, &E);
+            IsHoldingDown = 1;
+          }
+        }
+        if (!IsHoldingDown) {
+          i64 KeyCode = XLookupKeysym(&E.xkey, 0);
+          if (KeyCode < MAX_KEY) {
+            KeyDown[KeyCode] = 0;
           }
         }
         break;

@@ -104,8 +104,8 @@ static void GameRun(game_state* Game) {
     LastFrame += Game->DeltaTime;
 
     // Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
-    Camera.P.Z = 2.0f * sin(Game->Time * PI32 * 0.2f);
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light);
+    // Camera.P.Z = 2.0f * sin(Game->Time * PI32 * 0.2f);
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light, &Camera);
 
     DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));
 

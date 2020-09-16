@@ -8,7 +8,20 @@ static entity* EntityInit(entity* E, v3 P, mesh_id MeshId, texture_id TextureId)
   return E;
 }
 
-static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, float* ZBuffer, assets* Assets, v3 Light) {
+static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer* FrameBuffer, float* ZBuffer, assets* Assets, v3 Light, camera* Camera) {
+  if (KeyPressed[KEY_D]) {
+    Camera->P.X += 1;
+  }
+  if (KeyPressed[KEY_A]) {
+    Camera->P.X -= 1;
+  }
+  if (KeyPressed[KEY_W]) {
+    Camera->P.Z -= 1;
+  }
+  if (KeyPressed[KEY_S]) {
+    Camera->P.Z += 1;
+  }
+
   for (u32 EntityIndex = 0; EntityIndex < EntityCount; ++EntityIndex) {
     entity* Entity = &Entities[EntityIndex];
     v3 P = Entity->P;

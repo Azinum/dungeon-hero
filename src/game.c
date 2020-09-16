@@ -48,15 +48,32 @@ static void OutputZBufferToFile(const char* Path) {
   Image.Width = Win.Width;
   Image.Height = Win.Height;
   Image.Depth = 24;
-  Image.Pitch = Win.Width * 3;
+  Image.Pitch = Win.Width * 4;
   Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
   Image.BytesPerPixel = 4;
 
-  for (u32 Index = 0; Index < Image.Width * Image.Height; Index++) {
+  for (u32 Index = 0; Index < Image.Width * Image.Height; ++Index) {
     float V = Clamp(255 * Abs(RenderState.ZBuffer[Index]), 0, 255);
     color Color = {V, V, V, 255};
     color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
     *Pixel = Color;
+  }
+  StoreImage(Path, &Image);
+  UnloadImage(&Image);
+}
+
+static void OutputFrameBufferToFile(framebuffer* FrameBuffer, const char* Path) {
+  image Image;
+  Image.Width = FrameBuffer->Width;
+  Image.Height = FrameBuffer->Height;
+  Image.Depth = 24;
+  Image.Pitch = FrameBuffer->Width * 4;
+  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
+  Image.BytesPerPixel = 4;
+
+  for (u32 Index = 0; Index < FrameBuffer->Width * FrameBuffer->Height; ++Index) {
+    color Pixel = BGRToRGB(FrameBuffer->Color[Index]);
+    *(color*)&Image.PixelBuffer[Index * 4] = Pixel;
   }
   StoreImage(Path, &Image);
   UnloadImage(&Image);
@@ -102,10 +119,11 @@ static void GameRun(game_state* Game) {
       LastFrame -= (1.0f / TARGET_FPS);
       RendererSwapBuffers();
     }
-    RendererClear(10, 30, 80);
+    RendererClear(0, 0, 0);
   }
 
   OutputZBufferToFile("zbuffer.png");
+  OutputFrameBufferToFile(&RenderState.FrameBuffer, "framebuffer.png");
   AssetsUnloadAll(&Assets);
 }
 

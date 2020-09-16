@@ -135,6 +135,17 @@ inline color RGBToBGR(u8* A) {
   return Result;
 }
 
+inline color BGRToRGB(color Color) {
+  color Result;
+  
+  Result.R = Color.B;
+  Result.G = Color.G;
+  Result.B = Color.R;
+  Result.A = Color.A;
+
+  return Result;
+}
+
 inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   if (X < 0 || Y < 0 || X >= (i32)FrameBuffer->Width || Y >= (i32)FrameBuffer->Height) {
     return;

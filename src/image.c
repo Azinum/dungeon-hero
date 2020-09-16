@@ -97,6 +97,8 @@ done:
 
 static i32 StorePNGFromSource(const char* Path, image* Image) {
   i32 Result = -1;
+  png_structp PNG = {0};
+  png_infop Info = {0};
 
   FILE* File = fopen(Path, "wb");
   if (!File) {
@@ -104,23 +106,23 @@ static i32 StorePNGFromSource(const char* Path, image* Image) {
     goto done;
   }
 
-  png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png) {
+  PNG = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (!PNG) {
     goto done;
   }
 
-  png_infop info = png_create_info_struct(png);
-  if (!info)
+  Info = png_create_info_struct(PNG);
+  if (!Info)
     goto done;
 
-  if (setjmp(png_jmpbuf(png)))
+  if (setjmp(png_jmpbuf(PNG)))
     goto done;
 
-  png_init_io(png, File);
+  png_init_io(PNG, File);
 
   png_set_IHDR(
-    png,
-    info,
+    PNG,
+    Info,
     Image->Width, Image->Height,
     8,
     PNG_COLOR_TYPE_RGB,
@@ -128,10 +130,10 @@ static i32 StorePNGFromSource(const char* Path, image* Image) {
     PNG_COMPRESSION_TYPE_DEFAULT,
     PNG_FILTER_TYPE_BASE
   );
-  png_set_filter(png, PNG_FILTER_TYPE_BASE, PNG_FILTER_NONE);
+  png_set_filter(PNG, PNG_FILTER_TYPE_BASE, PNG_FILTER_NONE);
 
-  png_write_info(png, info);
-  png_set_filler(png, 0, PNG_FILLER_AFTER); // NOTE(lucas): This removes the alpha channel
+  png_write_info(PNG, Info);
+  png_set_filler(PNG, 0, PNG_FILLER_AFTER); // NOTE(lucas): This removes the alpha channel
 
   png_bytep row = (png_bytep)malloc(4 * Image->Width * sizeof(png_byte));
 
@@ -140,19 +142,19 @@ static i32 StorePNGFromSource(const char* Path, image* Image) {
       png_byte* Pixel = &(row[X * 4]);
       memcpy(Pixel, &Image->PixelBuffer[Image->BytesPerPixel * ((Y * Image->Width) + X)], Image->BytesPerPixel);
     }
-    png_write_row(png, row);
+    png_write_row(PNG, row);
   }
 
   free(row);
-  png_write_end(png, NULL);
+  png_write_end(PNG, NULL);
 
   Result = 0;
 done:
   if (Result != 0) {
     fprintf(stderr, "Failed to write PNG file '%s'\n", Path);
   }
-  if (png && info) {
-    png_destroy_write_struct(&png, &info);
+  if (PNG && Info) {
+    png_destroy_write_struct(&PNG, &Info);
   }
   fclose(File);
   return Result;

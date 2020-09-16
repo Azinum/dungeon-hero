@@ -4,4 +4,5 @@ static camera Camera;
 
 void CameraInit(camera* Camera, v3 Position) {
   Camera->P = Position;
+  Camera->TargetP = Position;
 }

@@ -95,6 +95,10 @@ inline float ToRadians(float Degrees) {
   return Degrees * (PI32 / 180.0f);
 }
 
+inline float Lerp(float V0, float V1, float T) {
+  return (1.0f - T) * V0 + T * V1;
+}
+
 inline mat4 Translate(v3 T) {
   mat4 Result = Mat4D(1.0f);
 

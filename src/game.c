@@ -15,7 +15,7 @@
 #define MAX_DELTA_TIME 0.2f
 
 game_state GameState;
-static v3 Light = V3(100, 350.0f, -100.0f);
+static v3 Light = V3(400, 350.0f, -50.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -29,18 +29,24 @@ static void GameStateInit(game_state* Game) {
     Entity->Speed = V3(0, 1.0f, 0);
   }
 #else
-  for (i32 X = -3; X <= 3; ++X) {
-    if (X == 1) {
-      GameAddEntity(V3(X, 1, 4), MESH_COOKING_POT, TEXTURE_UV);
-    }
-    if (X == 2) {
-      GameAddEntity(V3(X, 1, 4), MESH_CUBE, TEXTURE_BOX);
-    }
+  for (i32 Z = 4; Z < 10; ++Z) {
+    for (i32 X = -4; X <= 4; ++X) {
+      if (!(rand() % 16)) {
+        entity* E = GameAddEntity(V3(X, 1, Z), MESH_COOKING_POT, TEXTURE_UV);
+        E->Type = ENTITY_ROTATOR;
+      }
+      if (!(rand() % 16)) {
+        GameAddEntity(V3(X, 1, Z), MESH_CUBE, TEXTURE_BOX);
+      }
+      if (!(rand() % 20)) {
+        GameAddEntity(V3(X, 1, Z), MESH_STONE, TEXTURE_TEST);
+      }
 
-    GameAddEntity(V3(X, 0, 4), MESH_CUBE, TEXTURE_TEST);
+      GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_TEST);
+    }
   }
 #endif
-  CameraInit(&Camera, V3(0, -2, 0));
+  CameraInit(&Camera, V3(0, -3, 0));
 }
 
 static void OutputZBufferToFile(const char* Path) {
@@ -104,7 +110,6 @@ static void GameRun(game_state* Game) {
     LastFrame += Game->DeltaTime;
 
     // Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
-    // Camera.P.Z = 2.0f * sin(Game->Time * PI32 * 0.2f);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light, &Camera);
 
     DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));
@@ -116,7 +121,7 @@ static void GameRun(game_state* Game) {
     if (LastFrame > (1.0f / TARGET_FPS)) {
       snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
       WindowSetTitle(Title);
-      LastFrame -= (1.0f / TARGET_FPS);
+      LastFrame = 0; // (1.0f / TARGET_FPS);
       RendererSwapBuffers();
     }
     RendererClear(0, 0, 0);

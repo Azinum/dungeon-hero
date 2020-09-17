@@ -282,8 +282,8 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 
   MinX = Max(MinX, 0);
   MinY = Max(MinY, 0);
-  MaxX = Min(MaxX, FrameBuffer->Width - 1);
-  MaxY = Min(MaxY, FrameBuffer->Height - 1);
+  MaxX = Min(MaxX, (i32)FrameBuffer->Width - 1);
+  MaxY = Min(MaxY, (i32)FrameBuffer->Height - 1);
 
   v3 P = {0};
   for (P.Y = MinY; P.Y <= MaxY; P.Y++) {

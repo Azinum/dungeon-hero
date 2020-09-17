@@ -15,7 +15,7 @@
 #include "entity.h"
 #include "software_renderer.h"
 
-#define MAX_ENTITY 256
+#define MAX_ENTITY 512
 
 typedef struct game_state {
   float Time;

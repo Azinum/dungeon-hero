@@ -42,7 +42,7 @@ static void GameStateInit(game_state* Game) {
         GameAddEntity(V3(X, 1, Z), MESH_STONE, TEXTURE_TEST);
       }
 
-      GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_TEST);
+      GameAddEntity(V3(X, 0, Z), MESH_PLANE, TEXTURE_TEST);
     }
   }
 #endif

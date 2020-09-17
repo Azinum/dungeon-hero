@@ -4,7 +4,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
-#include <X11/XKBlib.h>
 
 static i8 KeyDown[MAX_KEY];
 static i8 KeyPressed[MAX_KEY];

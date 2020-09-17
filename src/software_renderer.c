@@ -244,6 +244,53 @@ inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, 
   }
 }
 
+inline void DrawTexture2DFast(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+  i32 MinX = X;
+  i32 MinY = Y;
+  i32 MaxX = X + W;
+  i32 MaxY = Y + H;
+
+  __m128i* Dest = (__m128i*)&FrameBuffer->Data[0];
+  __m128i* Source = (__m128i*)&Texture->PixelBuffer[0];
+  __m128i Texel = _mm_setr_epi8(
+    255, 255, 255, 255,
+    255, 255, 255, 255,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+  );
+  i32 XChunkCount = (MaxX - MinX) / 4;
+  i32 YChunkCount = (MaxY - MinY);  // NOTE(lucas): We are copying pixels wide, so the number of Y chunks is the same as before!
+
+  i32 XStart = MinX / 4;
+  i32 YStart = MinY;
+  i32 XEnd = MaxX / 4;
+  i32 YEnd = MaxY;
+
+  i32 XSampleStart = (XOffset * Texture->Width) / 4;
+  i32 XSampleEnd = (XRange * Texture->Width) / 4;
+  i32 YSampleStart = (YOffset * Texture->Height) / 4;
+  i32 YSampleEnd = (YRange * Texture->Height) / 4;
+  i32 XSampleCount = XSampleEnd - XSampleStart;
+  i32 YSampleCount = YSampleEnd - YSampleStart;
+
+  Dest += (FrameBuffer->Width / 4) * ((FrameBuffer->Height - 1) - YStart) + XStart;
+  for (i32 YPos = 0; YPos < YChunkCount; ++YPos) {
+    i32 YCoord = (i32)(Texture->Height * ((float)(YPos) / H) * YRange);
+    for (i32 XPos = 0; XPos < XChunkCount; ++XPos) {
+      i32 XCoord = (i32)(Texture->Width * ((float)(XPos * 4) / W) * XRange);
+      color C = *(color*)&Texture->PixelBuffer[4 * (XCoord + (YCoord * Texture->Width))];
+      Texel = _mm_setr_epi8(
+        C.R, C.G, C.B, C.A,
+        C.R, C.G, C.B, C.A,
+        C.R, C.G, C.B, C.A,
+        C.R, C.G, C.B, C.A
+      );
+      *(Dest)++ = Texel;
+    }
+    Dest -= (FrameBuffer->Width / 4) + (XEnd - XStart);
+  }
+}
+
 #define DrawSimpleTexture2D(FrameBuffer, X, Y, W, H, TEXTURE, TINT) \
   DrawTexture2D(FrameBuffer, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
 

@@ -113,6 +113,9 @@ static void GameRun(game_state* Game) {
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light, &Camera);
 
     DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));
+    float Scaling = 32 + 128 * (1 + sin(Game->Time * 0.25f));
+    DrawTexture2DFast(&RenderState.FrameBuffer, 36, 36, Scaling, Scaling, 0, 0, 1, 1, &Assets.Textures[TEXTURE_BOX], COLOR(1, 1, 1));
+    DrawTexture2D(&RenderState.FrameBuffer, 36 + Scaling + 36, 36, Scaling, Scaling, 0, 0, 1, 1, &Assets.Textures[TEXTURE_BOX], COLOR(1, 1, 1));
 
     if (WindowEvents() != 0) {
       break;

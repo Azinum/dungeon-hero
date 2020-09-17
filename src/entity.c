@@ -30,9 +30,9 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, framebuffer
     Camera->TargetP.Y -= 1;
   }
 
-  Camera->P.X = Lerp(Camera->P.X, Camera->TargetP.X, 20.0f * GameState.DeltaTime);
-  Camera->P.Y = Lerp(Camera->P.Y, Camera->TargetP.Y, 20.0f * GameState.DeltaTime);
-  Camera->P.Z = Lerp(Camera->P.Z, Camera->TargetP.Z, 20.0f * GameState.DeltaTime);
+  Camera->P.X = Lerp(Camera->P.X, Camera->TargetP.X, 10.0f * GameState.DeltaTime);
+  Camera->P.Y = Lerp(Camera->P.Y, Camera->TargetP.Y, 10.0f * GameState.DeltaTime);
+  Camera->P.Z = Lerp(Camera->P.Z, Camera->TargetP.Z, 10.0f * GameState.DeltaTime);
 
   for (u32 EntityIndex = 0; EntityIndex < EntityCount; ++EntityIndex) {
     entity* Entity = &Entities[EntityIndex];

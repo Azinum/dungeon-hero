@@ -79,9 +79,6 @@ static i32 WindowEvents() {
   for (u8 KeyIndex = 0; KeyIndex < MAX_KEY; ++KeyIndex) {
     KeyPressed[KeyIndex] = 0;
   }
-  for (u8 KeyIndex = 0; KeyIndex < MAX_KEY; ++KeyIndex) {
-    KeyDown[KeyIndex] = 0;
-  }
 
   while (XPending(Win.Disp)) {
     XNextEvent(Win.Disp, &E);
@@ -99,8 +96,8 @@ static i32 WindowEvents() {
             break;
           }
         }
+        break;
       }
-      // TODO(lucas): Fix key repeat
       case KeyRelease: {
         u8 IsHoldingDown = 0;
         if (XEventsQueued(Win.Disp, QueuedAfterReading)) {
@@ -119,6 +116,8 @@ static i32 WindowEvents() {
         }
         break;
       }
+      default:
+        break;
     }
   }
   return 0;

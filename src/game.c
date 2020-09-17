@@ -12,7 +12,7 @@
 #include "entity.c"
 
 #define BUFFER_SIZE 512
-#define MAX_DELTA_TIME 0.2f
+#define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
 static v3 Light = V3(400, 350.0f, -50.0f);

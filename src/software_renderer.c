@@ -346,7 +346,6 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 }
 
-
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling) {
   mat4 Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
@@ -356,7 +355,6 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
 
   mat4 MV = MultiplyMat4(View, Model);
   mat4 Mat = MultiplyMat4(Projection, MV);
-  // mat Mat = MultiplyMat4(Projection, MultiplyMat4(Model, View));
 
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];  // Vertices

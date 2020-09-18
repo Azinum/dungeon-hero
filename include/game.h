@@ -6,12 +6,12 @@
 #include "math_util.h"
 #include "list.h"
 
-#include "camera.h"
 #include "misc.h"
 #include "image.h"
 #include "mesh.h"
 #include "asset.h"
 #include "window.h"
+#include "camera.h"
 #include "entity.h"
 #include "software_renderer.h"
 

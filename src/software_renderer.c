@@ -393,13 +393,16 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 }
 
-static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling) {
+static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
   mat4 Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
 
-  mat4 View = Translate(Camera.P);
-
+#if 0
+  mat4 View = Translate(Camera->P);
+#else
+  mat4 View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
+#endif
   mat4 MV = MultiplyMat4(View, Model);
   mat4 Mat = MultiplyMat4(Projection, MV);
 

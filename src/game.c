@@ -2,12 +2,12 @@
 
 #include "game.h"
 
-#include "camera.c"
 #include "misc.c"
 #include "image.c"
 #include "mesh.c"
 #include "asset.c"
 #include "window.c"
+#include "camera.c"
 #include "software_renderer.c"
 #include "entity.c"
 
@@ -46,7 +46,7 @@ static void GameStateInit(game_state* Game) {
     }
   }
 #endif
-  CameraInit(&Camera, V3(0, 0, 0));
+  CameraInit(&Camera, V3(0, 3, 10));
 }
 
 static void OutputZBufferToFile(const char* Path) {
@@ -98,7 +98,7 @@ static void GameRun(game_state* Game) {
 
   u8 IsRunning = 1;
   u32 Tick = 0;
-  while (IsRunning) {
+  while (IsRunning && !WindowEvents()) {
     ++Tick;
     TimeLast = TimeNow;
     gettimeofday(&TimeNow, NULL);
@@ -110,17 +110,21 @@ static void GameRun(game_state* Game) {
     LastFrame += Game->DeltaTime;
 
     // Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
+    CameraUpdate(&Camera);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light, &Camera);
 
-    DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 32, 32, &SunTexture, COLOR(1, 1, 0));
-    float Scaling = 32 + 32 * (1 + sin(Game->Time * 0.25f));
-    DrawTexture2DFast(&RenderState.FrameBuffer, 36, 36, Scaling, Scaling, 0, 0, 1, 1, &Assets.Textures[TEXTURE_BOX], COLOR(1, 1, 1));
-    DrawTexture2D(&RenderState.FrameBuffer, 36 + Scaling + 36, 36, Scaling, Scaling, 0, 0, 1, 1, &Assets.Textures[TEXTURE_BOX], COLOR(1, 1, 1));
+    DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 36, 36, &SunTexture, COLOR(1, 1, 0));
 
-    if (WindowEvents() != 0) {
-      break;
+    if (KeyPressed[KEY_COMMA]) {
+      OutputZBufferToFile("zbuffer.png");
+      fprintf(stdout, "Z buffer saved to 'zbuffer.png'\n");
+    }
+    if (KeyPressed[KEY_PERIOD]) {
+      OutputFrameBufferToFile(&RenderState.FrameBuffer, "framebuffer.png");
+      fprintf(stdout, "Framebuffer saved to 'framebuffer.png'\n");
     }
 
+    // TODO(lucas): Properly implement timestepping!
     if (LastFrame > (1.0f / TARGET_FPS)) {
       snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
       WindowSetTitle(Title);
@@ -129,9 +133,6 @@ static void GameRun(game_state* Game) {
     }
     RendererClear(0, 0, 0);
   }
-
-  OutputZBufferToFile("zbuffer.png");
-  OutputFrameBufferToFile(&RenderState.FrameBuffer, "framebuffer.png");
   AssetsUnloadAll(&Assets);
 }
 

@@ -175,6 +175,16 @@ inline v3 NormalizeVec3(v3 A) {
   return Result;
 }
 
+inline v3 Cross(v3 A, v3 B) {
+  v3 Result = {0};
+
+  Result.X = (A.Y * B.Z) - (A.Z * B.Y);
+  Result.Y = (A.Z * B.X) - (A.X * B.Z);
+  Result.Z = (A.Y * B.Y) - (A.Y * B.X);
+
+  return Result;
+}
+
 #if USE_SSE
 
 inline mat4 Transpose(mat4 A) {
@@ -366,6 +376,33 @@ inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
   Result.Elements[2][2] = (ZNear + ZFar) / (ZNear - ZFar);
   Result.Elements[3][2] = (2.0f * ZNear * ZFar) / (ZNear - ZFar);
   Result.Elements[3][3] = 2.0f;
+
+  return Result;
+}
+
+inline mat4 LookAt(v3 Eye, v3 Center, v3 Up) {
+  mat4 Result = Mat4D(1.0f);
+
+  v3 F = NormalizeVec3(DifferenceV3(Center, Eye));
+  v3 S = NormalizeVec3(Cross(F, Up));
+  v3 U = Cross(S, F);
+
+  Result.Elements[0][0] = S.X;
+  Result.Elements[0][1] = U.X;
+  Result.Elements[0][2] = -F.X;
+
+  Result.Elements[1][0] = S.Y;
+  Result.Elements[1][1] = U.Y;
+  Result.Elements[1][2] = -F.Y;
+
+  Result.Elements[2][0] = S.Z;
+  Result.Elements[2][1] = U.Z;
+  Result.Elements[2][2] = -F.Z;
+
+  Result.Elements[3][0] = -DotVec3(S, Eye);
+  Result.Elements[3][1] = -DotVec3(U, Eye);
+  Result.Elements[3][2] = DotVec3(F, Eye);
+  Result.Elements[3][3] = 1.0f;
 
   return Result;
 }

@@ -278,12 +278,12 @@ inline void DrawTexture2DFast(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32
     i32 YCoord = (i32)(Texture->Height * ((float)(YPos) / H) * YRange);
     for (i32 XPos = 0; XPos < XChunkCount; ++XPos) {
       i32 XCoord = (i32)(Texture->Width * ((float)(XPos * 4) / W) * XRange);
-      color C = *(color*)&Texture->PixelBuffer[4 * (XCoord + (YCoord * Texture->Width))];
+      color* C = (color*)&Texture->PixelBuffer[4 * (XCoord + (YCoord * Texture->Width))];
       Texel = _mm_setr_epi8(
-        C.R, C.G, C.B, C.A,
-        C.R, C.G, C.B, C.A,
-        C.R, C.G, C.B, C.A,
-        C.R, C.G, C.B, C.A
+        C->R, C->G, C->B, C->A,
+        (C + 1)->R, (C + 1)->G, (C + 1)->B, (C + 1)->A,
+        (C + 2)->R, (C + 2)->G, (C + 2)->B, (C + 2)->A,
+        (C + 3)->R, (C + 3)->G, (C + 3)->B, (C + 3)->A
       );
       *(Dest)++ = Texel;
     }

@@ -8,8 +8,9 @@
 #include "asset.c"
 #include "window.c"
 #include "camera.c"
-#include "renderer_software.c"
-#include "renderer_opengl.c"
+
+#include "renderer.c"
+
 #include "entity.c"
 
 #define BUFFER_SIZE 512

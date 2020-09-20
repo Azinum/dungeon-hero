@@ -8,6 +8,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "types.h"
+
 #define PI32 3.14159265359f
 #define ARR_SIZE(ARR) ((sizeof(ARR)) / (sizeof(ARR[0])))
 

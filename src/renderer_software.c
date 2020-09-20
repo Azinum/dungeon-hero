@@ -1,6 +1,6 @@
 // software_renderer.c
 
-// #include "renderer_software.h"
+#include "renderer_software.h"
 
 static render_state RenderState;
 

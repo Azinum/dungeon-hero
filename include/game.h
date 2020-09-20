@@ -1,7 +1,6 @@
 // game.h
 
 #include "common.h"
-#include "types.h"
 #include "config.h"
 #include "math_util.h"
 #include "list.h"
@@ -13,8 +12,6 @@
 #include "window.h"
 #include "camera.h"
 #include "entity.h"
-#include "renderer_software.h"
-#include "renderer_opengl.h"
 
 #define MAX_ENTITY 512
 

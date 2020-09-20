@@ -18,6 +18,9 @@ prepare:
 compile:
 	${CC} ${FLAGS} ${LIBS} ${O_RELEASE}
 
+compile_opengl:
+	${CC} ${FLAGS} ${LIBS} ${O_RELEASE} -D RENDERER_OPENGL
+
 debug:
 	${CC} ${FLAGS} ${LIBS} ${O_DEBUG}
 	gdb ./${BUILD_DIR}/${PROG_NAME}

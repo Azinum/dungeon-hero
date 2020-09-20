@@ -15,5 +15,4 @@ typedef struct mesh {
   u32 UVCount;
   u32* UVIndices;
   u32 UVIndexCount;
-
 } mesh;

@@ -32,7 +32,7 @@ static void GameStateInit(game_state* Game) {
   }
 #endif
 
-#if 1
+#if 0
   for (i32 Z = 4; Z < 10; ++Z) {
     for (i32 X = -4; X <= 4; ++X) {
       if (!(rand() % 16)) {
@@ -49,8 +49,24 @@ static void GameStateInit(game_state* Game) {
       GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_TEST);
     }
   }
-#endif
+#else
+  for (i32 Z = 4; Z < 10; ++Z) {
+    for (i32 X = -4; X <= 4; ++X) {
+      if (!(rand() % 16)) {
+        entity* E = GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
+        E->Type = ENTITY_ROTATOR;
+      }
+      if (!(rand() % 16)) {
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
+      }
+      if (!(rand() % 20)) {
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_TEST);
+      }
 
+      GameAddEntity(V3(X, -1, Z), MESH_CUBE, TEXTURE_TEST);
+    }
+  }
+#endif
 #if 0
   GameAddEntity(V3(0, 0, -1), MESH_CUBE, TEXTURE_BOX);
 #endif
@@ -61,7 +77,9 @@ static void GameRun(game_state* Game) {
   assets Assets;
   AssetsLoadAll(&Assets);
 
-  image SunTexture = Assets.Textures[TEXTURE_SUN_ICON];
+  WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+  RendererInit(&Assets);
+  GameStateInit(Game);
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};
@@ -83,7 +101,7 @@ static void GameRun(game_state* Game) {
     CameraUpdate(&Camera);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState, &Assets, Light, &Camera);
 
-    DrawSimpleTexture2D(&RenderState, Light.X - 16, Light.Y - 16, 36, 36, &SunTexture, COLOR(1, 1, 0));
+    DrawSimpleTexture2D(&RenderState, Light.X - 16, Light.Y - 16, 36, 36, &Assets.Textures[TEXTURE_SUN_ICON], COLOR(1, 1, 0));
 
     // TODO(lucas): Properly implement timestepping!
     if (LastFrame > (1.0f / TARGET_FPS)) {
@@ -99,9 +117,13 @@ static void GameRun(game_state* Game) {
       }
       RendererSwapBuffers();
     }
-    RendererClear(0, 0, 0);
+    // RendererClear(0, 0, 0);
+    RendererClear(30, 40, 100);
   }
+
   AssetsUnloadAll(&Assets);
+  RendererDestroy();
+  WindowClose();
 }
 
 static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) {
@@ -116,12 +138,6 @@ static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) 
 void GameStart() {
   srand(time(NULL));
 
-  WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
-  RendererInit();
-
   game_state* Game = &GameState;
-  GameStateInit(Game);
   GameRun(Game);
-
-  RendererDestroy();
 }

@@ -7,6 +7,6 @@ typedef struct render_state {
   glSwapInterval_t* glSwapIntervalEXT;
 } render_state;
 
-i32 RendererInit();
+i32 RendererInit(assets* Assets);
 
 void RendererDestroy();

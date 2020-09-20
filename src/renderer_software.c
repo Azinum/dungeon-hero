@@ -393,6 +393,7 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   float* ZBuffer = RenderState->ZBuffer;
+
   Light = AddV3(Light, 1.0f);
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
@@ -498,7 +499,8 @@ static void OutputFrameBufferToFile(framebuffer* FrameBuffer, const char* Path) 
   UnloadImage(&Image);
 }
 
-i32 RendererInit() {
+i32 RendererInit(assets* Assets) {
+  (void)Assets;
   render_state* State = &RenderState;
   FrameBufferCreate(&State->FrameBuffer, Win.Width, Win.Height);
   State->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
@@ -531,5 +533,4 @@ void RendererDestroy() {
   XFreeGC(Win.Disp, Win.Gc);
   FrameBufferDestroy(&RenderState.FrameBuffer);
   free(RenderState.ZBuffer);
-  WindowClose();
 }

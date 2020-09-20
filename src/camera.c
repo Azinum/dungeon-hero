@@ -38,10 +38,10 @@ void CameraUpdate(camera* Camera) {
   }
 
   if (KeyDown[KEY_1]) {
-    Camera->Yaw -= 10.0f * GameState.DeltaTime;
+    Camera->Yaw -= 20.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_2]) {
-    Camera->Yaw += 10.0f * GameState.DeltaTime;
+    Camera->Yaw += 20.0f * GameState.DeltaTime;
   }
 
   float XOffset = MouseX - LastX;

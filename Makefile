@@ -18,14 +18,8 @@ prepare:
 compile:
 	${CC} ${FLAGS} ${LIBS} ${O_RELEASE} ${RENDERER}
 
-compile_opengl:
-	${CC} ${FLAGS} ${LIBS} ${O_RELEASE} -D RENDERER_OPENGL
-
-compile_software:
-	${CC} ${FLAGS} ${LIBS} ${O_RELEASE}
-
 debug:
-	${CC} ${FLAGS} ${LIBS} ${O_DEBUG}
+	${CC} ${FLAGS} ${LIBS} ${O_DEBUG} ${RENDERER}
 	gdb ./${BUILD_DIR}/${PROG_NAME}
 
 debug_profile:

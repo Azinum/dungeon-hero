@@ -108,23 +108,7 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
   XStoreName(Win.Disp, Win.Win, Title);
   XMapWindow(Win.Disp, Win.Win);
 
-  Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
-
-  if (!Win.Gc)
-    return -1;
-
-  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Width, Height, 32, 0);
-
-  if (!Win.Image)
-    return -1;
-
   return 0;
-}
-
-static void WindowSwapBuffers(framebuffer* FrameBuffer) {
-  Win.Image->data = (void*)FrameBuffer->Data;
-  XPutImage(Win.Disp, Win.Win, Win.Gc, Win.Image, 0, 0, 0, 0, FrameBuffer->Width, FrameBuffer->Height);
-  Win.Image->data = NULL;
 }
 
 static i32 WindowEvents() {
@@ -184,8 +168,6 @@ static void WindowSetTitle(const char* Title) {
 }
 
 static void WindowClose() {
-  XDestroyImage(Win.Image);
-  XFreeGC(Win.Disp, Win.Gc);
   XDestroyWindow(Win.Disp, Win.Win);
   XCloseDisplay(Win.Disp);
 }

@@ -1,5 +1,7 @@
 // software_renderer.c
 
+// #include "renderer_software.h"
+
 static render_state RenderState;
 
 static mat4 Projection;
@@ -210,7 +212,8 @@ inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
   }
 }
 
-inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
@@ -245,7 +248,8 @@ inline void DrawTexture2D(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, 
   }
 }
 
-inline void DrawTexture2DFast(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+inline void DrawTexture2DFast(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
@@ -283,10 +287,12 @@ inline void DrawTexture2DFast(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32
   }
 }
 
-#define DrawSimpleTexture2D(FrameBuffer, X, Y, W, H, TEXTURE, TINT) \
-  DrawTexture2D(FrameBuffer, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
+#define DrawSimpleTexture2D(RenderState, X, Y, W, H, TEXTURE, TINT) \
+  DrawTexture2D(RenderState, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
 
-static void DrawRect(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32 H, color Color, blend_mode BlendMode) {
+static void DrawRect(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, color Color, blend_mode BlendMode) {
+  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
+
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
@@ -385,7 +391,10 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 }
 
-static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+// static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
+  float* ZBuffer = RenderState->ZBuffer;
   Light = AddV3(Light, 1.0f);
   mat4 Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
@@ -455,20 +464,67 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
   }
 }
 
+static void OutputZBufferToFile(const char* Path) {
+  image Image;
+  Image.Width = Win.Width;
+  Image.Height = Win.Height;
+  Image.Depth = 24;
+  Image.Pitch = Win.Width * 4;
+  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
+  Image.BytesPerPixel = 4;
+
+  for (u32 Index = 0; Index < Image.Width * Image.Height; ++Index) {
+    float V = Clamp(255 * Abs(RenderState.ZBuffer[Index]), 0, 255);
+    color Color = {V, V, V, 255};
+    color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
+    *Pixel = Color;
+  }
+  StoreImage(Path, &Image);
+  UnloadImage(&Image);
+}
+
+static void OutputFrameBufferToFile(framebuffer* FrameBuffer, const char* Path) {
+  image Image;
+  Image.Width = FrameBuffer->Width;
+  Image.Height = FrameBuffer->Height;
+  Image.Depth = 24;
+  Image.Pitch = FrameBuffer->Width * 4;
+  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
+  Image.BytesPerPixel = 4;
+
+  for (u32 Index = 0; Index < FrameBuffer->Width * FrameBuffer->Height; ++Index) {
+    color Pixel = BGRToRGB(FrameBuffer->Color[Index]);
+    *(color*)&Image.PixelBuffer[Index * 4] = Pixel;
+  }
+  StoreImage(Path, &Image);
+  UnloadImage(&Image);
+}
+
 i32 RendererInit(u32 Width, u32 Height) {
   render_state* State = &RenderState;
   FrameBufferCreate(&State->FrameBuffer, Width, Height);
   State->ZBuffer = calloc(Width * Height, sizeof(float));
 
   WindowOpen(Width, Height, WINDOW_TITLE);
- 
+
+  Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
+  if (!Win.Gc)
+    return -1;
+  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Width, Height, 32, 0);
+
+  if (!Win.Image)
+    return -1;
+
   Projection = Perspective(70, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 
 
+// TODO(lucas): Abstract away the X11 (platform dependent) parts!
 static void RendererSwapBuffers() {
-  WindowSwapBuffers(&RenderState.FrameBuffer);
+  Win.Image->data = (void*)RenderState.FrameBuffer.Data;
+  XPutImage(Win.Disp, Win.Win, Win.Gc, Win.Image, 0, 0, 0, 0, RenderState.FrameBuffer.Width, RenderState.FrameBuffer.Height);
+  Win.Image->data = NULL;
 }
 
 static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
@@ -477,6 +533,8 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
 }
 
 void RendererDestroy() {
+  XDestroyImage(Win.Image);
+  XFreeGC(Win.Disp, Win.Gc);
   FrameBufferDestroy(&RenderState.FrameBuffer);
   free(RenderState.ZBuffer);
   WindowClose();

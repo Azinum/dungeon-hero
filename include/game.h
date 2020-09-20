@@ -13,7 +13,8 @@
 #include "window.h"
 #include "camera.h"
 #include "entity.h"
-#include "software_renderer.h"
+#include "renderer_software.h"
+#include "renderer_opengl.h"
 
 #define MAX_ENTITY 512
 

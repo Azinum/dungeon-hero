@@ -8,7 +8,8 @@
 #include "asset.c"
 #include "window.c"
 #include "camera.c"
-#include "software_renderer.c"
+#include "renderer_software.c"
+#include "renderer_opengl.c"
 #include "entity.c"
 
 #define BUFFER_SIZE 512
@@ -56,42 +57,6 @@ static void GameStateInit(game_state* Game) {
   CameraInit(&Camera, V3(0, 0, 0));
 }
 
-static void OutputZBufferToFile(const char* Path) {
-  image Image;
-  Image.Width = Win.Width;
-  Image.Height = Win.Height;
-  Image.Depth = 24;
-  Image.Pitch = Win.Width * 4;
-  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
-  Image.BytesPerPixel = 4;
-
-  for (u32 Index = 0; Index < Image.Width * Image.Height; ++Index) {
-    float V = Clamp(255 * Abs(RenderState.ZBuffer[Index]), 0, 255);
-    color Color = {V, V, V, 255};
-    color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
-    *Pixel = Color;
-  }
-  StoreImage(Path, &Image);
-  UnloadImage(&Image);
-}
-
-static void OutputFrameBufferToFile(framebuffer* FrameBuffer, const char* Path) {
-  image Image;
-  Image.Width = FrameBuffer->Width;
-  Image.Height = FrameBuffer->Height;
-  Image.Depth = 24;
-  Image.Pitch = FrameBuffer->Width * 4;
-  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
-  Image.BytesPerPixel = 4;
-
-  for (u32 Index = 0; Index < FrameBuffer->Width * FrameBuffer->Height; ++Index) {
-    color Pixel = BGRToRGB(FrameBuffer->Color[Index]);
-    *(color*)&Image.PixelBuffer[Index * 4] = Pixel;
-  }
-  StoreImage(Path, &Image);
-  UnloadImage(&Image);
-}
-
 static void GameRun(game_state* Game) {
   assets Assets;
   AssetsLoadAll(&Assets);
@@ -116,24 +81,14 @@ static void GameRun(game_state* Game) {
     Game->Time += Game->DeltaTime;
     LastFrame += Game->DeltaTime;
 
-    // Light.X = 400 + (100.0f * sin(Game->Time * PI32 * 0.25f));
     CameraUpdate(&Camera);
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState.FrameBuffer, RenderState.ZBuffer, &Assets, Light, &Camera);
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState, &Assets, Light, &Camera);
 
-    DrawSimpleTexture2D(&RenderState.FrameBuffer, Light.X - 16, Light.Y - 16, 36, 36, &SunTexture, COLOR(1, 1, 0));
-
-    if (KeyPressed[KEY_COMMA]) {
-      OutputZBufferToFile("zbuffer.png");
-      fprintf(stdout, "Z buffer saved to 'zbuffer.png'\n");
-    }
-    if (KeyPressed[KEY_PERIOD]) {
-      OutputFrameBufferToFile(&RenderState.FrameBuffer, "framebuffer.png");
-      fprintf(stdout, "Framebuffer saved to 'framebuffer.png'\n");
-    }
+    DrawSimpleTexture2D(&RenderState, Light.X - 16, Light.Y - 16, 36, 36, &SunTexture, COLOR(1, 1, 0));
 
     // TODO(lucas): Properly implement timestepping!
     if (LastFrame > (1.0f / TARGET_FPS)) {
-      snprintf(Title, BUFFER_SIZE, "Software Renderer | fps: %i, dt: %g, last: %.3f ms", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
+      snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
       WindowSetTitle(Title);
       LastFrame = 0; // (1.0f / TARGET_FPS);
       RendererSwapBuffers();

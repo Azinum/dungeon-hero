@@ -1,5 +1,6 @@
 // renderer_opengl.c
 
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <GL/glu.h>
@@ -18,12 +19,10 @@ static i32 ShaderCompile(const char* ShaderPath) {
 
   char Path[MAX_PATH_SIZE] = {0};
   snprintf(Path, MAX_PATH_SIZE, "%s.vert", ShaderPath);
-  buffer VertSource = {0};
-  ReadFile(Path, &VertSource);
+  const char* VertSource = ReadFileAndNullTerminate(Path);
   snprintf(Path, MAX_PATH_SIZE, "%s.frag", ShaderPath);
-  buffer FragSource = {0};
-  ReadFile(Path, &FragSource);
-  if (!VertSource.Data || !FragSource.Data)
+  const char* FragSource = ReadFileAndNullTerminate(Path);
+  if (!VertSource || !FragSource)
     goto done;
 
   i32 Report = -1;
@@ -68,14 +67,10 @@ static i32 ShaderCompile(const char* ShaderPath) {
 }
 
 done:
-  if (VertShader > 0) {
-    glDeleteShader(VertShader);
-  }
-  if (FragShader > 0) {
-    glDeleteShader(FragShader);
-  }
-  BufferFree(VertSource.Data, VertSource.Count);
-  BufferFree(FragSource.Data, FragSource.Count);
+  if (VertShader > 0) glDeleteShader(VertShader);
+  if (FragShader > 0) glDeleteShader(FragShader);
+  if (VertSource)     free((void*)VertSource);
+  if (FragSource)     free((void*)FragSource);
   return Program;
 }
 
@@ -99,6 +94,12 @@ static void OpenGLInit() {
   Win.VisualInfo = glXChooseVisual(Win.Disp, 0, Attribs);
   RenderState.Context = glXCreateContext(Win.Disp, Win.VisualInfo, NULL, GL_TRUE);
   glXMakeCurrent(Win.Disp, Win.Win, RenderState.Context);
+
+  i32 GlewError = glewInit();
+  if (GlewError != GLEW_OK) {
+    fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(GlewError));
+    return;
+  }
 }
 
 i32 RendererInit() {
@@ -117,5 +118,5 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
 }
 
 void RendererDestroy() {
-
+  glDeleteShader(DefaultShader);
 }

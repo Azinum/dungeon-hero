@@ -1,7 +1,5 @@
 // asset.h
 
-#define MAX_PATH_SIZE 512
-
 #define MESH_PATH "resource/mesh"
 #define TEXTURE_PATH "resource/texture"
 

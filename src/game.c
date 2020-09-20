@@ -99,8 +99,7 @@ static void GameRun(game_state* Game) {
       }
       RendererSwapBuffers();
     }
-    // RendererClear(0, 0, 0);
-    RendererClear(12, 30, 100);
+    RendererClear(0, 0, 0);
   }
   AssetsUnloadAll(&Assets);
 }

@@ -7,6 +7,77 @@
 #include "renderer_opengl.h"
 
 static render_state RenderState;
+static i32 DefaultShader;
+
+#define ERR_BUFFER_SIZE 512
+
+static i32 ShaderCompile(const char* ShaderPath) {
+  i32 Program = -1;
+  u32 VertShader = 0;
+  u32 FragShader = 0;
+
+  char Path[MAX_PATH_SIZE] = {0};
+  snprintf(Path, MAX_PATH_SIZE, "%s.vert", ShaderPath);
+  buffer VertSource = {0};
+  ReadFile(Path, &VertSource);
+  snprintf(Path, MAX_PATH_SIZE, "%s.frag", ShaderPath);
+  buffer FragSource = {0};
+  ReadFile(Path, &FragSource);
+  if (!VertSource.Data || !FragSource.Data)
+    goto done;
+
+  i32 Report = -1;
+  char ErrorLog[ERR_BUFFER_SIZE] = {0};
+
+  VertShader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(VertShader, 1, &VertSource, NULL);
+  glCompileShader(VertShader);
+{
+  glGetShaderiv(VertShader, GL_COMPILE_STATUS, &Report);
+  if (!Report) {
+    glGetShaderInfoLog(VertShader, ERR_BUFFER_SIZE, NULL, ErrorLog);
+    fprintf(stderr, "%s\n", ErrorLog);
+    goto done;
+  }
+}
+
+  FragShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(FragShader, 1, &FragSource, NULL);
+  glCompileShader(FragShader);
+{
+  glGetShaderiv(FragShader, GL_COMPILE_STATUS, &Report);
+  if (!Report) {
+    glGetShaderInfoLog(FragShader, ERR_BUFFER_SIZE, NULL, ErrorLog);
+    fprintf(stderr, "%s\n", ErrorLog);
+    goto done;
+  }
+}
+
+  Program = glCreateProgram();
+  glAttachShader(Program, VertShader);
+  glAttachShader(Program, FragShader);
+  glLinkProgram(Program);
+
+{
+  glGetProgramiv(Program, GL_VALIDATE_STATUS, &Report);
+  if (Report != GL_NO_ERROR) {
+    glGetProgramInfoLog(Program, ERR_BUFFER_SIZE, NULL, ErrorLog);
+    fprintf(stderr, "%s\n", ErrorLog);
+    goto done;
+  }
+}
+
+done:
+  if (VertShader > 0) {
+    glDeleteShader(VertShader);
+  }
+  if (FragShader > 0) {
+    glDeleteShader(FragShader);
+  }
+  BufferFree(VertSource.Data, VertSource.Count);
+  BufferFree(FragSource.Data, FragSource.Count);
+  return Program;
+}
 
 #define DrawSimpleTexture2D(RenderState, X, Y, W, H, TEXTURE, TINT) \
   DrawTexture2D(RenderState, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
@@ -32,6 +103,7 @@ static void OpenGLInit() {
 
 i32 RendererInit() {
   OpenGLInit();
+  DefaultShader = ShaderCompile("resource/shader/default");
   return 0;
 }
 

@@ -21,3 +21,6 @@
     Count = 0;\
   }\
 }
+
+#define BufferPush(Buffer, Count, Element) ListPush(Buffer, Count, Element)
+#define BufferFree(Buffer, Count) ListFree(Buffer, Count)

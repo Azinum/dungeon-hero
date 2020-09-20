@@ -16,7 +16,7 @@ SRC=src/main.c
 
 BUILD_DIR=build
 
-LIBS=-lpng -lm -L${X11_LIB} -lX11
+LIBS=-lpng -lm -L${X11_LIB} -lX11 -lGL -lGLU
 
 FLAGS=${SRC} -o ${BUILD_DIR}/${PROG_NAME} -I${INCLUDE_DIR} -Wall -W -Wno-missing-braces -std=c99
 
@@ -25,3 +25,5 @@ O_RELEASE=-O2
 O_DEBUG_PROFILE=-p -Og -W
 
 O_DEBUG=-Og -g
+
+RENDERER=-D RENDERER_OPENGL

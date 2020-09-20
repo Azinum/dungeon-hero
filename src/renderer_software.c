@@ -4,8 +4,6 @@
 
 static render_state RenderState;
 
-static mat4 Projection;
-
 typedef enum blend_mode {
   BLEND_MODE_NORMAL = 0,
   BLEND_MODE_ADD,
@@ -149,6 +147,7 @@ inline color BGRToRGB(color Color) {
   return Result;
 }
 
+// inline
 inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   if (X < 0 || Y < 0 || X >= (i32)FrameBuffer->Width || Y >= (i32)FrameBuffer->Height) {
     return;
@@ -391,12 +390,11 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #endif
 }
 
-// static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
 static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   float* ZBuffer = RenderState->ZBuffer;
   Light = AddV3(Light, 1.0f);
-  mat4 Model = Translate(P);
+  Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
 
@@ -404,7 +402,7 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
   mat4 View = Translate(Camera->P);
   View = MultiplyMat4(View, Rotate(Camera->Yaw, V3(0, 1, 0)));
 #else
-  mat4 View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
+  View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
   View = InverseMat4(View);
 #endif
   mat4 Mat = MultiplyMat4(Projection, View);
@@ -500,22 +498,18 @@ static void OutputFrameBufferToFile(framebuffer* FrameBuffer, const char* Path) 
   UnloadImage(&Image);
 }
 
-i32 RendererInit(u32 Width, u32 Height) {
+i32 RendererInit() {
   render_state* State = &RenderState;
-  FrameBufferCreate(&State->FrameBuffer, Width, Height);
-  State->ZBuffer = calloc(Width * Height, sizeof(float));
-
-  WindowOpen(Width, Height, WINDOW_TITLE);
+  FrameBufferCreate(&State->FrameBuffer, Win.Width, Win.Height);
+  State->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
 
   Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
   if (!Win.Gc)
     return -1;
-  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Width, Height, 32, 0);
+  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Win.Width, Win.Height, 32, 0);
 
   if (!Win.Image)
     return -1;
-
-  Projection = Perspective(70, (float)Win.Width / Win.Height, 0.1f, 500);
   return 0;
 }
 

@@ -14,6 +14,6 @@ typedef struct render_state {
   float* ZBuffer;
 } render_state;
 
-i32 RendererInit(u32 Width, u32 Height);
+i32 RendererInit();
 
 void RendererDestroy();

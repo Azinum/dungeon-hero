@@ -67,7 +67,11 @@ typedef struct window {
   i32 Width;
   i32 Height;
   Display* Disp;
+  i32 Screen;
+  i32 Depth;
+  Visual* Vis;
   Window Win;
+  XVisualInfo* VisualInfo;
   XImage* Image;
   GC Gc;
   Atom AtomWMDelete;
@@ -81,13 +85,33 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
   Win.Disp = XOpenDisplay(0);
   if (!Win.Disp)
     return -1;
-
+#if 0
   Win.Win = XCreateSimpleWindow(
     Win.Disp,
     DefaultRootWindow(Win.Disp),
     0, 0, Width, Height, 0, 0, 0
   );
-
+#else
+  XSetWindowAttributes Attribs = {0};
+  Win.Screen = XDefaultScreen(Win.Disp);
+  Win.Depth = XDefaultDepth(Win.Disp, Win.Screen);
+  Win.Vis = XDefaultVisual(Win.Disp, Win.Screen);
+  Window Parent = XRootWindow(Win.Disp, Win.Screen);
+  Win.Win = XCreateWindow(
+    Win.Disp,
+    Parent,
+    0,
+    0,
+    Win.Width,
+    Win.Height,
+    0,
+    Win.Depth,
+    InputOutput,
+    Win.Vis,
+    CWBackPixel | CWBorderPixel | CWBitGravity | CWEventMask | CWColormap,
+    &Attribs
+  );
+#endif
   if (!Win.Win)
     return -1;
 

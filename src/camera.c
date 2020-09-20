@@ -13,6 +13,8 @@ void CameraInit(camera* Camera, v3 Position) {
   Camera->Forward = V3(0.0f, 0.0f, 1.0f);
   Camera->Pitch = 0.0f;
   Camera->Yaw = 90.0f;
+
+  Projection = Perspective(70, (float)Win.Width / Win.Height, 0.1f, 500);
 }
 
 void CameraUpdate(camera* Camera) {

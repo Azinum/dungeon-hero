@@ -7,17 +7,16 @@
 #include "mesh.c"
 #include "asset.c"
 #include "window.c"
-#include "camera.c"
 
 #include "renderer.c"
 
+#include "camera.c"
 #include "entity.c"
 
 #define BUFFER_SIZE 512
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-// static v3 Light = V3(400, 350.0f, -50.0f);
 static v3 Light = V3(0.0f, 1.1f, 0.0f);
 
 static void GameStateInit(game_state* Game) {
@@ -55,7 +54,7 @@ static void GameStateInit(game_state* Game) {
 #if 0
   GameAddEntity(V3(0, 0, -1), MESH_CUBE, TEXTURE_BOX);
 #endif
-  CameraInit(&Camera, V3(0, 0, 0));
+  CameraInit(&Camera, V3(0, -1, 10));
 }
 
 static void GameRun(game_state* Game) {
@@ -72,7 +71,6 @@ static void GameRun(game_state* Game) {
   u8 IsRunning = 1;
   u32 Tick = 0;
   while (IsRunning && !WindowEvents()) {
-    ++Tick;
     TimeLast = TimeNow;
     gettimeofday(&TimeNow, NULL);
     Game->DeltaTime = ((((TimeNow.tv_sec - TimeLast.tv_sec) * 1000000.0f) + TimeNow.tv_usec) - (TimeLast.tv_usec)) / 1000000.0f;
@@ -89,12 +87,20 @@ static void GameRun(game_state* Game) {
 
     // TODO(lucas): Properly implement timestepping!
     if (LastFrame > (1.0f / TARGET_FPS)) {
-      snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
-      WindowSetTitle(Title);
-      LastFrame = 0; // (1.0f / TARGET_FPS);
+      ++Tick;
+      float Delta = LastFrame - (1.0f / TARGET_FPS);
+      if (!(Tick % 15)) {
+        snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
+        WindowSetTitle(Title);
+      }
+      LastFrame -= Delta;
+      if (LastFrame > 1.0f) {
+        LastFrame = 1.0f;
+      }
       RendererSwapBuffers();
     }
-    RendererClear(0, 0, 0);
+    // RendererClear(0, 0, 0);
+    RendererClear(12, 30, 100);
   }
   AssetsUnloadAll(&Assets);
 }
@@ -110,11 +116,12 @@ static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) 
 
 void GameStart() {
   srand(time(NULL));
+
+  WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+  RendererInit();
+
   game_state* Game = &GameState;
   GameStateInit(Game);
-
-  RendererInit(WINDOW_WIDTH, WINDOW_HEIGHT);
-
   GameRun(Game);
 
   RendererDestroy();

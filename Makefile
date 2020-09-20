@@ -16,10 +16,13 @@ prepare:
 	cp -rp ${RES_DIR} ${BUILD_DIR}
 
 compile:
-	${CC} ${FLAGS} ${LIBS} ${O_RELEASE}
+	${CC} ${FLAGS} ${LIBS} ${O_RELEASE} ${RENDERER}
 
 compile_opengl:
 	${CC} ${FLAGS} ${LIBS} ${O_RELEASE} -D RENDERER_OPENGL
+
+compile_software:
+	${CC} ${FLAGS} ${LIBS} ${O_RELEASE}
 
 debug:
 	${CC} ${FLAGS} ${LIBS} ${O_DEBUG}

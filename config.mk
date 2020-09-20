@@ -18,7 +18,7 @@ BUILD_DIR=build
 
 LIBS=-lpng -lm -L${X11_LIB} -lX11
 
-FLAGS=-I${INCLUDE_DIR} ${SRC} -o ${BUILD_DIR}/${PROG_NAME} -Wall -W -Wno-missing-braces -std=c99
+FLAGS=${SRC} -o ${BUILD_DIR}/${PROG_NAME} -I${INCLUDE_DIR} -Wall -W -Wno-missing-braces -std=c99
 
 O_RELEASE=-O2
 

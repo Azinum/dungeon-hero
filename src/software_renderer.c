@@ -9,12 +9,13 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-#define LightStrength 200.0f
+#define LightStrength 150.0f
 #define AMBIENT_LIGHT 3
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
 #define DRAW_VERTICES 0
+#define NO_LIGHTING 0
 #define DITHERING 1
 
 #define Degenerate(V0, V1, V2) \
@@ -251,12 +252,11 @@ inline void DrawTexture2DFast(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32
   i32 MaxY = Y + H;
 
   __m128i* Dest = (__m128i*)&FrameBuffer->Data[0];
-  __m128i* Source = (__m128i*)&Texture->PixelBuffer[0];
   __m128i Texel = _mm_setr_epi8(
     255, 255, 255, 255,
     255, 255, 255, 255,
-    0, 0, 0, 0,
-    0, 0, 0, 0
+    255, 255, 255, 255,
+    255, 255, 255, 255
   );
   i32 XChunkCount = (MaxX - MinX) / 4;
   i32 YChunkCount = (MaxY - MinY);  // NOTE(lucas): We are copying pixels wide, so the number of Y chunks is the same as before!
@@ -264,14 +264,6 @@ inline void DrawTexture2DFast(framebuffer* FrameBuffer, i32 X, i32 Y, i32 W, i32
   i32 XStart = MinX / 4;
   i32 YStart = MinY;
   i32 XEnd = MaxX / 4;
-  i32 YEnd = MaxY;
-
-  i32 XSampleStart = (XOffset * Texture->Width) / 4;
-  i32 XSampleEnd = (XRange * Texture->Width) / 4;
-  i32 YSampleStart = (YOffset * Texture->Height) / 4;
-  i32 YSampleEnd = (YRange * Texture->Height) / 4;
-  i32 XSampleCount = XSampleEnd - XSampleStart;
-  i32 YSampleCount = YSampleEnd - YSampleStart;
 
   Dest += (FrameBuffer->Width / 4) * ((FrameBuffer->Height - 1) - YStart) + XStart;
   for (i32 YPos = 0; YPos < YChunkCount; ++YPos) {
@@ -363,9 +355,9 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
           i32 YCoord = (i32)Abs(Texture->Height * (1.0f - UV.V)) % Texture->Height;
           Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Width) + XCoord)]);
 #endif
-          Texel.R = Clamp(Texel.R * LightFactor, AMBIENT_LIGHT, 0xff);
-          Texel.G = Clamp(Texel.G * LightFactor, AMBIENT_LIGHT, 0xff);
-          Texel.B = Clamp(Texel.B * LightFactor, AMBIENT_LIGHT, 0xff);
+          Texel.R = Clamp(Texel.R * LightFactor, AMBIENT_LIGHT, 0xFF);
+          Texel.G = Clamp(Texel.G * LightFactor, AMBIENT_LIGHT, 0xFF);
+          Texel.B = Clamp(Texel.B * LightFactor, AMBIENT_LIGHT, 0xFF);
           DrawPixel(FrameBuffer, P.X, P.Y, Texel);
         }
       }
@@ -394,17 +386,20 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 }
 
 static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+  Light = AddV3(Light, 1.0f);
   mat4 Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
 
 #if 0
   mat4 View = Translate(Camera->P);
+  View = MultiplyMat4(View, Rotate(Camera->Yaw, V3(0, 1, 0)));
 #else
   mat4 View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
+  View = InverseMat4(View);
 #endif
-  mat4 MV = MultiplyMat4(View, Model);
-  mat4 Mat = MultiplyMat4(Projection, MV);
+  mat4 Mat = MultiplyMat4(Projection, View);
+  Mat = MultiplyMat4(Mat, Model);
 
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];  // Vertices
@@ -421,6 +416,7 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     T[2] = Mesh->UV[Mesh->UVIndices[Index + 2]];
 
     Normal = Mesh->Normals[Mesh->NormalIndices[Index + 0]];
+    Normal = NormalizeVec3(Normal);
 
     R[0] = MultiplyMatrixVector(Mat, V[0]);
     R[1] = MultiplyMatrixVector(Mat, V[1]);
@@ -434,12 +430,18 @@ static void DrawMesh(framebuffer* FrameBuffer, float* ZBuffer, mesh* Mesh, image
     R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
     R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
 
+    Light.X = 0.5f * Win.Width;
+    Light.Y = 0.5f * Win.Height;
+
+#if NO_LIGHTING
+    float LightFactor = 1.0f;
+#else
     // TODO(lucas): Is this the correct way to calculate point light normals?
     v3 LightDelta = DifferenceV3(Light, R[0]);
-    LightDelta.X = -LightDelta.X;
     v3 LightNormal = NormalizeVec3(LightDelta);
     float LightDistance = DistanceV3(Light, R[0]);
     float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
+#endif
 
     v3 CameraNormal = V3(0, 0, -1.0f);
     float DotValue = DotVec3(CameraNormal, Normal);

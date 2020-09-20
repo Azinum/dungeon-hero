@@ -5,5 +5,8 @@ typedef struct camera {
   v3 TargetP;
   v3 Up;
   v3 Forward;
+
+  float Pitch;
+  float Yaw;
 } camera;
 

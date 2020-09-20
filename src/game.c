@@ -15,7 +15,8 @@
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-static v3 Light = V3(400, 350.0f, -50.0f);
+// static v3 Light = V3(400, 350.0f, -50.0f);
+static v3 Light = V3(0.0f, 1.1f, 0.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -28,25 +29,31 @@ static void GameStateInit(game_state* Game) {
     entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_TEST);
     Entity->Speed = V3(0, 1.0f, 0);
   }
-#else
+#endif
+
+#if 1
   for (i32 Z = 4; Z < 10; ++Z) {
     for (i32 X = -4; X <= 4; ++X) {
       if (!(rand() % 16)) {
-        entity* E = GameAddEntity(V3(X, 1, Z), MESH_COOKING_POT, TEXTURE_UV);
+        entity* E = GameAddEntity(V3(X, 0, Z), MESH_COOKING_POT, TEXTURE_UV);
         E->Type = ENTITY_ROTATOR;
       }
       if (!(rand() % 16)) {
-        GameAddEntity(V3(X, 1, Z), MESH_CUBE, TEXTURE_BOX);
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
       }
       if (!(rand() % 20)) {
-        GameAddEntity(V3(X, 1, Z), MESH_STONE, TEXTURE_TEST);
+        GameAddEntity(V3(X, 0, Z), MESH_STONE, TEXTURE_TEST);
       }
 
-      GameAddEntity(V3(X, 0, Z), MESH_PLANE, TEXTURE_TEST);
+      GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_TEST);
     }
   }
 #endif
-  CameraInit(&Camera, V3(0, 3, 10));
+
+#if 0
+  GameAddEntity(V3(0, 0, -1), MESH_CUBE, TEXTURE_BOX);
+#endif
+  CameraInit(&Camera, V3(0, 0, 0));
 }
 
 static void OutputZBufferToFile(const char* Path) {

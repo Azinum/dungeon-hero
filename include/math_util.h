@@ -406,3 +406,19 @@ inline mat4 LookAt(v3 Eye, v3 Center, v3 Up) {
 
   return Result;
 }
+
+inline mat4 InverseMat4(mat4 A) {
+  mat4 Result;
+
+  Result.Elements[0][0] = A.Elements[0][0]; Result.Elements[0][1] = A.Elements[1][0]; Result.Elements[0][2] = A.Elements[2][0]; Result.Elements[0][3] = 0.0f;
+  Result.Elements[1][0] = A.Elements[0][1]; Result.Elements[1][1] = A.Elements[1][1]; Result.Elements[1][2] = A.Elements[2][1]; Result.Elements[1][3] = 0.0f;
+  Result.Elements[2][0] = A.Elements[0][2]; Result.Elements[2][1] = A.Elements[1][2]; Result.Elements[2][2] = A.Elements[2][2]; Result.Elements[2][3] = 0.0f;
+
+  Result.Elements[3][0] = -(A.Elements[3][0] * Result.Elements[0][0] + A.Elements[3][1] * Result.Elements[1][0] + A.Elements[3][2] * Result.Elements[2][0]);
+  Result.Elements[3][1] = -(A.Elements[3][0] * Result.Elements[0][1] + A.Elements[3][1] * Result.Elements[1][1] + A.Elements[3][2] * Result.Elements[2][1]);
+  Result.Elements[3][2] = -(A.Elements[3][0] * Result.Elements[0][2] + A.Elements[3][1] * Result.Elements[1][2] + A.Elements[3][2] * Result.Elements[2][2]);
+
+  Result.Elements[3][3] = 1.0f;
+
+  return Result;
+}

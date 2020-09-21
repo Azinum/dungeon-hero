@@ -127,7 +127,7 @@ done:
   return Status;
 }
 
-void MeshSortIndexedData(mesh* Mesh) {
+i32 MeshSortIndexedData(mesh* Mesh) {
   v2* UV = NULL;
   u32 UVCount = 0;
   ListAlloc(UV, UVCount, Mesh->IndexCount, V2(0, 0));
@@ -137,14 +137,16 @@ void MeshSortIndexedData(mesh* Mesh) {
   ListAlloc(Normals, NormalCount, Mesh->IndexCount, V3(0, 0, 0));
 
   for (u32 I = 0; I < Mesh->IndexCount; ++I) {
-#if 1
     u32 Index = Mesh->Indices[I];
-    v2 CurrentUV = Mesh->UV[Mesh->UVIndices[I]];
+    u32 UVIndex = Mesh->UVIndices[I];
+    u32 NormalIndex = Mesh->NormalIndices[I];
+
+    v2 CurrentUV = Mesh->UV[UVIndex];
     UV[Index] = CurrentUV;
-    v3 CurrentNormal = Mesh->Normals[Mesh->NormalIndices[I]];
+    v3 CurrentNormal = Mesh->Normals[NormalIndex];
     Normals[Index] = CurrentNormal;
-#endif
   }
+
   ListFree(Mesh->UV, Mesh->UVCount);
   ListFree(Mesh->Normals, Mesh->NormalCount);
 
@@ -153,11 +155,12 @@ void MeshSortIndexedData(mesh* Mesh) {
   Mesh->Normals = Normals;
   Mesh->NormalCount = NormalCount;
 
-  for (u32 I = 0; I < Mesh->VertexCount; ++I) {
+  for (u32 I = 0; I < Mesh->IndexCount; ++I) {
     u32 Index = Mesh->Indices[I];
     v3 V = Mesh->Vertices[Index];
     v2 UV = Mesh->UV[Index];
     v3 N = Mesh->Normals[Index];
-    // printf("Vertex: (%g, %g, %g), (%g, %g), (%g, %g, %g)\n", V.X, V.Y, V.Z, UV.X, UV.Y, N.X, N.Y, N.Z);
+    // printf("[%i] Vertex: (%g, %g, %g), (%g, %g), (%g, %g, %g)\n", I, V.X, V.Y, V.Z, UV.X, UV.Y, N.X, N.Y, N.Z);
   }
+  return 0;
 }

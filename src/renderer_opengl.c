@@ -34,7 +34,6 @@ static void StoreAttrib(model* Model, i32 AttribNum, u32 Count, u32 Size, void* 
 
 static i32 UploadModel(model* Model, mesh* Mesh) {
   Model->DrawCount = Mesh->IndexCount;
-  // MeshSortIndexedData(Mesh);
 
   glGenVertexArrays(1, &Model->VAO);
   glBindVertexArray(Model->VAO);
@@ -50,6 +49,14 @@ static i32 UploadModel(model* Model, mesh* Mesh) {
 
   glBindVertexArray(0);
   return 0;
+}
+
+static i32 UploadAndIndexModel(model* Model, mesh* Mesh) {
+  i32 IndexResult = MeshSortIndexedData(Mesh);
+  if (IndexResult != 0) {
+    return IndexResult;
+  }
+  return UploadModel(Model, Mesh);
 }
 
 static i32 UploadTexture(u32* TextureId, image* Texture) {
@@ -199,7 +206,6 @@ static void OpenGLInit() {
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
-  glFrontFace(GL_CW);
 
   fprintf(stdout, "GL VENDOR:    %s\n", glGetString(GL_VENDOR));
   fprintf(stdout, "GL RENDERER:  %s\n", glGetString(GL_RENDERER));
@@ -327,6 +333,7 @@ i32 RendererInit(assets* Assets) {
   OpenGLInit();
   DefaultShader = ShaderCompile("resource/shader/default");
 
+#if 1
   mesh Mesh;
   Mesh.Indices = Indices;
   Mesh.IndexCount = ARR_SIZE(Indices);
@@ -338,8 +345,11 @@ i32 RendererInit(assets* Assets) {
   Mesh.NormalCount = ARR_SIZE(Normals);
 
   UploadModel(&DefaultModel, &Mesh);
+#else
+  mesh* Mesh = &Assets->Meshes[MESH_CUBE];
+  UploadAndIndexModel(&DefaultModel, Mesh);
+#endif
 
-  // UploadModel(&DefaultModel, &Assets->Meshes[MESH_CUBE]);
   UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_TEST]);
   return 0;
 }

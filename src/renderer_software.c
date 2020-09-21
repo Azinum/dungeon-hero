@@ -11,7 +11,7 @@ typedef enum blend_mode {
 
 #define LightStrength 150.0f
 #define AMBIENT_LIGHT 3
-#define DRAW_SOLID 0
+#define DRAW_SOLID 1
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
 #define DRAW_VERTICES 0
@@ -62,7 +62,7 @@ static void FrameBufferClear(framebuffer* FrameBuffer, color Color) {
 
 static void ZBufferClear(float* ZBuffer, u32 Width, u32 Height) {
   u32 Count = Width * Height;
-  float FillValue = -1.0f;
+  float FillValue = 1.0f;
 #if USE_SSE
   __m128* Dest = (__m128*)ZBuffer;
   __m128 Value = _mm_set_ps1(FillValue);
@@ -346,7 +346,7 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
         Z += C.Z * W2;
 
         i32 Index = ((FrameBuffer->Height - P.Y) * FrameBuffer->Width) - P.X;
-        if (ZBuffer[Index] < Z) {
+        if (ZBuffer[Index] > Z) {
           ZBuffer[Index] = Z;
           color Texel;
 #if DRAW_SOLID

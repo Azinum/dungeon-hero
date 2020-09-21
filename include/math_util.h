@@ -368,14 +368,17 @@ inline mat4 ScaleMat4(mat4 A, v3 B) {
 inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
   mat4 Result = {0};
 
+#if 1
   float TanThetaOver2 = tanf(Fov * (PI32 / 360.0f));
 
-  Result.Elements[0][0] = -1.0f / TanThetaOver2;
+  Result.Elements[0][0] = 1.0f / TanThetaOver2;
   Result.Elements[1][1] = AspectRatio / TanThetaOver2;
   Result.Elements[2][3] = -1.0f;
   Result.Elements[2][2] = (ZNear + ZFar) / (ZNear - ZFar);
   Result.Elements[3][2] = (2.0f * ZNear * ZFar) / (ZNear - ZFar);
-  Result.Elements[3][3] = 1.0f;
+  Result.Elements[3][3] = 0.0f;
+#else
+#endif
 
   return Result;
 }

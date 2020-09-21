@@ -14,15 +14,15 @@ void CameraInit(camera* Camera, v3 Position) {
   Camera->Pitch = 0.0f;
   Camera->Yaw = 90.0f;
 
-  Projection = Perspective(70, (float)Win.Width / Win.Height, 0.1f, 500);
+  Projection = Perspective(70, (float)Win.Width / Win.Height, 0.05f, 500);
 }
 
 void CameraUpdate(camera* Camera) {
   if (KeyDown[KEY_D]) {
-    Camera->P.X += 5.0f * GameState.DeltaTime;
+    Camera->P.X -= 5.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_A]) {
-    Camera->P.X -= 5.0f * GameState.DeltaTime;
+    Camera->P.X += 5.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_W]) {
     Camera->P.Z += 5.0f * GameState.DeltaTime;
@@ -31,10 +31,10 @@ void CameraUpdate(camera* Camera) {
     Camera->P.Z -= 5.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_Z]) {
-    Camera->P.Y -= 5.0f * GameState.DeltaTime;
+    Camera->P.Y += 5.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_X]) {
-    Camera->P.Y += 5.0f * GameState.DeltaTime;
+    Camera->P.Y -= 5.0f * GameState.DeltaTime;
   }
 
   if (KeyDown[KEY_1]) {

@@ -127,3 +127,37 @@ done:
   return Status;
 }
 
+void MeshSortIndexedData(mesh* Mesh) {
+  v2* UV = NULL;
+  u32 UVCount = 0;
+  ListAlloc(UV, UVCount, Mesh->IndexCount, V2(0, 0));
+
+  v3* Normals = NULL;
+  u32 NormalCount = 0;
+  ListAlloc(Normals, NormalCount, Mesh->IndexCount, V3(0, 0, 0));
+
+  for (u32 I = 0; I < Mesh->IndexCount; ++I) {
+#if 1
+    u32 Index = Mesh->Indices[I];
+    v2 CurrentUV = Mesh->UV[Mesh->UVIndices[I]];
+    UV[Index] = CurrentUV;
+    v3 CurrentNormal = Mesh->Normals[Mesh->NormalIndices[I]];
+    Normals[Index] = CurrentNormal;
+#endif
+  }
+  ListFree(Mesh->UV, Mesh->UVCount);
+  ListFree(Mesh->Normals, Mesh->NormalCount);
+
+  Mesh->UV = UV;
+  Mesh->UVCount = UVCount;
+  Mesh->Normals = Normals;
+  Mesh->NormalCount = NormalCount;
+
+  for (u32 I = 0; I < Mesh->VertexCount; ++I) {
+    u32 Index = Mesh->Indices[I];
+    v3 V = Mesh->Vertices[Index];
+    v2 UV = Mesh->UV[Index];
+    v3 N = Mesh->Normals[Index];
+    // printf("Vertex: (%g, %g, %g), (%g, %g), (%g, %g, %g)\n", V.X, V.Y, V.Z, UV.X, UV.Y, N.X, N.Y, N.Z);
+  }
+}

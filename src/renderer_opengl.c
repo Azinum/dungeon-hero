@@ -15,30 +15,55 @@ typedef struct model {
 } model;
 
 static render_state RenderState;
-static i32 DefaultShader;
+static u32 DefaultShader;
 static model DefaultModel;
+static u32 DefaultTexture;
 
 #define ERR_BUFFER_SIZE 512
 
-i32 UploadModel(model* Model, mesh* Mesh) {
+static void StoreAttrib(model* Model, i32 AttribNum, u32 Count, u32 Size, void* Data) {
+  glEnableVertexAttribArray(AttribNum);
+
+  glGenBuffers(1, &Model->VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, Model->VBO);
+  glBufferData(GL_ARRAY_BUFFER, Size, Data, GL_STATIC_DRAW);
+  glVertexAttribPointer(AttribNum, Count, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+static i32 UploadModel(model* Model, mesh* Mesh) {
   Model->DrawCount = Mesh->IndexCount;
+  // MeshSortIndexedData(Mesh);
 
   glGenVertexArrays(1, &Model->VAO);
   glBindVertexArray(Model->VAO);
 
-  // NOTE(lucas): Bind vertices
-  glGenBuffers(1, &Model->VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, Model->VBO);
-  glBufferData(GL_ARRAY_BUFFER, Mesh->VertexCount * sizeof(float) * 3, &Mesh->Vertices[0], GL_STATIC_DRAW);
-  i32 AttribNum = 0;
-  glEnableVertexAttribArray(AttribNum);
-  glVertexAttribPointer(AttribNum, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  // NOTE(lucas): Bind indices
   glGenBuffers(1, &Model->EBO);
+
+  StoreAttrib(Model, 0, 3, Mesh->VertexCount * sizeof(float) * 3, &Mesh->Vertices[0]);
+  StoreAttrib(Model, 1, 2, Mesh->UVCount * sizeof(float) * 2, &Mesh->UV[0]);
+  StoreAttrib(Model, 2, 3, Mesh->NormalCount * sizeof(float) * 3, &Mesh->Normals[0]);
+
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Model->EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, Mesh->IndexCount * sizeof(u32), &Mesh->Indices[0], GL_STATIC_DRAW);
+
+  glBindVertexArray(0);
+  return 0;
+}
+
+static i32 UploadTexture(u32* TextureId, image* Texture) {
+  glGenTextures(1, TextureId);
+  glBindTexture(GL_TEXTURE_2D, *TextureId);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Texture->Width, Texture->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Texture->PixelBuffer);
+  glBindTexture(GL_TEXTURE_2D, 0);
   return 0;
 }
 
@@ -114,6 +139,7 @@ inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H,
 static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
   u32 Handle = DefaultShader;
   glUseProgram(Handle);
+  u32 TextureId = DefaultTexture;
 
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
@@ -130,22 +156,35 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
 
   glBindVertexArray(Model->VAO);
   glEnableVertexAttribArray(0);
-  glDrawElements(GL_TRIANGLES, Model->DrawCount, GL_UNSIGNED_INT, 0);
-  glDisableVertexAttribArray(0);
-  glBindVertexArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
 
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, TextureId);
+
+  glDrawElements(GL_TRIANGLES, Model->DrawCount, GL_UNSIGNED_INT, 0);
+
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
+
+  glBindVertexArray(0);
   glUseProgram(0);
 }
 
 static void OpenGLInit() {
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
   GLint Attribs[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
   Win.VisualInfo = glXChooseVisual(Win.Disp, 0, Attribs);
   RenderState.Context = glXCreateContext(Win.Disp, Win.VisualInfo, NULL, GL_TRUE);
   glXMakeCurrent(Win.Disp, Win.Win, RenderState.Context);
+
+  RenderState.glSwapIntervalEXT = (glSwapInterval_t*)glXGetProcAddress((u8*)"glXSwapIntervalEXT");
+  if (RenderState.glSwapIntervalEXT) {
+    RenderState.glSwapIntervalEXT(Win.Disp, Win.Win, 0);
+  }
+  else {
+    fprintf(stderr, "Failed to disable vsync\n");
+  }
 
   i32 GlewError = glewInit();
   if (GlewError != GLEW_OK) {
@@ -153,16 +192,155 @@ static void OpenGLInit() {
     return;
   }
 
+  glEnable(GL_DEPTH_TEST);
+  glShadeModel(GL_FLAT);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+  glFrontFace(GL_CW);
+
   fprintf(stdout, "GL VENDOR:    %s\n", glGetString(GL_VENDOR));
   fprintf(stdout, "GL RENDERER:  %s\n", glGetString(GL_RENDERER));
   fprintf(stdout, "GL VERSION:   %s\n", glGetString(GL_VERSION));
   fprintf(stdout, "GLSL VERSION: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
+v3 Vertices[] = {
+  V3(-0.5, -0.5, -0.5),
+  V3(-0.5, 0.5, -0.5),
+  V3(0.5, 0.5, -0.5),
+  V3(0.5, -0.5, -0.5),
+
+  V3(-0.5, -0.5, 0.5),
+  V3(-0.5, 0.5, 0.5),
+  V3(0.5, 0.5, 0.5),
+  V3(0.5, -0.5, 0.5),
+
+  V3(-0.5, -0.5, -0.5),
+  V3(-0.5, -0.5, 0.5),
+  V3(0.5, -0.5, 0.5),
+  V3(0.5, -0.5, -0.5),
+
+  V3(-0.5, 0.5, -0.5),
+  V3(-0.5, 0.5, 0.5),
+  V3(0.5, 0.5, 0.5),
+  V3(0.5, 0.5, -0.5),
+
+  V3(-0.5, -0.5, -0.5),
+  V3(-0.5, -0.5, 0.5),
+  V3(-0.5, 0.5, 0.5),
+  V3(-0.5, 0.5, -0.5),
+
+  V3(0.5, -0.5, -0.5),
+  V3(0.5, -0.5, 0.5),
+  V3(0.5, 0.5, 0.5),
+  V3(0.5, 0.5, -0.5),
+};
+
+v2 UV[] = {
+  V2(1, 0), 
+  V2(0, 0), 
+  V2(0, 1), 
+  V2(1, 1), 
+            
+  V2(1, 0), 
+  V2(0, 0), 
+  V2(0, 1), 
+  V2(1, 1), 
+            
+  V2(0, 1), 
+  V2(1, 1), 
+  V2(1, 0), 
+  V2(0, 0), 
+            
+  V2(0, 1), 
+  V2(1, 1), 
+  V2(1, 0), 
+  V2(0, 0), 
+            
+  V2(1, 1), 
+  V2(1, 0), 
+  V2(0, 0), 
+  V2(0, 1), 
+            
+  V2(1, 1), 
+  V2(1, 0), 
+  V2(0, 0), 
+  V2(0, 1), 
+};
+
+v3 Normals[] = {
+  V3(0, 0, -1),
+  V3(0, 0, -1),
+  V3(0, 0, -1),
+  V3(0, 0, -1),
+               
+  V3(0, 0, 1),
+  V3(0, 0, 1),
+  V3(0, 0, 1),
+  V3(0, 0, 1),
+               
+  V3(0, -1, 0),
+  V3(0, -1, 0),
+  V3(0, -1, 0),
+  V3(0, -1, 0),
+               
+  V3(0, 1, 0),
+  V3(0, 1, 0),
+  V3(0, 1, 0),
+  V3(0, 1, 0),
+               
+  V3(-1, 0, 0),
+  V3(-1, 0, 0),
+  V3(-1, 0, 0),
+  V3(-1, 0, 0),
+               
+  V3(1, 0, 0),
+  V3(1, 0, 0),
+  V3(1, 0, 0),
+  V3(1, 0, 0),
+};
+
+static u32 Indices[] = {
+  0, 1, 2,
+  0, 2, 3,
+
+  6, 5, 4,
+  7, 6, 4,
+
+  10, 9, 8,
+  11, 10, 8,
+
+  12, 13, 14,
+  12, 14, 15,
+
+  16, 17, 18,
+  16, 18, 19,
+
+  22, 21, 20,
+  23, 22, 20
+};
+
 i32 RendererInit(assets* Assets) {
   OpenGLInit();
   DefaultShader = ShaderCompile("resource/shader/default");
-  UploadModel(&DefaultModel, &Assets->Meshes[MESH_CUBE]);
+
+  mesh Mesh;
+  Mesh.Indices = Indices;
+  Mesh.IndexCount = ARR_SIZE(Indices);
+  Mesh.Vertices = Vertices;
+  Mesh.VertexCount = ARR_SIZE(Vertices);
+  Mesh.UV = UV;
+  Mesh.UVCount = ARR_SIZE(UV);
+  Mesh.Normals = Normals;
+  Mesh.NormalCount = ARR_SIZE(Normals);
+
+  UploadModel(&DefaultModel, &Mesh);
+
+  // UploadModel(&DefaultModel, &Assets->Meshes[MESH_CUBE]);
+  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_TEST]);
   return 0;
 }
 

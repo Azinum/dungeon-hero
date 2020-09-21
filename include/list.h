@@ -2,24 +2,32 @@
 
 #include <stdio.h>
 
-#define ListPush(List, Count, Element) {\
-  if (List) {\
-    List = realloc(List, sizeof(Element) * (Count + 1));\
-    Assert(List);\
-    ++Count;\
-  }\
+#define ListPush(List, Count, Element) { \
+  if (List) { \
+    List = realloc(List, sizeof(Element) * (Count + 1)); \
+    Assert(List); \
+    ++Count; \
+  } \
   else { \
-    List = malloc(sizeof(Element) * 1);\
-    Count = 1;\
-  }\
-  List[Count - 1] = Element;\
+    List = malloc(sizeof(Element) * 1); \
+    Count = 1; \
+  } \
+  List[Count - 1] = Element; \
 }
 
-#define ListFree(List, Count) {\
-  if (List) {\
-    free(List);\
-    Count = 0;\
-  }\
+#define ListFree(List, Count) { \
+  if (List) { \
+    free(List); \
+    Count = 0; \
+  } \
+}
+
+#define ListAlloc(List, Count, Size, Element) { \
+  Count = Size; \
+  List = malloc(sizeof(Element) * Size); \
+  if (!List) { \
+    Count = 0; \
+  } \
 }
 
 #define BufferPush(Buffer, Count, Element) ListPush(Buffer, Count, Element)

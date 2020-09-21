@@ -25,10 +25,10 @@ void CameraUpdate(camera* Camera) {
     Camera->P.X -= 5.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_W]) {
-    Camera->P.Z -= 5.0f * GameState.DeltaTime;
+    Camera->P.Z += 5.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_S]) {
-    Camera->P.Z += 5.0f * GameState.DeltaTime;
+    Camera->P.Z -= 5.0f * GameState.DeltaTime;
   }
   if (KeyDown[KEY_Z]) {
     Camera->P.Y -= 5.0f * GameState.DeltaTime;

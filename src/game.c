@@ -17,7 +17,7 @@
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-static v3 Light = V3(0.0f, 1.1f, 0.0f);
+static v3 Light = V3(0.0f, 1.5f, 0.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -57,20 +57,20 @@ static void GameStateInit(game_state* Game) {
         E->Type = ENTITY_ROTATOR;
       }
       if (!(rand() % 16)) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
       }
       if (!(rand() % 20)) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_TEST);
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
       }
 
-      GameAddEntity(V3(X, -1, Z), MESH_CUBE, TEXTURE_TEST);
+      GameAddEntity(V3(X, -1, Z), MESH_CUBE, TEXTURE_UV);
     }
   }
 #endif
 #if 0
   GameAddEntity(V3(0, 0, -1), MESH_CUBE, TEXTURE_BOX);
 #endif
-  CameraInit(&Camera, V3(0, -1, 10));
+  CameraInit(&Camera, V3(0, -1, -1));
 }
 
 static void GameRun(game_state* Game) {
@@ -78,7 +78,8 @@ static void GameRun(game_state* Game) {
   AssetsLoadAll(&Assets);
 
   WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
-  RendererInit(&Assets);
+  if (RendererInit(&Assets) != 0)
+    return;
   GameStateInit(Game);
 
   char Title[BUFFER_SIZE] = {0};

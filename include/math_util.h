@@ -372,10 +372,10 @@ inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
 
   Result.Elements[0][0] = -1.0f / TanThetaOver2;
   Result.Elements[1][1] = AspectRatio / TanThetaOver2;
-  Result.Elements[2][3] = 1.0f;
+  Result.Elements[2][3] = -1.0f;
   Result.Elements[2][2] = (ZNear + ZFar) / (ZNear - ZFar);
   Result.Elements[3][2] = (2.0f * ZNear * ZFar) / (ZNear - ZFar);
-  Result.Elements[3][3] = 2.0f;
+  Result.Elements[3][3] = 1.0f;
 
   return Result;
 }

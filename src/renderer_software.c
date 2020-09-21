@@ -9,9 +9,9 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-#define LightStrength 150.0f
+#define LightStrength 200.0f
 #define AMBIENT_LIGHT 3
-#define DRAW_SOLID 1
+#define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
 #define DRAW_VERTICES 0

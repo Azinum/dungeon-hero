@@ -8,6 +8,7 @@ typedef enum mesh_id {
   MESH_STONE,
   MESH_COOKING_POT,
   MESH_PLANE,
+  MESH_MONSTER,
 
   MAX_MESH,
 } mesh_id;
@@ -18,6 +19,8 @@ typedef enum texture_id {
   TEXTURE_SUN_ICON,
   TEXTURE_BOX,
 
+  TEXTURE_MONSTER,
+
   MAX_TEXTURE,
 } texture_id;
 
@@ -25,7 +28,9 @@ static const char* MeshFileNames[MAX_MESH] = {
   "cube",
   "stone",
   "cooking_pot",
-  "plane"
+  "plane",
+
+  "monster",
 };
 
 static const char* TextureFileNames[MAX_TEXTURE] = {
@@ -33,6 +38,8 @@ static const char* TextureFileNames[MAX_TEXTURE] = {
   "uv_test",
   "sun_icon",
   "box",
+
+  "monster",
 };
 
 typedef struct assets {

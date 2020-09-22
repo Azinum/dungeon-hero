@@ -21,6 +21,16 @@ static u32 DefaultTexture;
 
 #define ERR_BUFFER_SIZE 512
 
+static void OutputZBufferToFile(render_state* RenderState, const char* Path) {
+  (void)RenderState;
+  (void)Path;
+}
+
+static void OutputFrameBufferToFile(render_state* RenderState, const char* Path) {
+  (void)RenderState;
+  (void)Path;
+}
+
 static void StoreAttrib(model* Model, i32 AttribNum, u32 Count, u32 Size, void* Data) {
   glEnableVertexAttribArray(AttribNum);
 

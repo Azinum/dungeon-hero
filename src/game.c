@@ -36,7 +36,7 @@ static void GameStateInit(game_state* Game) {
   for (i32 Z = 4; Z < 10; ++Z) {
     for (i32 X = -4; X <= 4; ++X) {
       if (!(rand() % 20)) {
-        entity* E = GameAddEntity(V3(X, 0, Z), MESH_COOKING_POT, TEXTURE_UV);
+        entity* E = GameAddEntity(V3(X, 0, Z), MESH_TEA_POT, TEXTURE_UV);
         E->Type = ENTITY_ROTATOR;
       }
       if (!(rand() % 20)) {
@@ -80,8 +80,10 @@ static void GameRun(game_state* Game) {
   assets Assets;
   AssetsLoadAll(&Assets);
 
+  render_state* Renderer = &RenderState;
+
   WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
-  if (RendererInit(&Assets) != 0)
+  if (RendererInit(Renderer, &Assets) != 0)
     return;
   GameStateInit(Game);
 
@@ -103,10 +105,19 @@ static void GameRun(game_state* Game) {
     LastFrame += Game->DeltaTime;
 
     CameraUpdate(&Camera);
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, &RenderState, &Assets, Light, &Camera);
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, &Camera);
 
-    DrawSimpleTexture2D(&RenderState, Light.X - 16, Light.Y - 16, 36, 36, &Assets.Textures[TEXTURE_SUN_ICON], COLOR(1, 1, 0));
+    DrawSimpleTexture2D(Renderer, Light.X - 16, Light.Y - 16, 36, 36, &Assets.Textures[TEXTURE_SUN_ICON], COLOR(1, 1, 0));
 
+    if (KeyPressed[KEY_COMMA]) {
+      char Date[MAX_PATH_SIZE];
+      char Path[MAX_PATH_SIZE];
+      GetDateAndTime(Date, MAX_PATH_SIZE);
+      snprintf(Path, MAX_PATH_SIZE, "%s/zbuffer_%s.png", SCREENSHOT_DIR, Date);
+      OutputZBufferToFile(Renderer, Path);
+      snprintf(Path, MAX_PATH_SIZE, "%s/screenshot_%s.png", SCREENSHOT_DIR, Date);
+      OutputFrameBufferToFile(Renderer, Path);
+    }
     // TODO(lucas): Properly implement timestepping!
     if (LastFrame > (1.0f / TARGET_FPS)) {
       ++Tick;

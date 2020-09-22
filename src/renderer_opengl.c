@@ -329,7 +329,8 @@ static u32 Indices[] = {
   23, 22, 20
 };
 
-i32 RendererInit(assets* Assets) {
+i32 RendererInit(render_state* RenderState, assets* Assets) {
+  (void)RenderState;
   OpenGLInit();
   DefaultShader = ShaderCompile("resource/shader/default");
 

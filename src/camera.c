@@ -2,8 +2,11 @@
 
 static camera Camera;
 
+#if 0
 static i32 LastX = 0;
 static i32 LastY = 0;
+#endif
+
 #define MOUSE_SENSITIVITY 0.5f
 
 void CameraInit(camera* Camera, v3 Position) {
@@ -44,10 +47,10 @@ void CameraUpdate(camera* Camera) {
     Camera->Yaw += 20.0f * GameState.DeltaTime;
   }
 
+#if 0
   float XOffset = MouseX - LastX;
   float YOffset = MouseY - LastY;
 
-#if 0
   XOffset *= MOUSE_SENSITIVITY;
   YOffset *= MOUSE_SENSITIVITY;
 
@@ -68,5 +71,4 @@ void CameraUpdate(camera* Camera) {
     sin(ToRadians(Camera->Yaw)) * cos(ToRadians(Camera->Pitch))
   );
   Camera->Forward = NormalizeVec3(Direction);
-  // printf("Forward: %g, %g, %g\n", Camera->Forward.X, Camera->Forward.Y, Camera->Forward.Z);
 }

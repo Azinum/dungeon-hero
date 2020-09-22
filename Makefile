@@ -13,6 +13,7 @@ clean:
 prepare:
 	mkdir -p ${BUILD_DIR}
 	mkdir -p ${PROF_DIR}
+	mkdir -p ${SCREENSHOT_DIR}
 	cp -rp ${RES_DIR} ${BUILD_DIR}
 
 compile:

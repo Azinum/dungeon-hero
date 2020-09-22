@@ -22,6 +22,28 @@ typedef enum blend_mode {
   ((V0.X == V1.X && V0.Y == V1.Y) || \
   ((V1.X == V2.X && V1.Y == V2.Y)))
 
+inline color RGBToBGR(u8* A) {
+  color Result;
+
+  Result.R = *(A + 0);
+  Result.G = *(A + 1);
+  Result.B = *(A + 2);
+  Result.A = 255;
+
+  return Result;
+}
+
+inline color BGRToRGB(color Color) {
+  color Result;
+
+  Result.R = Color.B;
+  Result.G = Color.G;
+  Result.B = Color.R;
+  Result.A = Color.A;
+
+  return Result;
+}
+
 static void FrameBufferCreate(framebuffer* FrameBuffer, u32 Width, u32 Height) {
   FrameBuffer->Data = malloc(Width * Height * 4);
   FrameBuffer->Width = Width;
@@ -87,6 +109,51 @@ static void FrameBufferDestroy(framebuffer* FrameBuffer) {
   }
 }
 
+static void OutputZBufferToFile(render_state* RenderState, const char* Path) {
+  float* ZBuffer = RenderState->ZBuffer;
+  Assert(ZBuffer);
+
+  image Image;
+  Image.Width = Win.Width;
+  Image.Height = Win.Height;
+  Image.Depth = 24;
+  Image.Pitch = Win.Width * 4;
+  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
+  Image.BytesPerPixel = 4;
+
+  for (u32 Index = 0; Index < Image.Width * Image.Height; ++Index) {
+    u8 V = Clamp(8 * 255 * Abs(1.0f - ZBuffer[Index]), 0, 255);
+    color Color = {V, V, V, 255};
+    color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
+    *Pixel = Color;
+  }
+
+  StoreImage(Path, &Image);
+  UnloadImage(&Image);
+  fprintf(stdout, "Z buffer saved to '%s'\n", Path);
+}
+
+static void OutputFrameBufferToFile(render_state* RenderState, const char* Path) {
+  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
+  Assert(FrameBuffer);
+
+  image Image;
+  Image.Width = FrameBuffer->Width;
+  Image.Height = FrameBuffer->Height;
+  Image.Depth = 24;
+  Image.Pitch = FrameBuffer->Width * 4;
+  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
+  Image.BytesPerPixel = 4;
+
+  for (u32 Index = 0; Index < FrameBuffer->Width * FrameBuffer->Height; ++Index) {
+    color Pixel = BGRToRGB(FrameBuffer->Color[Index]);
+    *(color*)&Image.PixelBuffer[Index * 4] = Pixel;
+  }
+  StoreImage(Path, &Image);
+  UnloadImage(&Image);
+  fprintf(stdout, "Framebuffer saved to '%s'\n", Path);
+}
+
 inline void Barycentric(v3 P, v3 A, v3 B, v3 C, float* W0, float* W1, float* W2) {
   v3 V0 = DifferenceV3(B, A);
   v3 V1 = DifferenceV3(C, A);
@@ -121,28 +188,6 @@ inline v2 Cartesian(v2 V0, v2 V1, v2 V2, float W0, float W1, float W2) {
 
   Result.X = (V0.X * W0) + (V1.X * W1) + (V2.X * W2);
   Result.Y = (V0.Y * W0) + (V1.Y * W1) + (V2.Y * W2);
-
-  return Result;
-}
-
-inline color RGBToBGR(u8* A) {
-  color Result;
-
-  Result.R = *(A + 0);
-  Result.G = *(A + 1);
-  Result.B = *(A + 2);
-  Result.A = 255;
-
-  return Result;
-}
-
-inline color BGRToRGB(color Color) {
-  color Result;
-  
-  Result.R = Color.B;
-  Result.G = Color.G;
-  Result.B = Color.R;
-  Result.A = Color.A;
 
   return Result;
 }
@@ -187,7 +232,8 @@ inline void DrawPixelAdd(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
 }
 
 // NOTE(lucas): Bresenham!
-inline void DrawLine(framebuffer* FrameBuffer, v2 A, v2 B, color Color) {
+inline void DrawLine(render_state* RenderState, v2 A, v2 B, color Color) {
+  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   u8 Steep = 0;
   if (Abs(A.X - B.X) < Abs(A.Y - B.Y)) {
     Steep = 1;
@@ -247,7 +293,9 @@ inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H,
   }
 }
 
+// TODO(lucas): Implement rendering of texture region
 inline void DrawTexture2DFast(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+  (void)XOffset; (void)YOffset; (void)XRange; (void)YRange; (void)Tint;
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   i32 MinX = X;
   i32 MinY = Y;
@@ -311,7 +359,9 @@ static void DrawRect(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, colo
 }
 
 // NOTE(lucas): Triangles are drawn in counterclockwise order
-static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, image* Texture, float LightFactor) {
+static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T0, v2 T1, v2 T2, image* Texture, float LightFactor) {
+  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
+  float* ZBuffer = RenderState->ZBuffer;
   if (A.X < 0 || A.Y < 0 || B.X < 0 || B.Y < 0 || C.X < 0 || C.Y < 0) {
     return;
   }
@@ -372,28 +422,25 @@ static void DrawFilledTriangle(framebuffer* FrameBuffer, float* ZBuffer, v3 A, v
 #if DRAW_BOUNDING_BOX
   color LineColor = COLOR(50, 50, 255);
 
-  DrawLine(FrameBuffer, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
-  DrawLine(FrameBuffer, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
-  DrawLine(FrameBuffer, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
-  DrawLine(FrameBuffer, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
+  DrawLine(RenderState, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
+  DrawLine(RenderState, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
+  DrawLine(RenderState, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
+  DrawLine(RenderState, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
 #endif
 
 #if DRAW_BOUNDING_BOX_POINTS
-  DrawRect(FrameBuffer, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
-  DrawRect(FrameBuffer, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
+  DrawRect(RenderState, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
+  DrawRect(RenderState, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
 #endif
 
 #if DRAW_VERTICES
-  DrawRect(FrameBuffer, A.X, A.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-  DrawRect(FrameBuffer, B.X, B.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-  DrawRect(FrameBuffer, C.X, C.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(RenderState, A.X, A.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(RenderState, B.X, B.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  DrawRect(RenderState, C.X, C.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
 #endif
 }
 
 static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
-  framebuffer* FrameBuffer = &RenderState->FrameBuffer;
-  float* ZBuffer = RenderState->ZBuffer;
-
   Light = AddV3(Light, 1.0f);
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
@@ -459,51 +506,14 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
     if (Degenerate(R[0], R[1], R[2])) {
       continue;
     }
-    DrawFilledTriangle(FrameBuffer, ZBuffer, R[0], R[1], R[2], T[0], T[1], T[2], Texture, LightFactor);
+    DrawFilledTriangle(RenderState, R[0], R[1], R[2], T[0], T[1], T[2], Texture, LightFactor);
   }
 }
 
-static void OutputZBufferToFile(const char* Path) {
-  image Image;
-  Image.Width = Win.Width;
-  Image.Height = Win.Height;
-  Image.Depth = 24;
-  Image.Pitch = Win.Width * 4;
-  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
-  Image.BytesPerPixel = 4;
-
-  for (u32 Index = 0; Index < Image.Width * Image.Height; ++Index) {
-    float V = Clamp(255 * Abs(RenderState.ZBuffer[Index]), 0, 255);
-    color Color = {V, V, V, 255};
-    color* Pixel = (color*)&Image.PixelBuffer[Index * 4];
-    *Pixel = Color;
-  }
-  StoreImage(Path, &Image);
-  UnloadImage(&Image);
-}
-
-static void OutputFrameBufferToFile(framebuffer* FrameBuffer, const char* Path) {
-  image Image;
-  Image.Width = FrameBuffer->Width;
-  Image.Height = FrameBuffer->Height;
-  Image.Depth = 24;
-  Image.Pitch = FrameBuffer->Width * 4;
-  Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
-  Image.BytesPerPixel = 4;
-
-  for (u32 Index = 0; Index < FrameBuffer->Width * FrameBuffer->Height; ++Index) {
-    color Pixel = BGRToRGB(FrameBuffer->Color[Index]);
-    *(color*)&Image.PixelBuffer[Index * 4] = Pixel;
-  }
-  StoreImage(Path, &Image);
-  UnloadImage(&Image);
-}
-
-i32 RendererInit(assets* Assets) {
+i32 RendererInit(render_state* RenderState, assets* Assets) {
   (void)Assets;
-  render_state* State = &RenderState;
-  FrameBufferCreate(&State->FrameBuffer, Win.Width, Win.Height);
-  State->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
+  FrameBufferCreate(&RenderState->FrameBuffer, Win.Width, Win.Height);
+  RenderState->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
 
   Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
   if (!Win.Gc)

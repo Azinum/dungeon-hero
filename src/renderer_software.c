@@ -501,10 +501,14 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
     float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
 #endif
 
-    v3 CameraNormal = V3(0, 0, -1.0f);
+    // v3 CameraNormal = V3(0, 0, -1.0f);
+    v3 CameraNormal = Camera->Forward;
+    CameraNormal.X = -CameraNormal.X;
+    CameraNormal.Y = -CameraNormal.Y;
+    CameraNormal.Z = -CameraNormal.Z;
     float DotValue = DotVec3(CameraNormal, Normal);
-    if (DotValue < 0.0f) {
-      // continue;
+    if (DotValue < -0.5f) {
+      continue;
     }
     if (Degenerate(R[0], R[1], R[2])) {
       continue;

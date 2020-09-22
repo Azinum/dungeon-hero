@@ -67,6 +67,12 @@ void CameraUpdate(camera* Camera) {
   if (KeyDown[KEY_L]) {
     Camera->Yaw += LOOK_SENSITIVITY * GameState.DeltaTime;
   }
+  if (KeyDown[KEY_J]) {
+    Camera->Pitch -= LOOK_SENSITIVITY * GameState.DeltaTime;
+  }
+  if (KeyDown[KEY_K]) {
+    Camera->Pitch += LOOK_SENSITIVITY * GameState.DeltaTime;
+  }
 
 #if 0
   float XOffset = MouseX - LastX;
@@ -80,9 +86,9 @@ void CameraUpdate(camera* Camera) {
 #endif
 
   if (Camera->Pitch >= 89.0f)
-    Camera->Pitch = 90.0f;
+    Camera->Pitch = 89.0f;
   if (Camera->Pitch <= -89.0f)
-    Camera->Pitch = -90.0f;
+    Camera->Pitch = -89.0f;
 
   v3 Direction = V3(
     cos(ToRadians(Camera->Yaw)) * cos(ToRadians(Camera->Pitch)),

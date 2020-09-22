@@ -22,6 +22,8 @@ typedef enum blend_mode {
   ((V0.X == V1.X && V0.Y == V1.Y) || \
   ((V1.X == V2.X && V1.Y == V2.Y)))
 
+inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color);
+
 inline color RGBToBGR(u8* A) {
   color Result;
 
@@ -192,8 +194,7 @@ inline v2 Cartesian(v2 V0, v2 V1, v2 V2, float W0, float W1, float W2) {
   return Result;
 }
 
-// inline
-inline void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
+void DrawPixel(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
   if (X < 0 || Y < 0 || X >= (i32)FrameBuffer->Width || Y >= (i32)FrameBuffer->Height) {
     return;
   }
@@ -257,6 +258,7 @@ inline void DrawLine(render_state* RenderState, v2 A, v2 B, color Color) {
   }
 }
 
+// TODO(lucas): Implement rendering of texture region
 inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   i32 MinX = X;
@@ -380,8 +382,8 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
   MaxY = Min(MaxY, (i32)FrameBuffer->Height - 1);
 
   v3 P = {0};
-  for (P.Y = MinY; P.Y <= MaxY; P.Y++) {
-    for (P.X = MinX; P.X <= MaxX; P.X++) {
+  for (P.Y = MinY; P.Y <= MaxY; ++P.Y) {
+    for (P.X = MinX; P.X <= MaxX; ++P.X) {
       float W0 = 0.0f;
       float W1 = 0.0f;
       float W2 = 0.0f;
@@ -414,6 +416,7 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
           Texel.G = Clamp(Texel.G * LightFactor, AMBIENT_LIGHT, 0xFF);
           Texel.B = Clamp(Texel.B * LightFactor, AMBIENT_LIGHT, 0xFF);
           DrawPixel(FrameBuffer, P.X, P.Y, Texel);
+
         }
       }
     }
@@ -421,7 +424,6 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 
 #if DRAW_BOUNDING_BOX
   color LineColor = COLOR(50, 50, 255);
-
   DrawLine(RenderState, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
   DrawLine(RenderState, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
   DrawLine(RenderState, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
@@ -442,6 +444,7 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 
 static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
   Light = AddV3(Light, 1.0f);
+
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
@@ -451,7 +454,7 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
   View = MultiplyMat4(View, Rotate(Camera->Yaw, V3(0, 1, 0)));
 #else
   View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
-  View = InverseMat4(View);
+  // View = InverseMat4(View);
 #endif
   mat4 Mat = MultiplyMat4(Projection, View);
   Mat = MultiplyMat4(Mat, Model);

@@ -52,7 +52,7 @@ static i32 LoadPNGFromFile(FILE* File, image* Image) {
     png_set_tRNS_to_alpha(PNG);
   }
 
-  // TODO(lucas): Support more color types when need be!
+  // NOTE(lucas): Support more color types when need be!
   switch (png_get_color_type(PNG, Info)) {
     case PNG_COLOR_TYPE_GRAY: {
       Image->Pitch = 3 * Image->Width;

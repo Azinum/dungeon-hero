@@ -73,7 +73,7 @@ static void GameStateInit(game_state* Game) {
 #if 0
   GameAddEntity(V3(0, 0, -1), MESH_CUBE, TEXTURE_BOX);
 #endif
-  CameraInit(&Camera, V3(0, -1, -1));
+  CameraInit(&Camera, V3(0, 0, 0));
 }
 
 static void GameRun(game_state* Game) {
@@ -117,6 +117,10 @@ static void GameRun(game_state* Game) {
       OutputZBufferToFile(Renderer, Path);
       snprintf(Path, MAX_PATH_SIZE, "%s/screenshot_%s.png", SCREENSHOT_DIR, Date);
       OutputFrameBufferToFile(Renderer, Path);
+    }
+    if (KeyPressed[KEY_R]) {
+      GameStateInit(Game);
+      continue;
     }
     // TODO(lucas): Properly implement timestepping!
     if (LastFrame > (1.0f / TARGET_FPS)) {

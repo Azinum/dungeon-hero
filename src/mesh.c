@@ -154,7 +154,6 @@ i32 MeshSortIndexedData(mesh* Mesh) {
   Mesh->UVCount = UVCount;
   Mesh->Normals = Normals;
   Mesh->NormalCount = NormalCount;
-
 #if 0
   for (u32 I = 0; I < Mesh->IndexCount; ++I) {
     u32 Index = Mesh->Indices[I];

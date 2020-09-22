@@ -3,184 +3,194 @@ Flat profile:
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
  time   seconds   seconds    calls   s/call   s/call  name    
- 96.91     10.89    10.89    42000     0.00     0.00  DrawFilledTriangle
-  1.51     11.06     0.17      699     0.00     0.00  ZBufferClear
-  1.33     11.21     0.15      699     0.00     0.00  FrameBufferClear
-  0.27     11.24     0.03   140000     0.00     0.00  DrawLine
-  0.00     11.24     0.00    21000     0.00     0.00  DrawMesh
-  0.00     11.24     0.00      700     0.00     0.02  UpdateAndDrawEntities
-  0.00     11.24     0.00      700     0.00     0.00  WindowEvents
-  0.00     11.24     0.00      699     0.00     0.00  RendererClear
-  0.00     11.24     0.00      699     0.00     0.00  RendererSwapBuffers
-  0.00     11.24     0.00      699     0.00     0.00  WindowSwapBuffers
-  0.00     11.24     0.00       30     0.00     0.00  EntityInit
-  0.00     11.24     0.00       30     0.00     0.00  GameAddEntity
-  0.00     11.24     0.00        2     0.00     0.00  UnloadImage
-  0.00     11.24     0.00        1     0.00     0.00  FrameBufferCreate
-  0.00     11.24     0.00        1     0.00     0.00  FrameBufferDestroy
-  0.00     11.24     0.00        1     0.00    11.24  GameRun
-  0.00     11.24     0.00        1     0.00    11.24  GameStart
-  0.00     11.24     0.00        1     0.00     0.00  GameStateInit
-  0.00     11.24     0.00        1     0.00     0.00  LoadImage
-  0.00     11.24     0.00        1     0.00     0.00  LoadPNGFromFile
-  0.00     11.24     0.00        1     0.00     0.00  MeshInit
-  0.00     11.24     0.00        1     0.00     0.00  MeshLoadOBJ
-  0.00     11.24     0.00        1     0.00     0.00  MeshUnload
-  0.00     11.24     0.00        1     0.00     0.00  OutputZBufferToFile
-  0.00     11.24     0.00        1     0.00     0.00  ReadFile
-  0.00     11.24     0.00        1     0.00     0.00  RendererDestroy
-  0.00     11.24     0.00        1     0.00     0.00  RendererInit
-  0.00     11.24     0.00        1     0.00     0.00  StoreImage
-  0.00     11.24     0.00        1     0.00     0.00  StorePNGFromSource
-  0.00     11.24     0.00        1     0.00     0.00  WindowClose
-  0.00     11.24     0.00        1     0.00     0.00  WindowOpen
+ 91.47      7.39     7.39  2698654     0.00     0.00  DrawFilledTriangle
+  4.46      7.75     0.36 69858269     0.00     0.00  DrawPixel
+  2.48      7.95     0.20    22260     0.00     0.00  DrawMesh
+  0.74      8.01     0.06      371     0.00     0.00  ZBufferClear
+  0.50      8.05     0.04      371     0.00     0.00  FrameBufferClear
+  0.12      8.06     0.01        6     0.00     0.00  MeshLoadOBJ
+  0.12      8.07     0.01        1     0.01     0.01  AssetsUnloadAll
+  0.12      8.08     0.01        1     0.01     8.08  GameRun
+  0.00      8.08     0.00      372     0.00     0.00  WindowEvents
+  0.00      8.08     0.00      371     0.00     0.00  CameraUpdate
+  0.00      8.08     0.00      371     0.00     0.00  RendererClear
+  0.00      8.08     0.00      371     0.00     0.00  RendererSwapBuffers
+  0.00      8.08     0.00      371     0.00     0.02  UpdateAndDrawEntities
+  0.00      8.08     0.00       60     0.00     0.00  EntityInit
+  0.00      8.08     0.00       60     0.00     0.00  GameAddEntity
+  0.00      8.08     0.00       24     0.00     0.00  WindowSetTitle
+  0.00      8.08     0.00       12     0.00     0.00  MeshInit
+  0.00      8.08     0.00        6     0.00     0.00  MeshUnload
+  0.00      8.08     0.00        6     0.00     0.00  ReadFile
+  0.00      8.08     0.00        5     0.00     0.00  LoadImage
+  0.00      8.08     0.00        5     0.00     0.00  LoadPNGFromFile
+  0.00      8.08     0.00        5     0.00     0.00  UnloadImage
+  0.00      8.08     0.00        1     0.00     0.00  AssetsInit
+  0.00      8.08     0.00        1     0.00     0.01  AssetsLoadAll
+  0.00      8.08     0.00        1     0.00     0.00  CameraInit
+  0.00      8.08     0.00        1     0.00     0.00  FrameBufferCreate
+  0.00      8.08     0.00        1     0.00     0.00  FrameBufferDestroy
+  0.00      8.08     0.00        1     0.00     8.08  GameStart
+  0.00      8.08     0.00        1     0.00     0.00  GameStateInit
+  0.00      8.08     0.00        1     0.00     0.00  RendererDestroy
+  0.00      8.08     0.00        1     0.00     0.00  RendererInit
+  0.00      8.08     0.00        1     0.00     0.00  WindowClose
+  0.00      8.08     0.00        1     0.00     0.00  WindowOpen
 
 			Call graph
 
 
-granularity: each sample hit covers 2 byte(s) for 0.09% of 11.24 seconds
+granularity: each sample hit covers 2 byte(s) for 0.12% of 8.08 seconds
 
 index % time    self  children    called     name
-                0.00   11.24       1/1           GameStart [2]
-[1]    100.0    0.00   11.24       1         GameRun [1]
-                0.00   10.92     700/700         UpdateAndDrawEntities [6]
-                0.00    0.32     699/699         RendererClear [7]
-                0.00    0.00     700/700         WindowEvents [11]
-                0.00    0.00     699/699         RendererSwapBuffers [12]
-                0.00    0.00       1/1           MeshLoadOBJ [23]
-                0.00    0.00       1/1           LoadImage [20]
-                0.00    0.00       1/1           OutputZBufferToFile [25]
-                0.00    0.00       1/1           MeshUnload [24]
-                0.00    0.00       1/2           UnloadImage [16]
+                0.01    8.07       1/1           GameStart [2]
+[1]    100.0    0.01    8.07       1         GameRun [1]
+                0.00    7.95     371/371         UpdateAndDrawEntities [5]
+                0.00    0.10     371/371         RendererClear [8]
+                0.00    0.01       1/1           AssetsLoadAll [12]
+                0.01    0.00       1/1           AssetsUnloadAll [13]
+                0.00    0.00     372/372         WindowEvents [14]
+                0.00    0.00     371/371         RendererSwapBuffers [16]
+                0.00    0.00     371/371         CameraUpdate [15]
+                0.00    0.00      24/24          WindowSetTitle [19]
+                0.00    0.00       1/1           WindowOpen [34]
+                0.00    0.00       1/1           RendererInit [32]
+                0.00    0.00       1/1           GameStateInit [30]
+                0.00    0.00       1/1           RendererDestroy [31]
+                0.00    0.00       1/1           WindowClose [33]
 -----------------------------------------------
-                0.00   11.24       1/1           main [3]
-[2]    100.0    0.00   11.24       1         GameStart [2]
-                0.00   11.24       1/1           GameRun [1]
-                0.00    0.00       1/1           GameStateInit [19]
-                0.00    0.00       1/1           RendererInit [28]
-                0.00    0.00       1/1           RendererDestroy [27]
+                0.00    8.08       1/1           main [3]
+[2]    100.0    0.00    8.08       1         GameStart [2]
+                0.01    8.07       1/1           GameRun [1]
 -----------------------------------------------
                                                  <spontaneous>
-[3]    100.0    0.00   11.24                 main [3]
-                0.00   11.24       1/1           GameStart [2]
+[3]    100.0    0.00    8.08                 main [3]
+                0.00    8.08       1/1           GameStart [2]
 -----------------------------------------------
-               10.89    0.03   42000/42000       DrawMesh [5]
-[4]     97.2   10.89    0.03   42000         DrawFilledTriangle [4]
-                0.03    0.00  140000/140000      DrawLine [10]
+                0.20    7.75   22260/22260       UpdateAndDrawEntities [5]
+[4]     98.4    0.20    7.75   22260         DrawMesh [4]
+                7.39    0.36 2698654/2698654     DrawFilledTriangle [6]
 -----------------------------------------------
-                0.00   10.92   21000/21000       UpdateAndDrawEntities [6]
-[5]     97.2    0.00   10.92   21000         DrawMesh [5]
-               10.89    0.03   42000/42000       DrawFilledTriangle [4]
+                0.00    7.95     371/371         GameRun [1]
+[5]     98.4    0.00    7.95     371         UpdateAndDrawEntities [5]
+                0.20    7.75   22260/22260       DrawMesh [4]
 -----------------------------------------------
-                0.00   10.92     700/700         GameRun [1]
-[6]     97.2    0.00   10.92     700         UpdateAndDrawEntities [6]
-                0.00   10.92   21000/21000       DrawMesh [5]
+                7.39    0.36 2698654/2698654     DrawMesh [4]
+[6]     95.9    7.39    0.36 2698654         DrawFilledTriangle [6]
+                0.36    0.00 69858269/69858269     DrawPixel [7]
 -----------------------------------------------
-                0.00    0.32     699/699         GameRun [1]
-[7]      2.8    0.00    0.32     699         RendererClear [7]
-                0.17    0.00     699/699         ZBufferClear [8]
-                0.15    0.00     699/699         FrameBufferClear [9]
+                0.36    0.00 69858269/69858269     DrawFilledTriangle [6]
+[7]      4.5    0.36    0.00 69858269         DrawPixel [7]
 -----------------------------------------------
-                0.17    0.00     699/699         RendererClear [7]
-[8]      1.5    0.17    0.00     699         ZBufferClear [8]
+                0.00    0.10     371/371         GameRun [1]
+[8]      1.2    0.00    0.10     371         RendererClear [8]
+                0.06    0.00     371/371         ZBufferClear [9]
+                0.04    0.00     371/371         FrameBufferClear [10]
 -----------------------------------------------
-                0.15    0.00     699/699         RendererClear [7]
-[9]      1.3    0.15    0.00     699         FrameBufferClear [9]
+                0.06    0.00     371/371         RendererClear [8]
+[9]      0.7    0.06    0.00     371         ZBufferClear [9]
 -----------------------------------------------
-                0.03    0.00  140000/140000      DrawFilledTriangle [4]
-[10]     0.3    0.03    0.00  140000         DrawLine [10]
+                0.04    0.00     371/371         RendererClear [8]
+[10]     0.5    0.04    0.00     371         FrameBufferClear [10]
 -----------------------------------------------
-                0.00    0.00     700/700         GameRun [1]
-[11]     0.0    0.00    0.00     700         WindowEvents [11]
+                0.01    0.00       6/6           AssetsLoadAll [12]
+[11]     0.1    0.01    0.00       6         MeshLoadOBJ [11]
+                0.00    0.00       6/12          MeshInit [20]
+                0.00    0.00       6/6           ReadFile [22]
 -----------------------------------------------
-                0.00    0.00     699/699         GameRun [1]
-[12]     0.0    0.00    0.00     699         RendererSwapBuffers [12]
-                0.00    0.00     699/699         WindowSwapBuffers [13]
+                0.00    0.01       1/1           GameRun [1]
+[12]     0.1    0.00    0.01       1         AssetsLoadAll [12]
+                0.01    0.00       6/6           MeshLoadOBJ [11]
+                0.00    0.00       6/12          MeshInit [20]
+                0.00    0.00       5/5           LoadImage [23]
+                0.00    0.00       1/1           AssetsInit [26]
 -----------------------------------------------
-                0.00    0.00     699/699         RendererSwapBuffers [12]
-[13]     0.0    0.00    0.00     699         WindowSwapBuffers [13]
+                0.01    0.00       1/1           GameRun [1]
+[13]     0.1    0.01    0.00       1         AssetsUnloadAll [13]
+                0.00    0.00       6/6           MeshUnload [21]
+                0.00    0.00       5/5           UnloadImage [25]
 -----------------------------------------------
-                0.00    0.00      30/30          GameAddEntity [15]
-[14]     0.0    0.00    0.00      30         EntityInit [14]
+                0.00    0.00     372/372         GameRun [1]
+[14]     0.0    0.00    0.00     372         WindowEvents [14]
 -----------------------------------------------
-                0.00    0.00      30/30          GameStateInit [19]
-[15]     0.0    0.00    0.00      30         GameAddEntity [15]
-                0.00    0.00      30/30          EntityInit [14]
+                0.00    0.00     371/371         GameRun [1]
+[15]     0.0    0.00    0.00     371         CameraUpdate [15]
 -----------------------------------------------
-                0.00    0.00       1/2           OutputZBufferToFile [25]
-                0.00    0.00       1/2           GameRun [1]
-[16]     0.0    0.00    0.00       2         UnloadImage [16]
+                0.00    0.00     371/371         GameRun [1]
+[16]     0.0    0.00    0.00     371         RendererSwapBuffers [16]
 -----------------------------------------------
-                0.00    0.00       1/1           RendererInit [28]
-[17]     0.0    0.00    0.00       1         FrameBufferCreate [17]
+                0.00    0.00      60/60          GameAddEntity [18]
+[17]     0.0    0.00    0.00      60         EntityInit [17]
 -----------------------------------------------
-                0.00    0.00       1/1           RendererDestroy [27]
-[18]     0.0    0.00    0.00       1         FrameBufferDestroy [18]
+                0.00    0.00      60/60          GameStateInit [30]
+[18]     0.0    0.00    0.00      60         GameAddEntity [18]
+                0.00    0.00      60/60          EntityInit [17]
 -----------------------------------------------
-                0.00    0.00       1/1           GameStart [2]
-[19]     0.0    0.00    0.00       1         GameStateInit [19]
-                0.00    0.00      30/30          GameAddEntity [15]
+                0.00    0.00      24/24          GameRun [1]
+[19]     0.0    0.00    0.00      24         WindowSetTitle [19]
+-----------------------------------------------
+                0.00    0.00       6/12          MeshLoadOBJ [11]
+                0.00    0.00       6/12          AssetsLoadAll [12]
+[20]     0.0    0.00    0.00      12         MeshInit [20]
+-----------------------------------------------
+                0.00    0.00       6/6           AssetsUnloadAll [13]
+[21]     0.0    0.00    0.00       6         MeshUnload [21]
+-----------------------------------------------
+                0.00    0.00       6/6           MeshLoadOBJ [11]
+[22]     0.0    0.00    0.00       6         ReadFile [22]
+-----------------------------------------------
+                0.00    0.00       5/5           AssetsLoadAll [12]
+[23]     0.0    0.00    0.00       5         LoadImage [23]
+                0.00    0.00       5/5           LoadPNGFromFile [24]
+-----------------------------------------------
+                0.00    0.00       5/5           LoadImage [23]
+[24]     0.0    0.00    0.00       5         LoadPNGFromFile [24]
+-----------------------------------------------
+                0.00    0.00       5/5           AssetsUnloadAll [13]
+[25]     0.0    0.00    0.00       5         UnloadImage [25]
+-----------------------------------------------
+                0.00    0.00       1/1           AssetsLoadAll [12]
+[26]     0.0    0.00    0.00       1         AssetsInit [26]
+-----------------------------------------------
+                0.00    0.00       1/1           GameStateInit [30]
+[27]     0.0    0.00    0.00       1         CameraInit [27]
+-----------------------------------------------
+                0.00    0.00       1/1           RendererInit [32]
+[28]     0.0    0.00    0.00       1         FrameBufferCreate [28]
+-----------------------------------------------
+                0.00    0.00       1/1           RendererDestroy [31]
+[29]     0.0    0.00    0.00       1         FrameBufferDestroy [29]
 -----------------------------------------------
                 0.00    0.00       1/1           GameRun [1]
-[20]     0.0    0.00    0.00       1         LoadImage [20]
-                0.00    0.00       1/1           LoadPNGFromFile [21]
------------------------------------------------
-                0.00    0.00       1/1           LoadImage [20]
-[21]     0.0    0.00    0.00       1         LoadPNGFromFile [21]
------------------------------------------------
-                0.00    0.00       1/1           MeshLoadOBJ [23]
-[22]     0.0    0.00    0.00       1         MeshInit [22]
+[30]     0.0    0.00    0.00       1         GameStateInit [30]
+                0.00    0.00      60/60          GameAddEntity [18]
+                0.00    0.00       1/1           CameraInit [27]
 -----------------------------------------------
                 0.00    0.00       1/1           GameRun [1]
-[23]     0.0    0.00    0.00       1         MeshLoadOBJ [23]
-                0.00    0.00       1/1           MeshInit [22]
-                0.00    0.00       1/1           ReadFile [26]
+[31]     0.0    0.00    0.00       1         RendererDestroy [31]
+                0.00    0.00       1/1           FrameBufferDestroy [29]
 -----------------------------------------------
                 0.00    0.00       1/1           GameRun [1]
-[24]     0.0    0.00    0.00       1         MeshUnload [24]
+[32]     0.0    0.00    0.00       1         RendererInit [32]
+                0.00    0.00       1/1           FrameBufferCreate [28]
 -----------------------------------------------
                 0.00    0.00       1/1           GameRun [1]
-[25]     0.0    0.00    0.00       1         OutputZBufferToFile [25]
-                0.00    0.00       1/2           UnloadImage [16]
-                0.00    0.00       1/1           StoreImage [29]
+[33]     0.0    0.00    0.00       1         WindowClose [33]
 -----------------------------------------------
-                0.00    0.00       1/1           MeshLoadOBJ [23]
-[26]     0.0    0.00    0.00       1         ReadFile [26]
------------------------------------------------
-                0.00    0.00       1/1           GameStart [2]
-[27]     0.0    0.00    0.00       1         RendererDestroy [27]
-                0.00    0.00       1/1           FrameBufferDestroy [18]
-                0.00    0.00       1/1           WindowClose [31]
------------------------------------------------
-                0.00    0.00       1/1           GameStart [2]
-[28]     0.0    0.00    0.00       1         RendererInit [28]
-                0.00    0.00       1/1           FrameBufferCreate [17]
-                0.00    0.00       1/1           WindowOpen [32]
------------------------------------------------
-                0.00    0.00       1/1           OutputZBufferToFile [25]
-[29]     0.0    0.00    0.00       1         StoreImage [29]
-                0.00    0.00       1/1           StorePNGFromSource [30]
------------------------------------------------
-                0.00    0.00       1/1           StoreImage [29]
-[30]     0.0    0.00    0.00       1         StorePNGFromSource [30]
------------------------------------------------
-                0.00    0.00       1/1           RendererDestroy [27]
-[31]     0.0    0.00    0.00       1         WindowClose [31]
------------------------------------------------
-                0.00    0.00       1/1           RendererInit [28]
-[32]     0.0    0.00    0.00       1         WindowOpen [32]
+                0.00    0.00       1/1           GameRun [1]
+[34]     0.0    0.00    0.00       1         WindowOpen [34]
 -----------------------------------------------
 
 Index by function name
 
-   [4] DrawFilledTriangle     [20] LoadImage              [29] StoreImage
-  [10] DrawLine               [21] LoadPNGFromFile        [30] StorePNGFromSource
-   [5] DrawMesh               [22] MeshInit               [16] UnloadImage
-  [14] EntityInit             [23] MeshLoadOBJ             [6] UpdateAndDrawEntities
-   [9] FrameBufferClear       [24] MeshUnload             [31] WindowClose
-  [17] FrameBufferCreate      [25] OutputZBufferToFile    [11] WindowEvents
-  [18] FrameBufferDestroy     [26] ReadFile               [32] WindowOpen
-  [15] GameAddEntity           [7] RendererClear          [13] WindowSwapBuffers
-   [1] GameRun                [27] RendererDestroy         [8] ZBufferClear
-   [2] GameStart              [28] RendererInit
-  [19] GameStateInit          [12] RendererSwapBuffers
+  [26] AssetsInit             [29] FrameBufferDestroy      [8] RendererClear
+  [12] AssetsLoadAll          [18] GameAddEntity          [31] RendererDestroy
+  [13] AssetsUnloadAll         [1] GameRun                [32] RendererInit
+  [27] CameraInit              [2] GameStart              [16] RendererSwapBuffers
+  [15] CameraUpdate           [30] GameStateInit          [25] UnloadImage
+   [6] DrawFilledTriangle     [23] LoadImage               [5] UpdateAndDrawEntities
+   [4] DrawMesh               [24] LoadPNGFromFile        [33] WindowClose
+   [7] DrawPixel              [20] MeshInit               [14] WindowEvents
+  [17] EntityInit             [11] MeshLoadOBJ            [34] WindowOpen
+  [10] FrameBufferClear       [21] MeshUnload             [19] WindowSetTitle
+  [28] FrameBufferCreate      [22] ReadFile                [9] ZBufferClear

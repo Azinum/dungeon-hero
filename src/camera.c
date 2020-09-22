@@ -7,31 +7,52 @@ static i32 LastX = 0;
 static i32 LastY = 0;
 #endif
 
-#define MOUSE_SENSITIVITY 0.5f
+#define MOUSE_SENSITIVITY 0.01f
+#define LOOK_SENSITIVITY 150.0f
 
 void CameraInit(camera* Camera, v3 Position) {
   Camera->P = Position;
   Camera->TargetP = Position;
   Camera->Up = V3(0.0f, 1.0f, 0.0f);
+  Camera->Right = V3(1.0f, 0.0f, 0.0f);
   Camera->Forward = V3(0.0f, 0.0f, 1.0f);
   Camera->Pitch = 0.0f;
   Camera->Yaw = 90.0f;
 
-  Projection = Perspective(70, (float)Win.Width / Win.Height, 0.05f, 500);
+  Projection = Perspective(80, (float)Win.Width / Win.Height, 0.05f, 500);
 }
+
+static i32 LastX = 0;
+static i32 LastY = 0;
 
 void CameraUpdate(camera* Camera) {
   if (KeyDown[KEY_D]) {
-    Camera->P.X -= 5.0f * GameState.DeltaTime;
+    Camera->P = AddToV3(Camera->P, V3(
+      Camera->Right.X * 5.0f * GameState.DeltaTime,
+      Camera->Right.Y * 5.0f * GameState.DeltaTime,
+      Camera->Right.Z * 5.0f * GameState.DeltaTime
+    ));
   }
   if (KeyDown[KEY_A]) {
-    Camera->P.X += 5.0f * GameState.DeltaTime;
+    Camera->P = AddToV3(Camera->P, V3(
+      -Camera->Right.X * 5.0f * GameState.DeltaTime,
+      -Camera->Right.Y * 5.0f * GameState.DeltaTime,
+      -Camera->Right.Z * 5.0f * GameState.DeltaTime
+    ));
   }
   if (KeyDown[KEY_W]) {
-    Camera->P.Z += 5.0f * GameState.DeltaTime;
+    Camera->P = AddToV3(Camera->P, V3(
+      Camera->Forward.X * 5.0f * GameState.DeltaTime,
+      Camera->Forward.Y * 5.0f * GameState.DeltaTime,
+      Camera->Forward.Z * 5.0f * GameState.DeltaTime
+    ));
   }
   if (KeyDown[KEY_S]) {
-    Camera->P.Z -= 5.0f * GameState.DeltaTime;
+    Camera->P = AddToV3(Camera->P, V3(
+      -Camera->Forward.X * 5.0f * GameState.DeltaTime,
+      -Camera->Forward.Y * 5.0f * GameState.DeltaTime,
+      -Camera->Forward.Z * 5.0f * GameState.DeltaTime
+    ));
   }
   if (KeyDown[KEY_Z]) {
     Camera->P.Y += 5.0f * GameState.DeltaTime;
@@ -40,11 +61,11 @@ void CameraUpdate(camera* Camera) {
     Camera->P.Y -= 5.0f * GameState.DeltaTime;
   }
 
-  if (KeyDown[KEY_1]) {
-    Camera->Yaw -= 20.0f * GameState.DeltaTime;
+  if (KeyDown[KEY_H]) {
+    Camera->Yaw -= LOOK_SENSITIVITY * GameState.DeltaTime;
   }
-  if (KeyDown[KEY_2]) {
-    Camera->Yaw += 20.0f * GameState.DeltaTime;
+  if (KeyDown[KEY_L]) {
+    Camera->Yaw += LOOK_SENSITIVITY * GameState.DeltaTime;
   }
 
 #if 0
@@ -58,8 +79,6 @@ void CameraUpdate(camera* Camera) {
   Camera->Pitch += YOffset;
 #endif
 
-  // Camera->Yaw += 12.0f * GameState.DeltaTime;
-
   if (Camera->Pitch >= 89.0f)
     Camera->Pitch = 90.0f;
   if (Camera->Pitch <= -89.0f)
@@ -71,4 +90,7 @@ void CameraUpdate(camera* Camera) {
     sin(ToRadians(Camera->Yaw)) * cos(ToRadians(Camera->Pitch))
   );
   Camera->Forward = NormalizeVec3(Direction);
+  v3 WorldUp = V3(0.0f, 1.0f, 0.0f);
+  Camera->Right = NormalizeVec3(Cross(Camera->Forward, WorldUp));
+  Camera->Up = NormalizeVec3(Cross(Camera->Right, Camera->Forward));
 }

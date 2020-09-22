@@ -180,7 +180,7 @@ inline v3 Cross(v3 A, v3 B) {
 
   Result.X = (A.Y * B.Z) - (A.Z * B.Y);
   Result.Y = (A.Z * B.X) - (A.X * B.Z);
-  Result.Z = (A.Y * B.Y) - (A.Y * B.X);
+  Result.Z = (A.X * B.Y) - (A.Y * B.X);
 
   return Result;
 }

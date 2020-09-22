@@ -163,11 +163,12 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
   Model = MultiplyMat4(Model, Scale(Scaling));
 
   View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
-  View = InverseMat4(View);
+  // View = InverseMat4(View);
 
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
+  glUniform3f(glGetUniformLocation(Handle, "Light"), Light.X, Light.Y, Light.Z);
 
   model* Model = &DefaultModel;
 
@@ -361,7 +362,7 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
   UploadAndIndexModel(&DefaultModel, Mesh);
 #endif
 
-  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_UV]);
+  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_TEST]);
   return 0;
 }
 

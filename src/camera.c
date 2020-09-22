@@ -7,7 +7,7 @@ static i32 LastX = 0;
 static i32 LastY = 0;
 #endif
 
-#define MOUSE_SENSITIVITY 0.01f
+#define MOUSE_SENSITIVITY 0.001f
 #define LOOK_SENSITIVITY 150.0f
 
 void CameraInit(camera* Camera, v3 Position) {
@@ -21,9 +21,6 @@ void CameraInit(camera* Camera, v3 Position) {
 
   Projection = Perspective(80, (float)Win.Width / Win.Height, 0.05f, 500);
 }
-
-static i32 LastX = 0;
-static i32 LastY = 0;
 
 void CameraUpdate(camera* Camera) {
   if (KeyDown[KEY_D]) {

@@ -9,9 +9,9 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-#define LightStrength 200.0f
+#define LightStrength 50.0f
 #define AMBIENT_LIGHT 3
-#define DRAW_SOLID 0
+#define DRAW_SOLID 1
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
 #define DRAW_VERTICES 0
@@ -442,20 +442,16 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 #endif
 }
 
-static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float YRotation, v3 Scaling, camera* Camera) {
   Light = AddV3(Light, 1.0f);
 
   Model = Translate(P);
-  Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
+  Model = MultiplyMat4(Model, Rotate(YRotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
 
-#if 0
-  mat4 View = Translate(Camera->P);
-  View = MultiplyMat4(View, Rotate(Camera->Yaw, V3(0, 1, 0)));
-#else
   View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
   // View = InverseMat4(View);
-#endif
+
   mat4 Mat = MultiplyMat4(Projection, View);
   Mat = MultiplyMat4(Mat, Model);
 
@@ -496,12 +492,11 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
 #else
     // TODO(lucas): Is this the correct way to calculate point light normals?
     v3 LightDelta = DifferenceV3(Light, R[0]);
-    v3 LightNormal = NormalizeVec3(LightDelta);
+    v3 UnitLight = NormalizeVec3(LightDelta);
     float LightDistance = DistanceV3(Light, R[0]);
-    float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, LightNormal) * LightStrength;
+    float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, UnitLight) * LightStrength;
 #endif
 
-    // v3 CameraNormal = V3(0, 0, -1.0f);
     v3 CameraNormal = Camera->Forward;
     CameraNormal.X = -CameraNormal.X;
     CameraNormal.Y = -CameraNormal.Y;

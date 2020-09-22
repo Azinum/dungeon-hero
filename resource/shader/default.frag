@@ -3,20 +3,20 @@
 #version 330 core
 
 in vec2 TexCoord;
-in vec3 SurfaceNormal;
 in vec3 LightDelta;
+in vec3 SurfaceNormal;
 
 out vec4 OutColor;
 
 uniform sampler2D Texture;
 
 void main() {
-	vec3 UnitNormal = normalize(SurfaceNormal);
-	vec3 UnitLight = normalize(LightDelta);
+	float LightDistance = length(LightDelta);
+	vec3 LightNormal = normalize(LightDelta);
+	float Attenuation = 1.0 / (LightDistance * LightDistance);
 
-	float DotProduct = dot(UnitNormal, UnitLight);
-	float Brightness = max(DotProduct, 0.1f);
-	float BrightnessFactor = 1.5f;
-	vec3 LightFactor = Brightness * vec3(1, 1, 1) * BrightnessFactor;
-	OutColor = vec4(LightFactor, 1) * texture2D(Texture, TexCoord);
+	float DotProduct = dot(SurfaceNormal, LightNormal);
+	vec3 Diffuse = max(DotProduct, 0.05) * vec3(texture2D(Texture, TexCoord));
+
+	OutColor = vec4(Diffuse, 1);
 }

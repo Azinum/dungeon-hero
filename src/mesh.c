@@ -160,7 +160,6 @@ i32 MeshSortIndexedData(mesh* Mesh) {
     v3 V = Mesh->Vertices[Index];
     v2 UV = Mesh->UV[Index];
     v3 N = Mesh->Normals[Index];
-    printf("[%i] Vertex: (%g, %g, %g), (%g, %g), (%g, %g, %g)\n", I, V.X, V.Y, V.Z, UV.X, UV.Y, N.X, N.Y, N.Z);
   }
 #endif
   return 0;

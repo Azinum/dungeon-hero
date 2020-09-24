@@ -9,9 +9,9 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-#define LightStrength 50.0f
-#define AMBIENT_LIGHT 3
-#define DRAW_SOLID 1
+#define LightStrength 7.5f
+#define AMBIENT_LIGHT 13
+#define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
 #define DRAW_VERTICES 0
@@ -423,7 +423,7 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
   }
 
 #if DRAW_BOUNDING_BOX
-  color LineColor = COLOR(50, 50, 255);
+  color LineColor = COLOR(70, 60, 255);
   DrawLine(RenderState, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
   DrawLine(RenderState, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
   DrawLine(RenderState, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
@@ -443,17 +443,13 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 }
 
 static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float YRotation, v3 Scaling, camera* Camera) {
-  Light = AddV3(Light, 1.0f);
-
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(YRotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
 
   View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
   // View = InverseMat4(View);
-
   mat4 Mat = MultiplyMat4(Projection, View);
-  Mat = MultiplyMat4(Mat, Model);
 
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {
     v3 V[3];  // Vertices
@@ -472,9 +468,25 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
     Normal = Mesh->Normals[Mesh->NormalIndices[Index + 0]];
     Normal = NormalizeVec3(Normal);
 
-    R[0] = MultiplyMatrixVector(Mat, V[0]);
-    R[1] = MultiplyMatrixVector(Mat, V[1]);
-    R[2] = MultiplyMatrixVector(Mat, V[2]);
+    // World-space
+    R[0] = MultiplyMatrixVector(Model, V[0]);
+    R[1] = MultiplyMatrixVector(Model, V[1]);
+    R[2] = MultiplyMatrixVector(Model, V[2]);
+
+#if NO_LIGHTING
+    float LightFactor = 1.0f;
+#else
+    v3 LightDelta = DifferenceV3(Light, R[0]);
+    v3 LightNormal = NormalizeVec3(LightDelta);
+    float LightDistance = DistanceV3(Light, R[0]);
+    float Attenuation = LightStrength / (LightDistance * LightDistance);
+    float LightFactor = DotVec3(Normal, LightNormal) * Attenuation;
+#endif
+
+    // View-space
+    R[0] = MultiplyMatrixVector(Mat, R[0]);
+    R[1] = MultiplyMatrixVector(Mat, R[1]);
+    R[2] = MultiplyMatrixVector(Mat, R[2]);
 
     R[0].X += 1.0f; R[0].Y += 1.0f;
     R[1].X += 1.0f; R[1].Y += 1.0f;
@@ -483,19 +495,6 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
     R[0].X *= 0.5f * Win.Width; R[0].Y *= 0.5f * Win.Height;
     R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
     R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
-
-    Light.X = 0.5f * Win.Width;
-    Light.Y = 0.5f * Win.Height;
-
-#if NO_LIGHTING
-    float LightFactor = 1.0f;
-#else
-    // TODO(lucas): Is this the correct way to calculate point light normals?
-    v3 LightDelta = DifferenceV3(Light, R[0]);
-    v3 UnitLight = NormalizeVec3(LightDelta);
-    float LightDistance = DistanceV3(Light, R[0]);
-    float LightFactor = (1.0f / (1.0f + LightDistance)) * DotVec3(Normal, UnitLight) * LightStrength;
-#endif
 
     v3 CameraNormal = Camera->Forward;
     CameraNormal.X = -CameraNormal.X;

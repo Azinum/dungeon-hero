@@ -17,7 +17,7 @@
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-static v3 Light = V3(0.0f, 2.0f, -0.5f);
+static v3 Light = V3(0.0f, 2.0f, 8);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -33,8 +33,8 @@ static void GameStateInit(game_state* Game) {
 #endif
 
 #if 1
-  for (i32 Z = 4; Z < 10; ++Z) {
-    for (i32 X = -4; X <= 4; ++X) {
+  for (i32 Z = 4; Z <= 12; ++Z) {
+    for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
         entity* E = GameAddEntity(V3(X, 0, Z), MESH_TEA_POT, TEXTURE_UV);
         E->Type = ENTITY_ROTATOR;
@@ -106,7 +106,7 @@ static void GameRun(game_state* Game) {
     LastFrame += Game->DeltaTime;
 
     CameraUpdate(&Camera);
-    Light.X = 1.0f * sin(Game->Time * 1.0f);
+    // Light.X = 1.0f * sin(Game->Time * 1.0f);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, &Camera);
 
     // DrawSimpleTexture2D(Renderer, Light.X - 16, Light.Y - 16, 36, 36, &Assets.Textures[TEXTURE_SUN_ICON], COLOR(1, 1, 0));

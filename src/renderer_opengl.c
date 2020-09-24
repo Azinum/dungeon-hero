@@ -362,7 +362,7 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
   UploadAndIndexModel(&DefaultModel, Mesh);
 #endif
 
-  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_TEST]);
+  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_UV]);
   return 0;
 }
 
@@ -380,6 +380,7 @@ void RendererDestroy() {
   glDeleteVertexArrays(1, &DefaultModel.VAO);
   glDeleteVertexArrays(1, &DefaultModel.VBO);
   glDeleteBuffers(1, &DefaultModel.EBO);
+  glDeleteTextures(1, &DefaultTexture);
   // }
   glDeleteShader(DefaultShader);
 }

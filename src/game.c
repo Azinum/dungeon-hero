@@ -5,6 +5,7 @@
 #include "misc.c"
 #include "image.c"
 #include "mesh.c"
+#include "audio.c"
 #include "asset.c"
 #include "window.c"
 
@@ -77,7 +78,8 @@ static void GameStateInit(game_state* Game) {
   CameraInit(&Camera, V3(0, 0, 0));
 }
 
-static void GameRun(game_state* Game) {
+static void GameRun() {
+  game_state* Game = &GameState;
   assets Assets;
   AssetsLoadAll(&Assets);
 
@@ -157,7 +159,5 @@ static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) 
 
 void GameStart() {
   srand(time(NULL));
-
-  game_state* Game = &GameState;
-  GameRun(Game);
+  AudioInit(SAMPLE_RATE, FRAMES_PER_BUFFER, GameRun);
 }

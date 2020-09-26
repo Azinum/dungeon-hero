@@ -20,7 +20,7 @@ SRC=src/main.c
 
 BUILD_DIR=build
 
-LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lGL -lGLU -lGLEW
+LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lGL -lGLU -lGLEW -lportaudio
 
 FLAGS=${SRC} -o ${BUILD_DIR}/${PROG_NAME} -I${INCLUDE_DIR} -Wall -W -Wno-missing-braces -std=c99
 

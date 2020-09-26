@@ -8,6 +8,7 @@
 #include "misc.h"
 #include "image.h"
 #include "mesh.h"
+#include "audio.h"
 #include "asset.h"
 #include "window.h"
 #include "camera.h"

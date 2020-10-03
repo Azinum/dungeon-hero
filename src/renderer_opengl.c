@@ -1,12 +1,5 @@
 // renderer_opengl.c
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glx.h>
-#include <GL/glu.h>
-
-#include "renderer_opengl.h"
-
 typedef struct model {
   u32 DrawCount;
   u32 VAO;
@@ -191,18 +184,7 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
 }
 
 static void OpenGLInit() {
-  GLint Attribs[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
-  Win.VisualInfo = glXChooseVisual(Win.Disp, 0, Attribs);
-  RenderState.Context = glXCreateContext(Win.Disp, Win.VisualInfo, NULL, GL_TRUE);
-  glXMakeCurrent(Win.Disp, Win.Win, RenderState.Context);
-
-  RenderState.glSwapIntervalEXT = (glSwapInterval_t*)glXGetProcAddress((u8*)"glXSwapIntervalEXT");
-  if (RenderState.glSwapIntervalEXT) {
-    RenderState.glSwapIntervalEXT(Win.Disp, Win.Win, 0);
-  }
-  else {
-    fprintf(stderr, "Failed to disable vsync\n");
-  }
+  PlatformOpenGLInit();
 
   i32 GlewError = glewInit();
   if (GlewError != GLEW_OK) {
@@ -367,7 +349,7 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
 }
 
 static void RendererSwapBuffers() {
-  glXSwapBuffers(Win.Disp, Win.Win);
+  WindowSwapBuffers(&RenderState);
 }
 
 static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {

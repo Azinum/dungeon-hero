@@ -10,3 +10,9 @@ typedef struct color {
 
 #define COLOR(R, G, B) (color) {B, G, R, .A = 255}
 #define COLORA(R, G, B, ColorA) (color) {B, G, R, .A = ColorA}
+
+#if RENDERER_OPENGL
+  #include "renderer_opengl.h"
+#else
+  #include "renderer_software.h"
+#endif

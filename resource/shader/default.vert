@@ -21,7 +21,7 @@ void main() {
 
 	float LightDistance = length(LightDelta);
 	vec3 LightNormal = normalize(LightDelta);
-	float Attenuation = 4.0 / (LightDistance * LightDistance);
+	float Attenuation = 32.0 / (LightDistance * LightDistance);
 
 	float DotProduct = dot(LightNormal, SurfaceNormal);
 	Diffuse = max(DotProduct, 0.1) * vec3(1, 1, 1);

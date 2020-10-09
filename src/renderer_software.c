@@ -285,7 +285,7 @@ inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H,
         continue;
       }
 
-      // TODO(lucas): Add full color tint
+      // TODO(lucas): Add full (linear) color tint
       Texel.R *= Tint.R;
       Texel.G *= Tint.G;
       Texel.B *= Tint.B;

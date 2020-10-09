@@ -89,11 +89,12 @@ static i32 ShaderCompile(const char* ShaderPath) {
   u32 VertShader = 0;
   u32 FragShader = 0;
 
-  char Path[MAX_PATH_SIZE] = {0};
-  snprintf(Path, MAX_PATH_SIZE, "%s.vert", ShaderPath);
-  const char* VertSource = ReadFileAndNullTerminate(Path);
-  snprintf(Path, MAX_PATH_SIZE, "%s.frag", ShaderPath);
-  const char* FragSource = ReadFileAndNullTerminate(Path);
+  char VertPath[MAX_PATH_SIZE] = {0};
+  snprintf(VertPath, MAX_PATH_SIZE, "%s.vert", ShaderPath);
+  const char* VertSource = ReadFileAndNullTerminate(VertPath);
+  char FragPath[MAX_PATH_SIZE] = {0};
+  snprintf(FragPath, MAX_PATH_SIZE, "%s.frag", ShaderPath);
+  const char* FragSource = ReadFileAndNullTerminate(FragPath);
   if (!VertSource || !FragSource)
     goto done;
 
@@ -107,7 +108,7 @@ static i32 ShaderCompile(const char* ShaderPath) {
   glGetShaderiv(VertShader, GL_COMPILE_STATUS, &Report);
   if (!Report) {
     glGetShaderInfoLog(VertShader, ERR_BUFFER_SIZE, NULL, ErrorLog);
-    fprintf(stderr, "%s\n", ErrorLog);
+    fprintf(stderr, "%s:%s\n", VertPath, ErrorLog);
     goto done;
   }
 }
@@ -119,7 +120,7 @@ static i32 ShaderCompile(const char* ShaderPath) {
   glGetShaderiv(FragShader, GL_COMPILE_STATUS, &Report);
   if (!Report) {
     glGetShaderInfoLog(FragShader, ERR_BUFFER_SIZE, NULL, ErrorLog);
-    fprintf(stderr, "%s\n", ErrorLog);
+    fprintf(stderr, "%s:%s\n", FragPath, ErrorLog);
     goto done;
   }
 }
@@ -133,7 +134,7 @@ static i32 ShaderCompile(const char* ShaderPath) {
   glGetProgramiv(Program, GL_VALIDATE_STATUS, &Report);
   if (Report != GL_NO_ERROR) {
     glGetProgramInfoLog(Program, ERR_BUFFER_SIZE, NULL, ErrorLog);
-    fprintf(stderr, "%s", ErrorLog);
+    fprintf(stderr, "%s:%s", ShaderPath, ErrorLog);
     goto done;
   }
 }

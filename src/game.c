@@ -7,9 +7,7 @@
 #include "mesh.c"
 #include "audio.c"
 #include "asset.c"
-#include "window.c"
-
-#include "renderer.c"
+#include "platform.c"
 
 #include "camera.c"
 #include "entity.c"
@@ -18,7 +16,7 @@
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-static v3 Light = V3(0.0f, 2.0f, 8);
+static v3 Light = V3(0.0f, 2.0f, 6);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -33,7 +31,7 @@ static void GameStateInit(game_state* Game) {
   }
 #endif
 
-#if 1
+#if 0
   for (i32 Z = 4; Z <= 12; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
@@ -44,7 +42,7 @@ static void GameStateInit(game_state* Game) {
         GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
       }
       if (!(rand() % 20)) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_TEST);
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
       }
       if (!(rand() % 35)) {
         GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_UV);
@@ -72,8 +70,8 @@ static void GameStateInit(game_state* Game) {
     }
   }
 #endif
-#if 0
-  GameAddEntity(V3(0, -1, 2), MESH_PLANE, TEXTURE_BOX);
+#if 1
+  GameAddEntity(V3(0, -1, 6), MESH_CUBE, TEXTURE_UV);
 #endif
   CameraInit(&Camera, V3(0, 0, 0));
 }
@@ -108,7 +106,6 @@ static void GameRun() {
     LastFrame += Game->DeltaTime;
 
     CameraUpdate(&Camera);
-    // Light.X = 1.0f * sin(Game->Time * 1.0f);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, &Camera);
 
     // DrawSimpleTexture2D(Renderer, Light.X - 16, Light.Y - 16, 36, 36, &Assets.Textures[TEXTURE_SUN_ICON], COLOR(1, 1, 0));
@@ -138,7 +135,7 @@ static void GameRun() {
       if (LastFrame > 1.0f) {
         LastFrame = 1.0f;
       }
-      RendererSwapBuffers();
+      RendererSwapBuffers(Renderer);
       RendererClear(30, 40, 100);
     }
   }

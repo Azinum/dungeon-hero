@@ -1,9 +1,24 @@
-// window.c
+// platform_linux.c
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <X11/Xatom.h>
+
+#if RENDERER_OPENGL
+
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
+#include <GL/glu.h>
+
+typedef i32(glSwapInterval_t)(Display* Disp, GLXDrawable Drawable, i32 Interval);
+
+static GLXContext Context;
+static glSwapInterval_t* glSwapIntervalEXT;
+
+#endif
 
 enum key_codes {
   KEY_SPACE         = XK_space,
@@ -79,19 +94,30 @@ typedef struct window {
 
 static window Win;
 
+static void PlatformOpenGLInit() {
+#if RENDERER_OPENGL
+  GLint Attribs[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
+  Win.VisualInfo = glXChooseVisual(Win.Disp, 0, Attribs);
+  Context = glXCreateContext(Win.Disp, Win.VisualInfo, NULL, GL_TRUE);
+  glXMakeCurrent(Win.Disp, Win.Win, Context);
+
+  glSwapIntervalEXT = (glSwapInterval_t*)glXGetProcAddress((u8*)"glXSwapIntervalEXT");
+  if (glSwapIntervalEXT) {
+    glSwapIntervalEXT(Win.Disp, Win.Win, 0);
+  }
+  else {
+    fprintf(stderr, "Failed to disable vsync\n");
+  }
+#endif
+}
+
 static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
   Win.Width = Width;
   Win.Height = Height;
   Win.Disp = XOpenDisplay(0);
   if (!Win.Disp)
     return -1;
-#if 0
-  Win.Win = XCreateSimpleWindow(
-    Win.Disp,
-    DefaultRootWindow(Win.Disp),
-    0, 0, Width, Height, 0, 0, 0
-  );
-#else
+
   XSetWindowAttributes Attribs = {0};
   Win.Screen = XDefaultScreen(Win.Disp);
   Win.Depth = XDefaultDepth(Win.Disp, Win.Screen);
@@ -111,7 +137,7 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
     CWBackPixel | CWBorderPixel | CWBitGravity | CWEventMask | CWColormap,
     &Attribs
   );
-#endif
+
   if (!Win.Win)
     return -1;
 
@@ -129,10 +155,38 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
 
   XSelectInput(Win.Disp, Win.Win, StructureNotifyMask | KeyPressMask | KeyReleaseMask);
 
+#if 0
+  Atom Atoms[2] = {
+    XInternAtom(Win.Disp, "_NET_WM_STATE_FULLSCREEN", False),
+    None
+  };
+
+  XChangeProperty(
+    Win.Disp,
+    Win.Win,
+    XInternAtom(Win.Disp, "_NET_WM_STATE", False),
+    XA_ATOM,
+    32,
+    PropModeReplace,
+    (u8*)Atoms,
+    1
+  );
+#endif
+
   XStoreName(Win.Disp, Win.Win, Title);
   XMapWindow(Win.Disp, Win.Win);
 
   return 0;
+}
+
+static void WindowSwapBuffers(render_state* RenderState) {
+#if RENDERER_OPENGL
+  glXSwapBuffers(Win.Disp, Win.Win);
+#else
+  Win.Image->data = (void*)RenderState->FrameBuffer.Data;
+  XPutImage(Win.Disp, Win.Win, Win.Gc, Win.Image, 0, 0, 0, 0, RenderState->FrameBuffer.Width, RenderState->FrameBuffer.Height);
+  Win.Image->data = NULL;
+#endif
 }
 
 static i32 WindowEvents() {

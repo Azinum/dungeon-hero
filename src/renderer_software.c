@@ -527,23 +527,11 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
   (void)Assets;
   FrameBufferCreate(&RenderState->FrameBuffer, Win.Width, Win.Height);
   RenderState->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
-
-  Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
-  if (!Win.Gc)
-    return -1;
-  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Win.Width, Win.Height, 32, 0);
-
-  if (!Win.Image)
-    return -1;
   return 0;
 }
 
-// TODO(lucas): Abstract away the X11 (platform dependent) parts!
 static void RendererSwapBuffers(render_state* RenderState) {
   WindowSwapBuffers(RenderState);
-  // Win.Image->data = (void*)RenderState.FrameBuffer.Data;
-  // XPutImage(Win.Disp, Win.Win, Win.Gc, Win.Image, 0, 0, 0, 0, RenderState.FrameBuffer.Width, RenderState.FrameBuffer.Height);
-  // Win.Image->data = NULL;
 }
 
 static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
@@ -552,8 +540,7 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
 }
 
 void RendererDestroy() {
-  XDestroyImage(Win.Image);
-  XFreeGC(Win.Disp, Win.Gc);
+  WindowDestroyContext();
   FrameBufferDestroy(&RenderState.FrameBuffer);
   free(RenderState.ZBuffer);
 }

@@ -176,6 +176,17 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
   XStoreName(Win.Disp, Win.Win, Title);
   XMapWindow(Win.Disp, Win.Win);
 
+#ifndef RENDERER_OPENGL
+  Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
+  if (!Win.Gc)
+    return -1;
+  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Win.Width, Win.Height, 32, 0);
+
+  if (!Win.Image)
+    return -1;
+#else
+
+#endif
   return 0;
 }
 
@@ -248,4 +259,11 @@ static void WindowSetTitle(const char* Title) {
 static void WindowClose() {
   XDestroyWindow(Win.Disp, Win.Win);
   XCloseDisplay(Win.Disp);
+}
+
+static void WindowDestroyContext() {
+#ifndef RENDERER_OPENGL
+  XDestroyImage(Win.Image);
+  XFreeGC(Win.Disp, Win.Gc);
+#endif
 }

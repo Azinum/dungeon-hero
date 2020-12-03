@@ -327,7 +327,7 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
   OpenGLInit();
   DefaultShader = ShaderCompile("resource/shader/default");
 
-#if 1
+#if 0
   mesh Mesh;
   Mesh.Indices = Indices;
   Mesh.IndexCount = ARR_SIZE(Indices);
@@ -344,7 +344,7 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
   UploadAndIndexModel(&DefaultModel, Mesh);
 #endif
 
-  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_UV]);
+  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_BOX]);
   return 0;
 }
 

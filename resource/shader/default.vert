@@ -29,5 +29,5 @@ void main() {
 	Diffuse *= Attenuation;
 
 	gl_Position = Projection * View * Model * vec4(Position, 1);
-	TexCoord = vec2(TexCoords.x, TexCoords.y);
+	TexCoord = vec2(TexCoords.x, 1 - TexCoords.y);
 }

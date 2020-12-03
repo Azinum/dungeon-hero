@@ -10,6 +10,7 @@ typedef enum mesh_id {
   MESH_PLANE,
   MESH_MONSTER,
   MESH_TEA_POT,
+  MESH_STALL,
 
   MAX_MESH,
 } mesh_id;
@@ -19,6 +20,7 @@ typedef enum texture_id {
   TEXTURE_UV,
   TEXTURE_SUN_ICON,
   TEXTURE_BOX,
+  TEXTURE_STALL,
 
   TEXTURE_MONSTER,
 
@@ -33,6 +35,7 @@ static const char* MeshFileNames[MAX_MESH] = {
 
   "monster",
   "teapot",
+  "stall",
 };
 
 static const char* TextureFileNames[MAX_TEXTURE] = {
@@ -40,6 +43,7 @@ static const char* TextureFileNames[MAX_TEXTURE] = {
   "uv_test",
   "sun_icon",
   "box",
+  "stall",
 
   "monster",
 };

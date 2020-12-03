@@ -31,7 +31,7 @@ static void GameStateInit(game_state* Game) {
   }
 #endif
 
-#if 1
+#if 0
   for (i32 Z = 4; Z <= 12; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
@@ -52,7 +52,7 @@ static void GameStateInit(game_state* Game) {
     }
   }
 #endif
-#if 0
+#if 1
   for (i32 Z = 4; Z < 10; ++Z) {
     for (i32 X = -4; X <= 4; ++X) {
       if (!(rand() % 16)) {
@@ -73,6 +73,7 @@ static void GameStateInit(game_state* Game) {
 #if 0
   GameAddEntity(V3(0, -1, 6), MESH_CUBE, TEXTURE_UV);
 #endif
+
   CameraInit(&Camera, V3(0, 0, 0));
 }
 

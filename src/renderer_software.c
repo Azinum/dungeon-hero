@@ -14,9 +14,9 @@ static float LightStrength = 0;
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
-#define DRAW_VERTICES 0
+#define DRAW_VERTICES 1
 #define NO_LIGHTING 0
-#define DITHERING 1
+#define DITHERING 0
 
 #define Degenerate(V0, V1, V2) \
   ((V0.X == V1.X && V0.Y == V1.Y) || \
@@ -478,7 +478,7 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
     CameraNormal.Y = -CameraNormal.Y;
     CameraNormal.Z = -CameraNormal.Z;
     float DotValue = DotVec3(CameraNormal, Normal);
-    if (DotValue < -0.5f) {
+    if (DotValue < -1.0f) {
       continue;
     }
 

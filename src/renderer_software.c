@@ -14,7 +14,7 @@ static float LightStrength = 0;
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
-#define DRAW_VERTICES 1
+#define DRAW_VERTICES 0
 #define NO_LIGHTING 0
 #define DITHERING 0
 

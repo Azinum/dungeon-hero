@@ -143,7 +143,7 @@ done:
   DrawTexture2D(RenderState, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
 
 inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
-
+  // TODO(lucas): Do implement this thiiiinng!
 }
 
 static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
@@ -206,145 +206,15 @@ static void OpenGLInit() {
   fprintf(stdout, "GLSL VERSION: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
-v3 Vertices[] = {
-  V3(-0.5, -0.5, -0.5),
-  V3(-0.5, 0.5, -0.5),
-  V3(0.5, 0.5, -0.5),
-  V3(0.5, -0.5, -0.5),
-
-  V3(-0.5, -0.5, 0.5),
-  V3(-0.5, 0.5, 0.5),
-  V3(0.5, 0.5, 0.5),
-  V3(0.5, -0.5, 0.5),
-
-  V3(-0.5, -0.5, -0.5),
-  V3(-0.5, -0.5, 0.5),
-  V3(0.5, -0.5, 0.5),
-  V3(0.5, -0.5, -0.5),
-
-  V3(-0.5, 0.5, -0.5),
-  V3(-0.5, 0.5, 0.5),
-  V3(0.5, 0.5, 0.5),
-  V3(0.5, 0.5, -0.5),
-
-  V3(-0.5, -0.5, -0.5),
-  V3(-0.5, -0.5, 0.5),
-  V3(-0.5, 0.5, 0.5),
-  V3(-0.5, 0.5, -0.5),
-
-  V3(0.5, -0.5, -0.5),
-  V3(0.5, -0.5, 0.5),
-  V3(0.5, 0.5, 0.5),
-  V3(0.5, 0.5, -0.5),
-};
-
-v2 UV[] = {
-  V2(1, 0), 
-  V2(0, 0), 
-  V2(0, 1), 
-  V2(1, 1), 
-            
-  V2(1, 0), 
-  V2(0, 0), 
-  V2(0, 1), 
-  V2(1, 1), 
-            
-  V2(0, 1), 
-  V2(1, 1), 
-  V2(1, 0), 
-  V2(0, 0), 
-            
-  V2(0, 1), 
-  V2(1, 1), 
-  V2(1, 0), 
-  V2(0, 0), 
-            
-  V2(1, 1), 
-  V2(1, 0), 
-  V2(0, 0), 
-  V2(0, 1), 
-            
-  V2(1, 1), 
-  V2(1, 0), 
-  V2(0, 0), 
-  V2(0, 1), 
-};
-
-v3 Normals[] = {
-  V3(0, 0, -1),
-  V3(0, 0, -1),
-  V3(0, 0, -1),
-  V3(0, 0, -1),
-               
-  V3(0, 0, 1),
-  V3(0, 0, 1),
-  V3(0, 0, 1),
-  V3(0, 0, 1),
-               
-  V3(0, -1, 0),
-  V3(0, -1, 0),
-  V3(0, -1, 0),
-  V3(0, -1, 0),
-               
-  V3(0, 1, 0),
-  V3(0, 1, 0),
-  V3(0, 1, 0),
-  V3(0, 1, 0),
-               
-  V3(-1, 0, 0),
-  V3(-1, 0, 0),
-  V3(-1, 0, 0),
-  V3(-1, 0, 0),
-               
-  V3(1, 0, 0),
-  V3(1, 0, 0),
-  V3(1, 0, 0),
-  V3(1, 0, 0),
-};
-
-static u32 Indices[] = {
-  0, 1, 2,
-  0, 2, 3,
-
-  6, 5, 4,
-  7, 6, 4,
-
-  10, 9, 8,
-  11, 10, 8,
-
-  12, 13, 14,
-  12, 14, 15,
-
-  16, 17, 18,
-  16, 18, 19,
-
-  22, 21, 20,
-  23, 22, 20
-};
-
 i32 RendererInit(render_state* RenderState, assets* Assets) {
   (void)RenderState;
   OpenGLInit();
   DefaultShader = ShaderCompile("resource/shader/default");
 
-#if 0
-  mesh Mesh;
-  Mesh.Indices = Indices;
-  Mesh.IndexCount = ARR_SIZE(Indices);
-  Mesh.Vertices = Vertices;
-  Mesh.VertexCount = ARR_SIZE(Vertices);
-  Mesh.UV = UV;
-  Mesh.UVCount = ARR_SIZE(UV);
-  Mesh.Normals = Normals;
-  Mesh.NormalCount = ARR_SIZE(Normals);
-
-  UploadModel(&DefaultModel, &Mesh);
-#else
   mesh* Mesh = &Assets->Meshes[MESH_CUBE];
   UploadAndIndexModel(&DefaultModel, Mesh);
-#endif
 
-  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_BOX]);
+  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_UV]);
   return 0;
 }
 

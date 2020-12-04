@@ -31,11 +31,11 @@ static void GameStateInit(game_state* Game) {
   }
 #endif
 
-#if 0
-  for (i32 Z = 4; Z <= 12; ++Z) {
+#if 1
+  for (i32 Z = 4; Z <= 11; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
-        entity* E = GameAddEntity(V3(X, 0, Z), MESH_TEA_POT, TEXTURE_UV);
+        entity* E = GameAddEntity(V3(X, 0, Z), MESH_STONE, TEXTURE_TEST);
         E->Type = ENTITY_ROTATOR;
       }
       if (!(rand() % 20)) {
@@ -52,7 +52,7 @@ static void GameStateInit(game_state* Game) {
     }
   }
 #endif
-#if 1
+#if 0
   for (i32 Z = 4; Z < 10; ++Z) {
     for (i32 X = -4; X <= 4; ++X) {
       if (!(rand() % 16)) {
@@ -71,10 +71,9 @@ static void GameStateInit(game_state* Game) {
   }
 #endif
 #if 0
-  GameAddEntity(V3(0, -1, 6), MESH_CUBE, TEXTURE_UV);
+  entity* Entity = GameAddEntity(V3(0, -1, 6), MESH_MONSTER, TEXTURE_MONSTER);
+  Entity->Type = ENTITY_ROTATOR;
 #endif
-
-  CameraInit(&Camera, V3(0, 0, 0));
 }
 
 static void GameRun() {
@@ -88,6 +87,7 @@ static void GameRun() {
   if (RendererInit(Renderer, &Assets) != 0)
     return;
   GameStateInit(Game);
+  CameraInit(&Camera, V3(0, 0, 0));
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};

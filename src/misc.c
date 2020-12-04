@@ -61,5 +61,5 @@ done:
 static void GetDateAndTime(char* Buffer, u32 Size) {
   time_t Time = time(NULL);
   struct tm Tm = *localtime(&Time);
-  snprintf(Buffer, Size, "%i-%02i-%02i-%02i:%02i:%02i", 1900 + Tm.tm_year, 1 + Tm.tm_mon, Tm.tm_mday, Tm.tm_hour, Tm.tm_min, Tm.tm_sec);
+  snprintf(Buffer, Size, "%i-%02i-%02i-%02i_%02i_%02i", 1900 + Tm.tm_year, 1 + Tm.tm_mon, Tm.tm_mday, Tm.tm_hour, Tm.tm_min, Tm.tm_sec);
 }

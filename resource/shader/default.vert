@@ -21,7 +21,7 @@ void main() {
 
 	float LightDistance = length(LightDelta);
 	vec3 LightNormal = normalize(LightDelta);
-	float Attenuation = 32.0 / (LightDistance * LightDistance);
+	float Attenuation = 64.0 / (LightDistance * LightDistance);
 
 	float DotProduct = dot(LightNormal, SurfaceNormal);
 	Diffuse = max(DotProduct, 0.1) * vec3(1, 1, 1);
@@ -29,5 +29,5 @@ void main() {
 	Diffuse *= Attenuation;
 
 	gl_Position = Projection * View * Model * vec4(Position, 1);
-	TexCoord = vec2(TexCoords.x, TexCoords.y);
+	TexCoord = vec2(TexCoords.x, 1.0 - TexCoords.y);
 }

@@ -45,7 +45,7 @@ static void GameStateInit(game_state* Game) {
         GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
       }
       if (!(rand() % 35)) {
-        GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_UV);
+        GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_MONSTER);
       }
 
       GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_TEST);

@@ -54,4 +54,9 @@ typedef struct assets {
 
   image Textures[MAX_TEXTURE];
   u32 TextureCount;
+
+#if RENDERER_OPENGL && 0
+  model Models[MAX_MESH];
+  u32 ModelCount;
+#endif
 } assets;

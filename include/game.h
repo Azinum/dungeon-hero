@@ -10,6 +10,7 @@
 #include "mesh.h"
 #include "audio.h"
 #include "asset.h"
+#include "renderer.h"
 #include "platform.h"
 #include "camera.h"
 #include "entity.h"

@@ -444,7 +444,11 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 
 #define MAX_CLIPPED_TRIANGLES 8
 
-static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float YRotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float YRotation, v3 Scaling, camera* Camera) {
+  mesh* Mesh = &Assets->Meshes[MeshId];
+  image* Texture = &Assets->Textures[TextureId];
+  Assert(Mesh);
+
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(YRotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));

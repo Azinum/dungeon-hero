@@ -2,7 +2,7 @@
 
 CC=gcc
 
-PROG_NAME=software-renderer
+PROG_NAME=dungeon-hero
 
 INCLUDE_DIR=include
 

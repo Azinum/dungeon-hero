@@ -16,7 +16,7 @@
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-static v3 Light = V3(0.0f, 2.0f, 6);
+static v3 Light = V3(0.0f, 0.15f, 5.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -26,8 +26,8 @@ static void GameStateInit(game_state* Game) {
 
 #if 0
   for (u32 Index = 0; Index < 5; ++Index) {
-    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_TEST);
-    Entity->Speed = V3(0, 1.0f, 0);
+    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_UV);
+      Entity->Speed = V3(0, 1.0f, 0);
   }
 #endif
 
@@ -35,7 +35,7 @@ static void GameStateInit(game_state* Game) {
   for (i32 Z = 4; Z <= 11; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
-        entity* E = GameAddEntity(V3(X, 0, Z), MESH_STONE, TEXTURE_TEST);
+        entity* E = GameAddEntity(V3(X, 0, Z), MESH_COOKING_POT, TEXTURE_UV);
         E->Type = ENTITY_ROTATOR;
       }
       if (!(rand() % 20)) {
@@ -52,6 +52,7 @@ static void GameStateInit(game_state* Game) {
     }
   }
 #endif
+
 #if 0
   for (i32 Z = 4; Z < 10; ++Z) {
     for (i32 X = -4; X <= 4; ++X) {

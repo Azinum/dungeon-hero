@@ -246,6 +246,10 @@ static i32 WindowEvents() {
         break;
     }
   }
+#if 0
+    XWarpPointer(Win.Disp, None, Win.Win, 0, 0, 0, 0, 10, 10);
+#endif
+
   Window RootWindow;
   u32 Mask;
   XQueryPointer(Win.Disp, Win.Win, &RootWindow, &RootWindow, &MouseX, &MouseY, &MouseX, &MouseY, &Mask);

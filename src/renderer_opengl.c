@@ -2,8 +2,6 @@
 
 static render_state RenderState;
 static u32 DefaultShader;
-static model DefaultModel;
-static u32 DefaultTexture;
 
 #define ERR_BUFFER_SIZE 512
 
@@ -207,12 +205,9 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
 
   DefaultShader = ShaderCompile("resource/shader/default");
 
-#if 0
-  mesh* Mesh = &Assets->Meshes[MESH_CUBE];
-  UploadAndIndexModel(&DefaultModel, Mesh);
-
-  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_UV]);
-#else
+  // TODO(lucas): Figure out and explore how asset/resource loading and unloading should work
+  // when it comes to using different renderers. Should we be able to switch rendering context in run-time, i.e. should we be able to switch from software to hardware rendering?
+  // How will we handle resources in that case?
   for (u32 Index = 0; Index < Assets->MeshCount; ++Index) {
     mesh* Mesh = &Assets->Meshes[Index];
     model Model;
@@ -227,7 +222,6 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
     RenderState->Textures[Index] = TextureId;
     RenderState->TextureCount++;
   }
-#endif
   return 0;
 }
 
@@ -240,12 +234,18 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void RendererDestroy() {
-  // TODO(lucas): Temporary {
-  glDeleteVertexArrays(1, &DefaultModel.VAO);
-  glDeleteVertexArrays(1, &DefaultModel.VBO);
-  glDeleteBuffers(1, &DefaultModel.EBO);
-  glDeleteTextures(1, &DefaultTexture);
-  // }
+void RendererDestroy(render_state* RenderState) {
+  for (u32 Index = 0; Index < RenderState->ModelCount; ++Index) {
+    model* Model = &RenderState->Models[Index];
+    glDeleteVertexArrays(1, &Model->VAO);
+    glDeleteVertexArrays(1, &Model->VBO);
+    glDeleteBuffers(1, &Model->EBO);
+  }
+  RenderState->ModelCount = 0;
+  for (u32 Index = 0; Index < RenderState->TextureCount; ++Index) {
+    u32 TextureId = RenderState->Textures[Index];
+    glDeleteTextures(1, &TextureId);
+  }
+  RenderState->TextureCount = 0;
   glDeleteShader(DefaultShader);
 }

@@ -16,7 +16,7 @@
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-static v3 Light = V3(0.0f, 0.15f, 5.0f);
+static v3 Light = V3(0.0f, 0.5f, 7.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -143,7 +143,8 @@ static void GameRun() {
   }
 
   AssetsUnloadAll(&Assets);
-  RendererDestroy();
+  RendererDestroy(Renderer);
+  WindowDestroyContext();
   WindowClose();
 }
 

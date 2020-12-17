@@ -16,3 +16,5 @@ typedef struct color {
 #else
   #include "renderer_software.h"
 #endif
+
+static void RendererUpdateBuffers(struct render_state* RenderState);

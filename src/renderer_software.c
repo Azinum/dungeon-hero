@@ -543,6 +543,14 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
   ZBufferClear(RenderState.ZBuffer, RenderState.FrameBuffer.Width, RenderState.FrameBuffer.Height);
 }
 
+static void RendererUpdateBuffers(render_state* RenderState) {
+  Assert(RenderState->FrameBuffer.Data && RenderState->ZBuffer);
+  FrameBufferDestroy(&RenderState->FrameBuffer);
+  free(RenderState->ZBuffer);
+  FrameBufferCreate(&RenderState->FrameBuffer, Win.Width, Win.Height);
+  RenderState->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
+}
+
 void RendererDestroy(render_state* RenderState) {
   FrameBufferDestroy(&RenderState->FrameBuffer);
   free(RenderState->ZBuffer);

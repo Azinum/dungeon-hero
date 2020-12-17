@@ -77,6 +77,10 @@ static void GameStateInit(game_state* Game) {
 #endif
 }
 
+static void FramebufferChangeCallback(i32 Width, i32 Height) {
+  RendererUpdateBuffers(&RenderState);
+}
+
 static void GameRun() {
   game_state* Game = &GameState;
   assets Assets;
@@ -85,6 +89,7 @@ static void GameRun() {
   render_state* Renderer = &RenderState;
 
   WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+  WindowSetFramebufferCallback(FramebufferChangeCallback);
   if (RendererInit(Renderer, &Assets) != 0)
     return;
   GameStateInit(Game);

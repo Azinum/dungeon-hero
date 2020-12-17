@@ -24,7 +24,7 @@ LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lGL -lGLU -lGLEW -lportaudio
 
 FLAGS=${SRC} -o ${BUILD_DIR}/${PROG_NAME} -I${INCLUDE_DIR} -Wall -W -Wno-missing-braces -std=c99
 
-O_RELEASE=-O2
+O_RELEASE=-O2 -ffast-math
 
 O_DEBUG_PROFILE=-p -Og -W
 

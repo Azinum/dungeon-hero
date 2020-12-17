@@ -234,6 +234,11 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+static void RendererUpdateBuffers(render_state* RenderState) {
+  (void)RenderState;
+  // TODO(lucas): Implement this!!
+}
+
 void RendererDestroy(render_state* RenderState) {
   for (u32 Index = 0; Index < RenderState->ModelCount; ++Index) {
     model* Model = &RenderState->Models[Index];

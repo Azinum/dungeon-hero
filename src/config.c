@@ -2,7 +2,7 @@
 
 static i32 G_WindowWidth = 800;
 static i32 G_WindowHeight = 600;
-static i8 G_WindowFullscreen = 0;
+static i32 G_WindowFullscreen = 0;
 static i32 G_TargetFps = 60;
 
 #define SScanf(RESULT, IterBuffer, Format, ...) {\
@@ -44,7 +44,7 @@ static i32 LoadConfig(const char* Path) {
     }
   } while (1);
 
-#if 1
+#if 0
   printf("Loaded config file '%s'\n", Path);
   printf("window_width = %i\n", G_WindowWidth);
   printf("window_height = %i\n", G_WindowHeight);

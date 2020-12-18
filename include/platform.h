@@ -8,6 +8,8 @@ static void PlatformOpenGLInit();
 
 static i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen);
 
+static void WindowFocus();
+
 static void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallback);
 
 static void WindowSwapBuffers(struct render_state* RenderState);

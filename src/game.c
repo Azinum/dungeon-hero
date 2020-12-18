@@ -78,10 +78,6 @@ static void GameStateInit(game_state* Game) {
 #endif
 }
 
-static void FramebufferChangeCallback(i32 Width, i32 Height) {
-  RendererUpdateBuffers(&RenderState);
-}
-
 static void GameRun() {
   game_state* Game = &GameState;
   assets Assets;
@@ -90,9 +86,10 @@ static void GameRun() {
   render_state* Renderer = &RenderState;
 
   WindowOpen(G_WindowWidth, G_WindowHeight, WINDOW_TITLE, G_WindowFullscreen);
-  WindowSetFramebufferCallback(FramebufferChangeCallback);
-  if (RendererInit(Renderer, &Assets) != 0)
+  if (RendererInit(Renderer, &Assets) != 0) {
     return;
+  }
+  WindowFocus();
   GameStateInit(Game);
   CameraInit(&Camera, V3(0, 0, 0));
 

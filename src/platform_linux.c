@@ -91,6 +91,7 @@ typedef struct window {
   XImage* Image;
   GC Gc;
   Atom AtomWMDelete;
+  Cursor WinCursor;
 } window;
 
 static window Win;
@@ -180,8 +181,7 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   XMapWindow(Win.Disp, Win.Win);
   XMapRaised(Win.Disp, Win.Win);
 
-  // XGrabPointer(Win.Disp, Win.Win, True, 0, GrabModeAsync, GrabModeAsync, Win.Win, 0, CurrentTime);
-  // XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
+#ifndef RENDERER_OPENGL
   Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
   if (!Win.Gc) {
     return -1;
@@ -191,7 +191,27 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   if (!Win.Image) {
     return -1;
   }
+#endif
+
+#if 1
+  // NOTE(lucas): Painfully hide that damn cursor
+  Pixmap CursorBitmap;
+  XColor CursorColor = { .red = 0, .green = 0, .blue = 0 };
+  static i8 NoData[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+  CursorBitmap = XCreateBitmapFromData(Win.Disp, Win.Win, NoData, 8, 8);
+  Win.WinCursor = XCreatePixmapCursor(Win.Disp, CursorBitmap, CursorBitmap, &CursorColor, &CursorColor, 0, 0);
+  XDefineCursor(Win.Disp, Win.Win, Win.WinCursor);
+  XFreePixmap(Win.Disp, CursorBitmap);
+#endif
+
+  XSync(Win.Disp, False);
   return 0;
+}
+
+static void WindowFocus() {
+  XGrabPointer(Win.Disp, Win.Win, True, 0, GrabModeAsync, GrabModeAsync, Win.Win, Win.WinCursor, CurrentTime);
+  XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
 }
 
 static void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallback) {
@@ -267,6 +287,9 @@ static void WindowSetTitle(const char* Title) {
 }
 
 static void WindowClose() {
+  if (Win.WinCursor != None) {
+    XFreeCursor(Win.Disp, Win.WinCursor);
+  }
   XDestroyWindow(Win.Disp, Win.Win);
   XCloseDisplay(Win.Disp);
 }

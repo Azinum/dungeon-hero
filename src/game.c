@@ -3,6 +3,7 @@
 #include "game.h"
 
 #include "misc.c"
+#include "config.c"
 #include "image.c"
 #include "mesh.c"
 #include "audio.c"
@@ -88,7 +89,7 @@ static void GameRun() {
 
   render_state* Renderer = &RenderState;
 
-  WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+  WindowOpen(G_WindowWidth, G_WindowHeight, WINDOW_TITLE, G_WindowFullscreen);
   WindowSetFramebufferCallback(FramebufferChangeCallback);
   if (RendererInit(Renderer, &Assets) != 0)
     return;
@@ -131,9 +132,9 @@ static void GameRun() {
       continue;
     }
     // TODO(lucas): Properly implement timestepping!
-    if (LastFrame > (1.0f / TARGET_FPS)) {
+    if (LastFrame > (1.0f / G_TargetFps)) {
       ++Tick;
-      float Delta = LastFrame - (1.0f / TARGET_FPS);
+      float Delta = LastFrame - (1.0f / G_TargetFps);
       if (!(Tick % 15)) {
         snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
         WindowSetTitle(Title);
@@ -143,7 +144,7 @@ static void GameRun() {
         LastFrame = 1.0f;
       }
       RendererSwapBuffers(Renderer);
-      RendererClear(30, 40, 100);
+      RendererClear(40, 40, 100);
     }
   }
 
@@ -163,6 +164,7 @@ static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) 
 }
 
 void GameStart() {
+  LoadConfig(CONFIG_FILE);
   srand(time(NULL));
   AudioInit(SAMPLE_RATE, FRAMES_PER_BUFFER, GameRun);
 }

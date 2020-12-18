@@ -112,25 +112,7 @@ static void PlatformOpenGLInit() {
 #endif
 }
 
-static i32 WindowUpdateContext() {
-#ifdef RENDERER_OPENGL
-
-#else
-  if (Win.Image) XDestroyImage(Win.Image);
-  if (Win.Gc) XFreeGC(Win.Disp, Win.Gc);
-
-  Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
-  if (!Win.Gc)
-    return -1;
-  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Win.Width, Win.Height, 32, 0);
-
-  if (!Win.Image)
-    return -1;
-#endif
-  return 0;
-}
-
-static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
+static i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   Win.Width = Width;
   Win.Height = Height;
   Win.FramebufferSizeCallback = NULL;
@@ -176,10 +158,39 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
 
   XSelectInput(Win.Disp, Win.Win, StructureNotifyMask | KeyPressMask | KeyReleaseMask);
 
+  if (Fullscreen) {
+    Atom Atoms[2] = {
+      XInternAtom(Win.Disp, "_NET_WM_STATE_FULLSCREEN", False),
+      False
+    };
+
+    XChangeProperty(
+      Win.Disp,
+      Win.Win,
+      XInternAtom(Win.Disp, "_NET_WM_STATE", False),
+      XA_ATOM,
+      32,
+      PropModeReplace,
+      (u8*)Atoms,
+      1
+    );
+  }
+
   XStoreName(Win.Disp, Win.Win, Title);
   XMapWindow(Win.Disp, Win.Win);
+  XMapRaised(Win.Disp, Win.Win);
 
-  WindowUpdateContext();
+  // XGrabPointer(Win.Disp, Win.Win, True, 0, GrabModeAsync, GrabModeAsync, Win.Win, 0, CurrentTime);
+  // XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
+  Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
+  if (!Win.Gc) {
+    return -1;
+  }
+  Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Win.Width, Win.Height, 32, 0);
+
+  if (!Win.Image) {
+    return -1;
+  }
   return 0;
 }
 
@@ -209,9 +220,6 @@ static i32 WindowEvents() {
       case KeyPress: {
         i64 KeyCode = XLookupKeysym(&E.xkey, 0);
 
-        if (KeyCode == 65480) { // F11
-          WindowToggleFullscreen();
-        }
         switch (KeyCode) {
           case XK_Escape:
             return -1;
@@ -256,54 +264,6 @@ static i32 WindowEvents() {
 
 static void WindowSetTitle(const char* Title) {
   XStoreName(Win.Disp, Win.Win, Title);
-}
-
-static i32 WindowToggleFullscreen() {
-  XSizeHints* SizeHints = XAllocSizeHints();
-  long Hints = 0;
-
-  if (XGetWMSizeHints(Win.Disp, Win.Win, SizeHints, &Hints, XInternAtom(Win.Disp, "WM_SIZE_HINTS", False)) != 0) {
-    fprintf(stderr, "Failed to get size hints\n");
-    return -1;
-  }
-
-  XLowerWindow(Win.Disp, Win.Win);
-  XUnmapWindow(Win.Disp, Win.Win);
-  XSync(Win.Disp, False);
-
-  XFree(SizeHints);
-
-  Atom Atoms[2] = {
-    XInternAtom(Win.Disp, "_NET_WM_STATE_FULLSCREEN", False),
-    False
-  };
-
-  XChangeProperty(
-    Win.Disp,
-    Win.Win,
-    XInternAtom(Win.Disp, "_NET_WM_STATE", False),
-    XA_ATOM,
-    32,
-    PropModeReplace,
-    (u8*)Atoms,
-    1
-  );
-
-  XMapWindow(Win.Disp, Win.Win);
-  XMapRaised(Win.Disp, Win.Win);
-
-  // TODO(lucas): This doesn't work properly. Do coding magic and fix!
-  XWindowAttributes WinAttribs;
-  XGetWindowAttributes(Win.Disp, Win.Win, &WinAttribs);
-  Win.Width = WinAttribs.width;
-  Win.Height = WinAttribs.height;
-
-  if (Win.FramebufferSizeCallback)
-    Win.FramebufferSizeCallback(Win.Width, Win.Height);
-  // XGrabPointer(Win.Disp, Win.Win, True, 0, GrabModeAsync, GrabModeAsync, Win.Win, 0, CurrentTime);
-  // XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
-  WindowUpdateContext();
-  return 0;
 }
 
 static void WindowClose() {

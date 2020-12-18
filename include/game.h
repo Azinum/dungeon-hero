@@ -1,9 +1,9 @@
 // game.h
 
 #include "common.h"
+#include "list.h"
 #include "config.h"
 #include "math_util.h"
-#include "list.h"
 
 #include "misc.h"
 #include "image.h"

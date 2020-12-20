@@ -9,8 +9,8 @@ typedef enum blend_mode {
 
 static float LightStrength = 0;
 
-#define LIGHT_STRENGTH 15
-#define AMBIENT_LIGHT 3
+#define LIGHT_STRENGTH 1
+#define AMBIENT_LIGHT 5
 #define DRAW_SOLID 0
 #define DRAW_BOUNDING_BOX 0
 #define DRAW_BOUNDING_BOX_POINTS 0
@@ -444,7 +444,11 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 
 #define MAX_CLIPPED_TRIANGLES 8
 
-static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float YRotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float YRotation, v3 Scaling, camera* Camera) {
+  mesh* Mesh = &Assets->Meshes[MeshId];
+  image* Texture = &Assets->Textures[TextureId];
+  Assert(Mesh);
+
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(YRotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
@@ -493,8 +497,8 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
     v3 LightDelta = DifferenceV3(Light, R[0]);
     v3 LightNormal = NormalizeVec3(LightDelta);
     float LightDistance = DistanceV3(Light, R[0]);
-    LightStrength = LIGHT_STRENGTH + 1.0f * (1 + sin(GameState.Time * 3.0f));
-    float Attenuation = LightStrength / (LightDistance * LightDistance * 4);
+    LightStrength = LIGHT_STRENGTH + 1.0f * (0.1f * sin(GameState.Time * 4.0f));
+    float Attenuation = LightStrength / (LightDistance * 0.5f);
     float LightFactor = DotVec3(Normal, LightNormal) * Attenuation;
 #endif
 
@@ -539,8 +543,15 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
   ZBufferClear(RenderState.ZBuffer, RenderState.FrameBuffer.Width, RenderState.FrameBuffer.Height);
 }
 
-void RendererDestroy() {
-  WindowDestroyContext();
-  FrameBufferDestroy(&RenderState.FrameBuffer);
-  free(RenderState.ZBuffer);
+static void RendererUpdateBuffers(render_state* RenderState) {
+  Assert(RenderState->FrameBuffer.Data && RenderState->ZBuffer);
+  FrameBufferDestroy(&RenderState->FrameBuffer);
+  free(RenderState->ZBuffer);
+  FrameBufferCreate(&RenderState->FrameBuffer, Win.Width, Win.Height);
+  RenderState->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
+}
+
+void RendererDestroy(render_state* RenderState) {
+  FrameBufferDestroy(&RenderState->FrameBuffer);
+  free(RenderState->ZBuffer);
 }

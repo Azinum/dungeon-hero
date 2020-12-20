@@ -1,15 +1,16 @@
 // game.h
 
 #include "common.h"
+#include "list.h"
 #include "config.h"
 #include "math_util.h"
-#include "list.h"
 
 #include "misc.h"
 #include "image.h"
 #include "mesh.h"
 #include "audio.h"
 #include "asset.h"
+#include "renderer.h"
 #include "platform.h"
 #include "camera.h"
 #include "entity.h"

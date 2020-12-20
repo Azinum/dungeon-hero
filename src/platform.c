@@ -1,7 +1,5 @@
 // platform.c
 
-#include "renderer.h"
-
 #if __linux__
 
 #include "platform_linux.c"

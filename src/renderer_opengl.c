@@ -1,16 +1,7 @@
 // renderer_opengl.c
 
-typedef struct model {
-  u32 DrawCount;
-  u32 VAO;
-  u32 VBO;
-  u32 EBO;
-} model;
-
 static render_state RenderState;
 static u32 DefaultShader;
-static model DefaultModel;
-static u32 DefaultTexture;
 
 #define ERR_BUFFER_SIZE 512
 
@@ -147,10 +138,11 @@ inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H,
   // TODO(lucas): Do implement this thiiiinng!
 }
 
-static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+  (void)Assets;
   u32 Handle = DefaultShader;
   glUseProgram(Handle);
-  u32 TextureId = DefaultTexture;
+  u32 Texture = RenderState->Textures[TextureId];
 
   Model = Translate(P);
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
@@ -164,7 +156,7 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
   glUniform3f(glGetUniformLocation(Handle, "Light"), Light.X, Light.Y, Light.Z);
 
-  model* Model = &DefaultModel;
+  model* Model = &RenderState->Models[MeshId];
 
   glBindVertexArray(Model->VAO);
   glEnableVertexAttribArray(0);
@@ -172,7 +164,7 @@ static void DrawMesh(render_state* RenderState, mesh* Mesh, image* Texture, v3 P
   glEnableVertexAttribArray(2);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, TextureId);
+  glBindTexture(GL_TEXTURE_2D, Texture);
 
   glDrawElements(GL_TRIANGLES, Model->DrawCount, GL_UNSIGNED_INT, 0);
 
@@ -208,14 +200,29 @@ static void OpenGLInit() {
 }
 
 i32 RendererInit(render_state* RenderState, assets* Assets) {
-  (void)RenderState;
   OpenGLInit();
+  RenderState->ModelCount = 0;
+  RenderState->TextureCount = 0;
+
   DefaultShader = ShaderCompile("resource/shader/default");
 
-  mesh* Mesh = &Assets->Meshes[MESH_CUBE];
-  UploadAndIndexModel(&DefaultModel, Mesh);
-
-  UploadTexture(&DefaultTexture, &Assets->Textures[TEXTURE_UV]);
+  // TODO(lucas): Figure out and explore how asset/resource loading and unloading should work
+  // when it comes to using different renderers. Should we be able to switch rendering context in run-time, i.e. should we be able to switch from software to hardware rendering?
+  // How will we handle resources in that case?
+  for (u32 Index = 0; Index < Assets->MeshCount; ++Index) {
+    mesh* Mesh = &Assets->Meshes[Index];
+    model Model;
+    UploadAndIndexModel(&Model, Mesh);
+    RenderState->Models[Index] = Model;
+    RenderState->ModelCount++;
+  }
+  for (u32 Index = 0; Index < Assets->TextureCount; ++Index) {
+    image* Texture = &Assets->Textures[Index];
+    u32 TextureId = 0;
+    UploadTexture(&TextureId, Texture);
+    RenderState->Textures[Index] = TextureId;
+    RenderState->TextureCount++;
+  }
   return 0;
 }
 
@@ -228,12 +235,23 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void RendererDestroy() {
-  // TODO(lucas): Temporary {
-  glDeleteVertexArrays(1, &DefaultModel.VAO);
-  glDeleteVertexArrays(1, &DefaultModel.VBO);
-  glDeleteBuffers(1, &DefaultModel.EBO);
-  glDeleteTextures(1, &DefaultTexture);
-  // }
+static void RendererUpdateBuffers(render_state* RenderState) {
+  (void)RenderState;
+  // TODO(lucas): Implement this!!
+}
+
+void RendererDestroy(render_state* RenderState) {
+  for (u32 Index = 0; Index < RenderState->ModelCount; ++Index) {
+    model* Model = &RenderState->Models[Index];
+    glDeleteVertexArrays(1, &Model->VAO);
+    glDeleteVertexArrays(1, &Model->VBO);
+    glDeleteBuffers(1, &Model->EBO);
+  }
+  RenderState->ModelCount = 0;
+  for (u32 Index = 0; Index < RenderState->TextureCount; ++Index) {
+    u32 TextureId = RenderState->Textures[Index];
+    glDeleteTextures(1, &TextureId);
+  }
+  RenderState->TextureCount = 0;
   glDeleteShader(DefaultShader);
 }

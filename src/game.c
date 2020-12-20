@@ -3,6 +3,7 @@
 #include "game.h"
 
 #include "misc.c"
+#include "config.c"
 #include "image.c"
 #include "mesh.c"
 #include "audio.c"
@@ -16,7 +17,7 @@
 #define MAX_DELTA_TIME 0.5f
 
 game_state GameState;
-static v3 Light = V3(0.0f, 2.0f, 6);
+static v3 Light = V3(0.0f, 0.5f, 7.0f);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -26,8 +27,8 @@ static void GameStateInit(game_state* Game) {
 
 #if 0
   for (u32 Index = 0; Index < 5; ++Index) {
-    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_TEST);
-    Entity->Speed = V3(0, 1.0f, 0);
+    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_UV);
+      Entity->Speed = V3(0, 1.0f, 0);
   }
 #endif
 
@@ -35,7 +36,7 @@ static void GameStateInit(game_state* Game) {
   for (i32 Z = 4; Z <= 11; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
-        entity* E = GameAddEntity(V3(X, 0, Z), MESH_STONE, TEXTURE_TEST);
+        entity* E = GameAddEntity(V3(X, 0, Z), MESH_COOKING_POT, TEXTURE_UV);
         E->Type = ENTITY_ROTATOR;
       }
       if (!(rand() % 20)) {
@@ -45,13 +46,14 @@ static void GameStateInit(game_state* Game) {
         GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
       }
       if (!(rand() % 35)) {
-        GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_UV);
+        GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_MONSTER);
       }
 
       GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_TEST);
     }
   }
 #endif
+
 #if 0
   for (i32 Z = 4; Z < 10; ++Z) {
     for (i32 X = -4; X <= 4; ++X) {
@@ -83,9 +85,11 @@ static void GameRun() {
 
   render_state* Renderer = &RenderState;
 
-  WindowOpen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
-  if (RendererInit(Renderer, &Assets) != 0)
+  WindowOpen(G_WindowWidth, G_WindowHeight, WINDOW_TITLE, G_WindowFullscreen);
+  if (RendererInit(Renderer, &Assets) != 0) {
     return;
+  }
+  WindowFocus();
   GameStateInit(Game);
   CameraInit(&Camera, V3(0, 0, 0));
 
@@ -125,9 +129,9 @@ static void GameRun() {
       continue;
     }
     // TODO(lucas): Properly implement timestepping!
-    if (LastFrame > (1.0f / TARGET_FPS)) {
+    if (LastFrame > (1.0f / G_TargetFps)) {
       ++Tick;
-      float Delta = LastFrame - (1.0f / TARGET_FPS);
+      float Delta = LastFrame - (1.0f / G_TargetFps);
       if (!(Tick % 15)) {
         snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
         WindowSetTitle(Title);
@@ -137,12 +141,13 @@ static void GameRun() {
         LastFrame = 1.0f;
       }
       RendererSwapBuffers(Renderer);
-      RendererClear(30, 40, 100);
+      RendererClear(40, 40, 100);
     }
   }
 
   AssetsUnloadAll(&Assets);
-  RendererDestroy();
+  RendererDestroy(Renderer);
+  WindowDestroyContext();
   WindowClose();
 }
 
@@ -156,6 +161,7 @@ static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) 
 }
 
 void GameStart() {
+  LoadConfig(CONFIG_FILE);
   srand(time(NULL));
   AudioInit(SAMPLE_RATE, FRAMES_PER_BUFFER, GameRun);
 }

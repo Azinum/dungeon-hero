@@ -81,6 +81,7 @@ static i32 MouseY = 0;
 typedef struct window {
   i32 Width;
   i32 Height;
+  framebuffer_size_callback FramebufferSizeCallback;
   Display* Disp;
   i32 Screen;
   i32 Depth;
@@ -90,6 +91,7 @@ typedef struct window {
   XImage* Image;
   GC Gc;
   Atom AtomWMDelete;
+  Cursor WinCursor;
 } window;
 
 static window Win;
@@ -111,9 +113,11 @@ static void PlatformOpenGLInit() {
 #endif
 }
 
-static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
+static i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   Win.Width = Width;
   Win.Height = Height;
+  Win.FramebufferSizeCallback = NULL;
+
   Win.Disp = XOpenDisplay(0);
   if (!Win.Disp)
     return -1;
@@ -155,39 +159,63 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title) {
 
   XSelectInput(Win.Disp, Win.Win, StructureNotifyMask | KeyPressMask | KeyReleaseMask);
 
-#if 0
-  Atom Atoms[2] = {
-    XInternAtom(Win.Disp, "_NET_WM_STATE_FULLSCREEN", False),
-    None
-  };
+  if (Fullscreen) {
+    Atom Atoms[2] = {
+      XInternAtom(Win.Disp, "_NET_WM_STATE_FULLSCREEN", False),
+      False
+    };
 
-  XChangeProperty(
-    Win.Disp,
-    Win.Win,
-    XInternAtom(Win.Disp, "_NET_WM_STATE", False),
-    XA_ATOM,
-    32,
-    PropModeReplace,
-    (u8*)Atoms,
-    1
-  );
-#endif
+    XChangeProperty(
+      Win.Disp,
+      Win.Win,
+      XInternAtom(Win.Disp, "_NET_WM_STATE", False),
+      XA_ATOM,
+      32,
+      PropModeReplace,
+      (u8*)Atoms,
+      1
+    );
+  }
 
   XStoreName(Win.Disp, Win.Win, Title);
   XMapWindow(Win.Disp, Win.Win);
+  XMapRaised(Win.Disp, Win.Win);
 
 #ifndef RENDERER_OPENGL
   Win.Gc = XCreateGC(Win.Disp, Win.Win, 0, NULL);
-  if (!Win.Gc)
+  if (!Win.Gc) {
     return -1;
+  }
   Win.Image = XCreateImage(Win.Disp, NULL, 24, ZPixmap, 0, 0, Win.Width, Win.Height, 32, 0);
 
-  if (!Win.Image)
+  if (!Win.Image) {
     return -1;
-#else
-
+  }
 #endif
+
+#if 1
+  // NOTE(lucas): Painfully hide that damn cursor
+  Pixmap CursorBitmap;
+  XColor CursorColor = { .red = 0, .green = 0, .blue = 0 };
+  static i8 NoData[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+  CursorBitmap = XCreateBitmapFromData(Win.Disp, Win.Win, NoData, 8, 8);
+  Win.WinCursor = XCreatePixmapCursor(Win.Disp, CursorBitmap, CursorBitmap, &CursorColor, &CursorColor, 0, 0);
+  XDefineCursor(Win.Disp, Win.Win, Win.WinCursor);
+  XFreePixmap(Win.Disp, CursorBitmap);
+#endif
+
+  XSync(Win.Disp, False);
   return 0;
+}
+
+static void WindowFocus() {
+  XGrabPointer(Win.Disp, Win.Win, True, 0, GrabModeAsync, GrabModeAsync, Win.Win, Win.WinCursor, CurrentTime);
+  XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
+}
+
+static void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallback) {
+  Win.FramebufferSizeCallback = FramebufferSizeCallback;
 }
 
 static void WindowSwapBuffers(render_state* RenderState) {
@@ -211,6 +239,7 @@ static i32 WindowEvents() {
     switch (E.type) {
       case KeyPress: {
         i64 KeyCode = XLookupKeysym(&E.xkey, 0);
+
         switch (KeyCode) {
           case XK_Escape:
             return -1;
@@ -246,6 +275,7 @@ static i32 WindowEvents() {
         break;
     }
   }
+
   Window RootWindow;
   u32 Mask;
   XQueryPointer(Win.Disp, Win.Win, &RootWindow, &RootWindow, &MouseX, &MouseY, &MouseX, &MouseY, &Mask);
@@ -257,6 +287,9 @@ static void WindowSetTitle(const char* Title) {
 }
 
 static void WindowClose() {
+  if (Win.WinCursor != None) {
+    XFreeCursor(Win.Disp, Win.WinCursor);
+  }
   XDestroyWindow(Win.Disp, Win.Win);
   XCloseDisplay(Win.Disp);
 }

@@ -36,8 +36,6 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, render_stat
     }
 #else
 #endif
-    mesh Mesh = Assets->Meshes[Entity->MeshId];
-    image Texture = Assets->Textures[Entity->TextureId];
-    DrawMesh(RenderState, &Mesh, &Texture, P, Light, Entity->Rotation, Entity->Scaling, Camera);
+    DrawMesh(RenderState, Assets, Entity->MeshId, Entity->TextureId, P, Light, Entity->Rotation, Entity->Scaling, Camera);
   }
 }

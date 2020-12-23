@@ -96,7 +96,7 @@ typedef struct window {
 
 static window Win;
 
-static void PlatformOpenGLInit() {
+void PlatformOpenGLInit() {
 #if RENDERER_OPENGL
   GLint Attribs[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
   Win.VisualInfo = glXChooseVisual(Win.Disp, 0, Attribs);
@@ -113,7 +113,7 @@ static void PlatformOpenGLInit() {
 #endif
 }
 
-static i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
+i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   Win.Width = Width;
   Win.Height = Height;
   Win.FramebufferSizeCallback = NULL;
@@ -209,16 +209,24 @@ static i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   return 0;
 }
 
-static void WindowFocus() {
+i32 WindowWidth() {
+  return Win.Width;
+}
+
+i32 WindowHeight() {
+  return Win.Height;
+}
+
+void WindowFocus() {
   XGrabPointer(Win.Disp, Win.Win, True, 0, GrabModeAsync, GrabModeAsync, Win.Win, Win.WinCursor, CurrentTime);
   XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
 }
 
-static void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallback) {
+void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallback) {
   Win.FramebufferSizeCallback = FramebufferSizeCallback;
 }
 
-static void WindowSwapBuffers(render_state* RenderState) {
+void WindowSwapBuffers(render_state* RenderState) {
 #if RENDERER_OPENGL
   glXSwapBuffers(Win.Disp, Win.Win);
 #else
@@ -228,7 +236,7 @@ static void WindowSwapBuffers(render_state* RenderState) {
 #endif
 }
 
-static i32 WindowEvents() {
+i32 WindowEvents() {
   XEvent E;
   for (u8 KeyIndex = 0; KeyIndex < MAX_KEY; ++KeyIndex) {
     KeyPressed[KeyIndex] = 0;
@@ -282,11 +290,11 @@ static i32 WindowEvents() {
   return 0;
 }
 
-static void WindowSetTitle(const char* Title) {
+void WindowSetTitle(const char* Title) {
   XStoreName(Win.Disp, Win.Win, Title);
 }
 
-static void WindowClose() {
+void WindowClose() {
   if (Win.WinCursor != None) {
     XFreeCursor(Win.Disp, Win.WinCursor);
   }
@@ -294,7 +302,7 @@ static void WindowClose() {
   XCloseDisplay(Win.Disp);
 }
 
-static void WindowDestroyContext() {
+void WindowDestroyContext() {
 #ifndef RENDERER_OPENGL
   XDestroyImage(Win.Image);
   XFreeGC(Win.Disp, Win.Gc);

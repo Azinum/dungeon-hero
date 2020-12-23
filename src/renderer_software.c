@@ -116,10 +116,10 @@ static void OutputZBufferToFile(render_state* RenderState, const char* Path) {
   Assert(ZBuffer);
 
   image Image;
-  Image.Width = Win.Width;
-  Image.Height = Win.Height;
+  Image.Width = WindowWidth();
+  Image.Height = WindowHeight();
   Image.Depth = 24;
-  Image.Pitch = Win.Width * 4;
+  Image.Pitch = WindowWidth() * 4;
   Image.PixelBuffer = malloc(4 * sizeof(u8) * Image.Width * Image.Height);
   Image.BytesPerPixel = 4;
 
@@ -516,9 +516,9 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
     R[1].X += 1.0f; R[1].Y += 1.0f;
     R[2].X += 1.0f; R[2].Y += 1.0f;
 
-    R[0].X *= 0.5f * Win.Width; R[0].Y *= 0.5f * Win.Height;
-    R[1].X *= 0.5f * Win.Width; R[1].Y *= 0.5f * Win.Height;
-    R[2].X *= 0.5f * Win.Width; R[2].Y *= 0.5f * Win.Height;
+    R[0].X *= 0.5f * WindowWidth(); R[0].Y *= 0.5f * WindowHeight();
+    R[1].X *= 0.5f * WindowWidth(); R[1].Y *= 0.5f * WindowHeight();
+    R[2].X *= 0.5f * WindowWidth(); R[2].Y *= 0.5f * WindowHeight();
 
     if (Degenerate(R[0], R[1], R[2])) {
       continue;
@@ -529,8 +529,8 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
 
 i32 RendererInit(render_state* RenderState, assets* Assets) {
   (void)Assets;
-  FrameBufferCreate(&RenderState->FrameBuffer, Win.Width, Win.Height);
-  RenderState->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
+  FrameBufferCreate(&RenderState->FrameBuffer, WindowWidth(), WindowHeight());
+  RenderState->ZBuffer = calloc(WindowWidth() * WindowHeight(), sizeof(float));
   return 0;
 }
 
@@ -547,8 +547,8 @@ static void RendererUpdateBuffers(render_state* RenderState) {
   Assert(RenderState->FrameBuffer.Data && RenderState->ZBuffer);
   FrameBufferDestroy(&RenderState->FrameBuffer);
   free(RenderState->ZBuffer);
-  FrameBufferCreate(&RenderState->FrameBuffer, Win.Width, Win.Height);
-  RenderState->ZBuffer = calloc(Win.Width * Win.Height, sizeof(float));
+  FrameBufferCreate(&RenderState->FrameBuffer, WindowWidth(), WindowHeight());
+  RenderState->ZBuffer = calloc(WindowWidth() * WindowHeight(), sizeof(float));
 }
 
 void RendererDestroy(render_state* RenderState) {

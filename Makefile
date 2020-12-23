@@ -19,6 +19,9 @@ prepare:
 compile:
 	${CC} ${FLAGS} ${LIBS} ${O_RELEASE} ${RENDERER}
 
+compile_mac:
+	${CC} ${FLAGS_MAC} ${LIBS_MAC} ${O_RELEASE} ${RENDERER}
+
 debug:
 	${CC} ${FLAGS} ${LIBS} ${O_DEBUG} ${RENDERER}
 	gdb ./${BUILD_DIR}/${PROG_NAME}

@@ -163,5 +163,6 @@ static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) 
 void GameStart() {
   LoadConfig(CONFIG_FILE);
   srand(time(NULL));
-  AudioInit(SAMPLE_RATE, FRAMES_PER_BUFFER, GameRun);
+  // AudioInit(SAMPLE_RATE, FRAMES_PER_BUFFER, GameRun);
+  GameRun();
 }

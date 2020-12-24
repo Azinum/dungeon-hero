@@ -8,7 +8,7 @@
 
 #if __APPLE__ || __MACH__
 
-#error "Mac OSX is not supported"
+#include "platform_macos.h"
 
 #endif
 

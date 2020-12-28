@@ -4,6 +4,7 @@ static i32 G_WindowWidth = 800;
 static i32 G_WindowHeight = 600;
 static i32 G_WindowFullscreen = 0;
 static i32 G_TargetFps = 60;
+static i32 G_CompatibleOpenGL = 0;
 
 #define SScanf(RESULT, IterBuffer, Format, ...) {\
   u32 ReadBytes = 0;\
@@ -41,6 +42,9 @@ static i32 LoadConfig(const char* Path) {
     }
     else if (!strncmp(Word, "target_fps", WORD_SIZE)) {
       SScanf(Result, Iter, "%i", &G_TargetFps);
+    }
+    else if (!strncmp(Word, "compat_opengl", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_CompatibleOpenGL);
     }
   } while (1);
 

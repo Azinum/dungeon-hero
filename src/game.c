@@ -36,10 +36,6 @@ static void GameStateInit(game_state* Game) {
   for (i32 Z = 4; Z <= 11; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
-        entity* E = GameAddEntity(V3(X, 0, Z), MESH_COOKING_POT, TEXTURE_UV);
-        E->Type = ENTITY_ROTATOR;
-      }
-      if (!(rand() % 20)) {
         GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
       }
       if (!(rand() % 20)) {
@@ -163,6 +159,8 @@ static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId) 
 void GameStart() {
   LoadConfig(CONFIG_FILE);
   srand(time(NULL));
-  // AudioInit(SAMPLE_RATE, FRAMES_PER_BUFFER, GameRun);
-  GameRun();
+  if (AudioInit(SAMPLE_RATE, FRAMES_PER_BUFFER, GameRun) != 0) {
+    // NOTE(lucas): We failed to initialize portaudio if we get to here, but we start the game anyways
+    GameRun();
+  }
 }

@@ -1,7 +1,7 @@
 // renderer_opengl.c
 
 static render_state RenderState;
-static u32 DefaultShader;
+static i32 DefaultShader;
 
 #define ERR_BUFFER_SIZE 512
 
@@ -79,8 +79,10 @@ static i32 ShaderCompile(const char* ShaderPath) {
   char FragPath[MAX_PATH_SIZE] = {0};
   snprintf(FragPath, MAX_PATH_SIZE, "%s.frag", ShaderPath);
   const char* FragSource = ReadFileAndNullTerminate(FragPath);
-  if (!VertSource || !FragSource)
+  if (!VertSource || !FragSource) {
+    fprintf(stderr, "Failed to open shader file(s)\n");
     goto done;
+  }
 
   i32 Report = -1;
   char ErrorLog[ERR_BUFFER_SIZE] = {0};
@@ -204,10 +206,20 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
   RenderState->ModelCount = 0;
   RenderState->TextureCount = 0;
 
-  DefaultShader = ShaderCompile("resource/shader/default");
+  if (G_CompatibleOpenGL) {
+    DefaultShader = ShaderCompile("resource/shader/compat_default");
+  }
+  else {
+    DefaultShader = ShaderCompile("resource/shader/default");
+  }
+
+  if (DefaultShader < 0) {
+    fprintf(stderr, "Failed to load shader(s)\n");
+    return -1;
+  }
 
   // TODO(lucas): Figure out and explore how asset/resource loading and unloading should work
-  // when it comes to using different renderers. Should we be able to switch rendering context in run-time, i.e. should we be able to switch from software to hardware rendering?
+  // when it comes to using different renderers. Should we be able to switch rendering context, i.e. switch from software to hardware rendering, in run-time?
   // How will we handle resources in that case?
   for (u32 Index = 0; Index < Assets->MeshCount; ++Index) {
     mesh* Mesh = &Assets->Meshes[Index];

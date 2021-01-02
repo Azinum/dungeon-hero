@@ -2,12 +2,12 @@
 
 static camera Camera;
 
-#if 0
-static i32 LastX = 0;
-static i32 LastY = 0;
+#if 1
+static float LastX = 0;
+static float LastY = 0;
 #endif
 
-#define MOUSE_SENSITIVITY 0.001f
+#define MOUSE_SENSITIVITY 0.05f
 #define LOOK_SENSITIVITY 150.0f
 
 void CameraInit(camera* Camera, v3 Position) {
@@ -71,12 +71,14 @@ void CameraUpdate(camera* Camera) {
     Camera->Pitch += LOOK_SENSITIVITY * GameState.DeltaTime;
   }
 
-#if 0
+#if 1
   float XOffset = MouseX - LastX;
   float YOffset = MouseY - LastY;
+  LastX = MouseX;
+  LastY = MouseY;
 
   XOffset *= MOUSE_SENSITIVITY;
-  YOffset *= MOUSE_SENSITIVITY;
+  YOffset *= -MOUSE_SENSITIVITY;
 
   Camera->Yaw += XOffset;
   Camera->Pitch += YOffset;

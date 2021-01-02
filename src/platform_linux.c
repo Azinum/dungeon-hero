@@ -193,7 +193,7 @@ i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   }
 #endif
 
-#if 1
+#if 0
   // NOTE(lucas): Painfully hide that damn cursor
   Pixmap CursorBitmap;
   XColor CursorColor = { .red = 0, .green = 0, .blue = 0 };
@@ -218,8 +218,10 @@ i32 WindowHeight() {
 }
 
 void WindowFocus() {
-  XGrabPointer(Win.Disp, Win.Win, True, 0, GrabModeAsync, GrabModeAsync, Win.Win, Win.WinCursor, CurrentTime);
+#if 0
+  XGrabPointer(Win.Disp, Win.Win, False, 0, GrabModeAsync, GrabModeAsync, None, Win.WinCursor, CurrentTime);
   XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
+#endif
 }
 
 void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallback) {
@@ -287,6 +289,7 @@ i32 WindowEvents() {
   Window RootWindow;
   u32 Mask;
   XQueryPointer(Win.Disp, Win.Win, &RootWindow, &RootWindow, &MouseX, &MouseY, &MouseX, &MouseY, &Mask);
+  XFlush(Win.Disp);
   return 0;
 }
 

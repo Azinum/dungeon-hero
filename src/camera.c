@@ -19,7 +19,7 @@ void CameraInit(camera* Camera, v3 Position) {
   Camera->Pitch = 0.0f;
   Camera->Yaw = 90.0f;
 
-  Projection = Perspective(85.0f, (float)Win.Width / Win.Height, 0.05f, 500);
+  Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 500);
 }
 
 void CameraUpdate(camera* Camera) {

@@ -5,6 +5,10 @@ static i32 G_WindowHeight = 600;
 static i32 G_WindowFullscreen = 0;
 static i32 G_TargetFps = 60;
 static i32 G_CompatibleOpenGL = 0;
+static i32 G_Fov = 75;
+
+#define FOV_MIN 30
+#define FOV_MAX 110
 
 #define SScanf(RESULT, IterBuffer, Format, ...) {\
   u32 ReadBytes = 0;\
@@ -45,6 +49,10 @@ static i32 LoadConfig(const char* Path) {
     }
     else if (!strncmp(Word, "compat_opengl", WORD_SIZE)) {
       SScanf(Result, Iter, "%i", &G_CompatibleOpenGL);
+    }
+    else if (!strncmp(Word, "fov", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_Fov);
+      G_Fov = Clamp(G_Fov, FOV_MIN, FOV_MAX);
     }
   } while (1);
 

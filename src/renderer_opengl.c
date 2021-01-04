@@ -138,6 +138,7 @@ done:
 
 inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
   // TODO(lucas): Do implement this thiiiinng!
+  (void)RenderState; (void)X; (void)Y; (void)W; (void)H; (void)XOffset; (void)YOffset; (void)XRange; (void)YRange; (void)Texture; (void)Tint;
 }
 
 static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {

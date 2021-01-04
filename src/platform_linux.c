@@ -230,6 +230,7 @@ void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallb
 
 void WindowSwapBuffers(render_state* RenderState) {
 #if RENDERER_OPENGL
+  (void)RenderState;
   glXSwapBuffers(Win.Disp, Win.Win);
 #else
   Win.Image->data = (void*)RenderState->FrameBuffer.Data;

@@ -24,7 +24,7 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, render_stat
         break;
       }
     }
-#if 1
+#if 0
 #define YMax 1
     if (P.Y < -YMax) {
       Entity->P.Y = -YMax;

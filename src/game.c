@@ -36,7 +36,8 @@ static void GameStateInit(game_state* Game) {
   for (i32 Z = 4; Z <= 11; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
       if (!(rand() % 20)) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
+        entity* Cube = GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
+        Cube->Type = ENTITY_ROTATOR;
       }
       if (!(rand() % 20)) {
         GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
@@ -129,7 +130,7 @@ static void GameRun() {
       ++Tick;
       float Delta = LastFrame - (1.0f / G_TargetFps);
       if (!(Tick % 15)) {
-        snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
+        snprintf(Title, BUFFER_SIZE, "%s | %ix%i | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, WindowWidth(), WindowHeight(), (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
         WindowSetTitle(Title);
       }
       LastFrame -= Delta;

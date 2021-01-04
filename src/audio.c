@@ -11,6 +11,8 @@ static i32 OpenStream(PaStream* Stream, PaStreamParameters* InPort, PaStreamPara
 
 i32 StereoCallback(const void* InBuffer, void* OutBuffer, u64 FramesPerBuffer, const PaStreamCallbackTimeInfo* TimeInfo, PaStreamCallbackFlags Flags, void* UserData) {
   float* Out = (float*)OutBuffer;
+  (void)InBuffer; (void)TimeInfo; (void)Flags; (void)UserData;
+
   for (u32 SampleIndex = 0; SampleIndex < FramesPerBuffer; ++SampleIndex) {
     *(Out++) = 0;
     *(Out++) = 0;

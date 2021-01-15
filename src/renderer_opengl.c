@@ -120,7 +120,7 @@ static i32 ShaderCompile(const char* ShaderPath) {
   glGetProgramiv(Program, GL_VALIDATE_STATUS, &Report);
   if (Report != GL_NO_ERROR) {
     glGetProgramInfoLog(Program, ERR_BUFFER_SIZE, NULL, ErrorLog);
-    fprintf(stderr, "%s:%s", ShaderPath, ErrorLog);
+    fprintf(stderr, "%s:%s\n", ShaderPath, ErrorLog);
     goto done;
   }
 }

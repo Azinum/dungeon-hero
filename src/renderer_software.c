@@ -483,8 +483,10 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
     CameraNormal.Z = -CameraNormal.Z;
     float DotValue = DotVec3(CameraNormal, Normal);
     if (DotValue < -1.0f) {
-      continue;
+      // continue;
     }
+
+    // Normal = NormalizeVec3(MultiplyMatrixVector(Transpose(InverseMat4(Model)), Normal));
 
     // World-space
     R[0] = MultiplyMatrixVector(Model, V[0]);

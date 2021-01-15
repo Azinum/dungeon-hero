@@ -75,8 +75,10 @@ enum key_codes {
 
 static i8 KeyDown[MAX_KEY];
 static i8 KeyPressed[MAX_KEY];
-static i32 MouseX = 0;
-static i32 MouseY = 0;
+static double VirtMouseX = 0;
+static double VirtMouseY = 0;
+static i32 LastMouseX = 0;
+static i32 LastMouseY = 0;
 
 typedef struct window {
   i32 Width;
@@ -92,6 +94,12 @@ typedef struct window {
   GC Gc;
   Atom AtomWMDelete;
   Cursor WinCursor;
+
+  i32 MouseX;
+  i32 MouseY;
+  i32 LastWarpedMouseX;
+  i32 LastWarpedMouseY;
+  cursor_mode CursorMode;
 } window;
 
 static window Win;
@@ -111,6 +119,48 @@ void PlatformOpenGLInit() {
     fprintf(stderr, "Failed to disable vsync\n");
   }
 #endif
+}
+
+void PlatformWarpCursor(double X, double Y) {
+  Win.LastWarpedMouseX = (i32)X;
+  Win.LastWarpedMouseY = (i32)Y;
+
+  XWarpPointer(
+      Win.Disp,
+      None,
+      Win.Win,
+      0, 0, 0, 0,
+      (i32)X,
+      (i32)Y
+  );
+
+  XFlush(Win.Disp);
+}
+
+void PlatformGetCursorPos(double* X, double* Y) {
+  if (Win.CursorMode == CURSOR_DISABLED) {
+    *X = VirtMouseX;
+    *Y = VirtMouseY;
+  }
+  else {
+    *X = Win.MouseX;
+    *Y = Win.MouseY;
+  }
+}
+
+void PlatformSetCursorMode(cursor_mode Mode) {
+  Win.CursorMode = Mode;
+}
+
+void PlatformDisableCursor() {
+  Window RootWindow;
+  u32 Mask;
+  LastMouseX = Win.MouseX;
+  LastMouseY = Win.MouseY;
+  XQueryPointer(Win.Disp, Win.Win, &RootWindow, &RootWindow, &Win.MouseX, &Win.MouseY, &Win.MouseX, &Win.MouseY, &Mask);
+
+  XGrabPointer(Win.Disp, Win.Win, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask, GrabModeAsync, GrabModeAsync, None, Win.WinCursor, CurrentTime);
+  XWarpPointer(Win.Disp, None, Win.Win, 0, 0, 0, 0, Win.Width / 2, Win.Height / 2);
 }
 
 i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
@@ -157,7 +207,7 @@ i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   XSetWMProtocols(Win.Disp, Win.Win, &Win.AtomWMDelete, 1);
   XFlush(Win.Disp);
 
-  XSelectInput(Win.Disp, Win.Win, StructureNotifyMask | KeyPressMask | KeyReleaseMask);
+  XSelectInput(Win.Disp, Win.Win, StructureNotifyMask | KeyPressMask | KeyReleaseMask | PointerMotionMask | FocusChangeMask | EnterWindowMask | LeaveWindowMask);
 
   if (Fullscreen) {
     Atom Atoms[2] = {
@@ -197,14 +247,17 @@ i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   // NOTE(lucas): Painfully hide that damn cursor
   Pixmap CursorBitmap;
   XColor CursorColor = { .red = 0, .green = 0, .blue = 0 };
-  static i8 NoData[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  static const i8 NoData[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  CursorBitmap = XCreateBitmapFromData(Win.Disp, Win.Win, NoData, 8, 8);
+  CursorBitmap = XCreateBitmapFromData(Win.Disp, Win.Win, (const char*)NoData, 8, 8);
   Win.WinCursor = XCreatePixmapCursor(Win.Disp, CursorBitmap, CursorBitmap, &CursorColor, &CursorColor, 0, 0);
   XDefineCursor(Win.Disp, Win.Win, Win.WinCursor);
   XFreePixmap(Win.Disp, CursorBitmap);
 #endif
 
+  Win.MouseX = Win.MouseY = 0;
+  Win.LastWarpedMouseX = Win.LastWarpedMouseY = 0;
+  Win.CursorMode = CURSOR_NORMAL;
   XSync(Win.Disp, False);
   return 0;
 }
@@ -264,6 +317,7 @@ i32 WindowEvents() {
         }
         break;
       }
+
       case KeyRelease: {
         u8 IsHoldingDown = 0;
         if (XEventsQueued(Win.Disp, QueuedAfterReading)) {
@@ -282,14 +336,53 @@ i32 WindowEvents() {
         }
         break;
       }
+      case FocusIn: {
+        if (Win.CursorMode == CURSOR_DISABLED) {
+          PlatformDisableCursor();
+        }
+        break;
+      }
+      case EnterNotify: {
+        const i32 X = E.xcrossing.x;
+        const i32 Y = E.xcrossing.y;
+        VirtMouseX = X;
+        VirtMouseY = Y;
+        Win.MouseX = X;
+        Win.MouseY = Y;
+        LastMouseX = X;
+        LastMouseY = Y;
+        break;
+      }
+      case MotionNotify: {
+        const i32 X = E.xmotion.x;
+        const i32 Y = E.xmotion.y;
+        if (X != Win.LastWarpedMouseX || Y != Win.LastWarpedMouseY) {
+          if (Win.CursorMode == CURSOR_DISABLED) {
+            const i32 Dx = X - LastMouseX;
+            const i32 Dy = Y - LastMouseY;
+            VirtMouseX += Dx;
+            VirtMouseY += Dy;
+          }
+          else {
+            Win.MouseX = X;
+            Win.MouseY = Y;
+          }
+        }
+        LastMouseX = X;
+        LastMouseY = Y;
+        break;
+      }
       default:
         break;
     }
   }
 
-  Window RootWindow;
-  u32 Mask;
-  XQueryPointer(Win.Disp, Win.Win, &RootWindow, &RootWindow, &MouseX, &MouseY, &MouseX, &MouseY, &Mask);
+  if (Win.CursorMode == CURSOR_DISABLED) {
+    //if (Win.LastWarpedMouseX != (Win.Width / 2) || Win.LastWarpedMouseY != (Win.Height / 2)) {
+      PlatformWarpCursor(Win.Width / 2, Win.Height / 2);
+    //}
+  }
+
   XFlush(Win.Disp);
   return 0;
 }

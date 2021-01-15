@@ -1,6 +1,6 @@
 // default.frag
 
-#version 330 core
+#version 330 compatibility
 
 in vec2 TexCoord;
 in vec3 SurfaceNormal;
@@ -22,5 +22,5 @@ void main() {
 	float Delta = max(dot(Normal, LightDirection), 0.0);
 	vec3 Diffuse = Delta * LightColor;
 
-	OutColor = vec4((Ambient + Diffuse), 1.0) * texture2D(Texture, TexCoord);
+	OutColor = vec4((Ambient + Diffuse), 1.0) * texture(Texture, TexCoord);
 }

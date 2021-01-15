@@ -25,6 +25,8 @@ typedef struct game_state {
 } game_state;
 
 extern game_state GameState;
+extern double MouseX;
+extern double MouseY;
 
 static entity* GameAddEntity(v3 Position, mesh_id MeshId, texture_id TextureId);
 

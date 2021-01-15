@@ -6,6 +6,7 @@ static i32 G_WindowFullscreen = 0;
 static i32 G_TargetFps = 60;
 static i32 G_CompatibleOpenGL = 0;
 static i32 G_Fov = 75;
+static double G_Sensitivity = 0.05f;
 
 #define FOV_MIN 30
 #define FOV_MAX 110
@@ -54,15 +55,10 @@ static i32 LoadConfig(const char* Path) {
       SScanf(Result, Iter, "%i", &G_Fov);
       G_Fov = Clamp(G_Fov, FOV_MIN, FOV_MAX);
     }
+    else if (!strncmp(Word, "sensitivity", WORD_SIZE)) {
+      SScanf(Result, Iter, "%lf", &G_Sensitivity);
+    }
   } while (1);
-
-#if 0
-  printf("Loaded config file '%s'\n", Path);
-  printf("window_width = %i\n", G_WindowWidth);
-  printf("window_height = %i\n", G_WindowHeight);
-  printf("window_fullscreen = %i\n", G_WindowFullscreen);
-  printf("target_fps = %i\n", G_TargetFps);
-#endif
 
   BufferFree(Buffer.Data, Buffer.Count);
   return 0;

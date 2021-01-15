@@ -243,7 +243,7 @@ i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   }
 #endif
 
-#if 0
+#if 1
   // NOTE(lucas): Painfully hide that damn cursor
   Pixmap CursorBitmap;
   XColor CursorColor = { .red = 0, .green = 0, .blue = 0 };
@@ -296,6 +296,12 @@ i32 WindowEvents() {
   XEvent E;
   for (u8 KeyIndex = 0; KeyIndex < MAX_KEY; ++KeyIndex) {
     KeyPressed[KeyIndex] = 0;
+  }
+
+  if (Win.CursorMode == CURSOR_DISABLED) {
+    //if (Win.LastWarpedMouseX != (Win.Width / 2) || Win.LastWarpedMouseY != (Win.Height / 2)) {
+      PlatformWarpCursor(Win.Width / 2, Win.Height / 2);
+    //}
   }
 
   while (XPending(Win.Disp)) {
@@ -375,12 +381,6 @@ i32 WindowEvents() {
       default:
         break;
     }
-  }
-
-  if (Win.CursorMode == CURSOR_DISABLED) {
-    //if (Win.LastWarpedMouseX != (Win.Width / 2) || Win.LastWarpedMouseY != (Win.Height / 2)) {
-      PlatformWarpCursor(Win.Width / 2, Win.Height / 2);
-    //}
   }
 
   XFlush(Win.Disp);

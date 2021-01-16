@@ -77,8 +77,8 @@ static i8 KeyDown[MAX_KEY];
 static i8 KeyPressed[MAX_KEY];
 static double VirtMouseX = 0;
 static double VirtMouseY = 0;
-static i32 LastMouseX = 0;
-static i32 LastMouseY = 0;
+static double LastMouseX = 0;
+static double LastMouseY = 0;
 
 typedef struct window {
   i32 Width;
@@ -97,8 +97,8 @@ typedef struct window {
 
   i32 MouseX;
   i32 MouseY;
-  i32 LastWarpedMouseX;
-  i32 LastWarpedMouseY;
+  double LastWarpedMouseX;
+  double LastWarpedMouseY;
   cursor_mode CursorMode;
 } window;
 
@@ -150,6 +150,14 @@ void PlatformGetCursorPos(double* X, double* Y) {
 
 void PlatformSetCursorMode(cursor_mode Mode) {
   Win.CursorMode = Mode;
+  if (Win.CursorMode == CURSOR_NORMAL) {
+    PlatformEnableCursor();
+    PlatformShowCursor();
+  }
+  else if (Win.CursorMode == CURSOR_DISABLED) {
+    PlatformDisableCursor();
+    PlatformHideCursor();
+  }
 }
 
 void PlatformDisableCursor() {
@@ -161,6 +169,18 @@ void PlatformDisableCursor() {
 
   XGrabPointer(Win.Disp, Win.Win, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask, GrabModeAsync, GrabModeAsync, None, Win.WinCursor, CurrentTime);
   XWarpPointer(Win.Disp, None, Win.Win, 0, 0, 0, 0, Win.Width / 2, Win.Height / 2);
+}
+
+void PlatformEnableCursor() {
+  XUngrabPointer(Win.Disp, CurrentTime);
+}
+
+void PlatformHideCursor() {
+  XDefineCursor(Win.Disp, Win.Win, Win.WinCursor);
+}
+
+void PlatformShowCursor() {
+  XDefineCursor(Win.Disp, Win.Win, None);
 }
 
 i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
@@ -243,17 +263,14 @@ i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   }
 #endif
 
-#if 1
-  // NOTE(lucas): Painfully hide that damn cursor
+  // NOTE(lucas): To painfully hide that damn cursor, we use a fully transparent pixelmap
   Pixmap CursorBitmap;
   XColor CursorColor = { .red = 0, .green = 0, .blue = 0 };
   static const i8 NoData[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
   CursorBitmap = XCreateBitmapFromData(Win.Disp, Win.Win, (const char*)NoData, 8, 8);
   Win.WinCursor = XCreatePixmapCursor(Win.Disp, CursorBitmap, CursorBitmap, &CursorColor, &CursorColor, 0, 0);
-  XDefineCursor(Win.Disp, Win.Win, Win.WinCursor);
   XFreePixmap(Win.Disp, CursorBitmap);
-#endif
 
   Win.MouseX = Win.MouseY = 0;
   Win.LastWarpedMouseX = Win.LastWarpedMouseY = 0;
@@ -262,11 +279,11 @@ i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   return 0;
 }
 
-i32 WindowWidth() {
+inline i32 WindowWidth() {
   return Win.Width;
 }
 
-i32 WindowHeight() {
+inline i32 WindowHeight() {
   return Win.Height;
 }
 
@@ -298,13 +315,8 @@ i32 WindowEvents() {
     KeyPressed[KeyIndex] = 0;
   }
 
-  if (Win.CursorMode == CURSOR_DISABLED) {
-    //if (Win.LastWarpedMouseX != (Win.Width / 2) || Win.LastWarpedMouseY != (Win.Height / 2)) {
-      PlatformWarpCursor(Win.Width / 2, Win.Height / 2);
-    //}
-  }
-
   while (XPending(Win.Disp)) {
+
     XNextEvent(Win.Disp, &E);
     switch (E.type) {
       case KeyPress: {
@@ -383,6 +395,11 @@ i32 WindowEvents() {
     }
   }
 
+  if (Win.CursorMode == CURSOR_DISABLED) {
+    // if (Win.LastWarpedMouseX != (Win.Width / 2) || Win.LastWarpedMouseY != (Win.Height / 2)) {
+      PlatformWarpCursor(Win.Width / 2, Win.Height / 2);
+    // }
+  }
   XFlush(Win.Disp);
   return 0;
 }

@@ -19,6 +19,12 @@ void PlatformSetCursorMode(cursor_mode Mode);
 
 void PlatformDisableCursor();
 
+void PlatformEnableCursor();
+
+void PlatformHideCursor();
+
+void PlatformShowCursor();
+
 i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen);
 
 i32 WindowWidth();

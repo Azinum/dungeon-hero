@@ -27,13 +27,6 @@ static void GameStateInit(game_state* Game) {
   Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
-#if 0
-  for (u32 Index = 0; Index < 5; ++Index) {
-    entity* Entity = GameAddEntity(V3(Index - 2.0f, Index - 2.0f, 5.0f), rand() % MAX_MESH, TEXTURE_UV);
-      Entity->Speed = V3(0, 1.0f, 0);
-  }
-#endif
-
 #if 1
   for (i32 Z = 4; Z <= 11; ++Z) {
     for (i32 X = -5; X <= 5; ++X) {
@@ -52,29 +45,6 @@ static void GameStateInit(game_state* Game) {
     }
   }
 #endif
-
-#if 0
-  for (i32 Z = 4; Z < 10; ++Z) {
-    for (i32 X = -4; X <= 4; ++X) {
-      if (!(rand() % 16)) {
-        entity* E = GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
-        E->Type = ENTITY_ROTATOR;
-      }
-      if (!(rand() % 16)) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
-      }
-      if (!(rand() % 20)) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
-      }
-
-      GameAddEntity(V3(X, -1, Z), MESH_CUBE, TEXTURE_UV);
-    }
-  }
-#endif
-#if 0
-  entity* Entity = GameAddEntity(V3(0, -1, 6), MESH_MONSTER, TEXTURE_MONSTER);
-  Entity->Type = ENTITY_ROTATOR;
-#endif
 }
 
 static void GameRun() {
@@ -91,7 +61,7 @@ static void GameRun() {
   WindowFocus();
   PlatformSetCursorMode(CURSOR_DISABLED);
   GameStateInit(Game);
-  CameraInit(&Camera, V3(0, 0, 0));
+  CameraInit(&Camera, V3(0, 1, 0));
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};
@@ -129,12 +99,15 @@ static void GameRun() {
       GameStateInit(Game);
       continue;
     }
+    if (KeyPressed[KEY_M]) {
+      PlatformSetCursorMode(!Win.CursorMode);
+    }
     // TODO(lucas): Properly implement timestepping!
     if (LastFrame > (1.0f / G_TargetFps)) {
       ++Tick;
       float Delta = LastFrame - (1.0f / G_TargetFps);
       if (!(Tick % 15)) {
-        snprintf(Title, BUFFER_SIZE, "%s | %ix%i | fps: %i, dt: %g, last: %.3f ms", WINDOW_TITLE, WindowWidth(), WindowHeight(), (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame);
+        snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms | %ix%i", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame, WindowWidth(), WindowHeight());
         WindowSetTitle(Title);
       }
       LastFrame -= Delta;

@@ -58,7 +58,6 @@ static void GameRun() {
   if (RendererInit(Renderer, &Assets) != 0) {
     return;
   }
-  WindowFocus();
   PlatformSetCursorMode(CURSOR_DISABLED);
   GameStateInit(Game);
   CameraInit(&Camera, V3(0, 1, 0));
@@ -115,7 +114,7 @@ static void GameRun() {
         LastFrame = 1.0f;
       }
       RendererSwapBuffers(Renderer);
-      RendererClear(40, 40, 100);
+      RendererClear(G_BackgroundColor.X, G_BackgroundColor.Y, G_BackgroundColor.Z);
     }
   }
 

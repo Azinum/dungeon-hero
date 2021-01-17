@@ -10,11 +10,6 @@ typedef enum blend_mode {
 static float LightStrength = 0;
 
 #define LIGHT_STRENGTH 1
-#define AMBIENT_LIGHT 5
-#define DRAW_SOLID 0
-#define DRAW_BOUNDING_BOX 0
-#define DRAW_BOUNDING_BOX_POINTS 0
-#define DRAW_VERTICES 0
 #define NO_LIGHTING 0
 #define DITHERING 0
 
@@ -233,7 +228,7 @@ inline void DrawPixelAdd(framebuffer* FrameBuffer, i32 X, i32 Y, color Color) {
 }
 
 // NOTE(lucas): Bresenham!
-inline void DrawLine(render_state* RenderState, v2 A, v2 B, color Color) {
+void DrawLine(render_state* RenderState, v2 A, v2 B, color Color) {
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   u8 Steep = 0;
   if (Abs(A.X - B.X) < Abs(A.Y - B.Y)) {
@@ -401,20 +396,21 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
         if (ZBuffer[Index] > Z) {
           ZBuffer[Index] = Z;
           color Texel;
-#if DRAW_SOLID
-          Texel = COLOR(255, 255, 255);
-#else
-          v2 UV = Cartesian(
-            T0, T1, T2,
-            W0, W1, W2
-          );
-          i32 XCoord = (i32)Abs(Texture->Width * UV.U) % Texture->Width;
-          i32 YCoord = (i32)Abs(Texture->Height * (1.0f - UV.V)) % Texture->Height;
-          Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Width) + XCoord)]);
-#endif
-          Texel.R = Clamp(Texel.R * LightFactor, AMBIENT_LIGHT, 0xFF);
-          Texel.G = Clamp(Texel.G * LightFactor, AMBIENT_LIGHT, 0xFF);
-          Texel.B = Clamp(Texel.B * LightFactor, AMBIENT_LIGHT, 0xFF);
+          if (G_DrawSolid) {
+            Texel = COLOR(255, 255, 255);
+          }
+          else {
+            v2 UV = Cartesian(
+              T0, T1, T2,
+              W0, W1, W2
+            );
+            i32 XCoord = (i32)Abs(Texture->Width * UV.U) % Texture->Width;
+            i32 YCoord = (i32)Abs(Texture->Height * (1.0f - UV.V)) % Texture->Height;
+            Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Width) + XCoord)]);
+          }
+          Texel.R = Clamp(Texel.R * LightFactor, G_Ambient, 0xFF);
+          Texel.G = Clamp(Texel.G * LightFactor, G_Ambient, 0xFF);
+          Texel.B = Clamp(Texel.B * LightFactor, G_Ambient, 0xFF);
           DrawPixel(FrameBuffer, P.X, P.Y, Texel);
 
         }
@@ -422,24 +418,24 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
     }
   }
 
-#if DRAW_BOUNDING_BOX
-  color LineColor = COLOR(70, 60, 255);
-  DrawLine(RenderState, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
-  DrawLine(RenderState, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
-  DrawLine(RenderState, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
-  DrawLine(RenderState, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
-#endif
+  if (G_DrawBoundingBox) {
+    color LineColor = COLOR(70, 60, 255);
+    DrawLine(RenderState, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
+    DrawLine(RenderState, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
+    DrawLine(RenderState, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
+    DrawLine(RenderState, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
+  }
 
-#if DRAW_BOUNDING_BOX_POINTS
-  DrawRect(RenderState, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
-  DrawRect(RenderState, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
-#endif
+  if (G_DrawBoundingBoxPoints) {
+    DrawRect(RenderState, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
+    DrawRect(RenderState, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
+  }
 
-#if DRAW_VERTICES
-  DrawRect(RenderState, A.X, A.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-  DrawRect(RenderState, B.X, B.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-  DrawRect(RenderState, C.X, C.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-#endif
+  if (G_DrawVertices) {
+    DrawRect(RenderState, A.X, A.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+    DrawRect(RenderState, B.X, B.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+    DrawRect(RenderState, C.X, C.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+  }
 }
 
 #define MAX_CLIPPED_TRIANGLES 8
@@ -493,16 +489,15 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
     R[1] = MultiplyMatrixVector(Model, V[1]);
     R[2] = MultiplyMatrixVector(Model, V[2]);
 
-#if NO_LIGHTING
     float LightFactor = 1.0f;
-#else
-    v3 LightDelta = DifferenceV3(Light, R[0]);
-    v3 LightNormal = NormalizeVec3(LightDelta);
-    float LightDistance = DistanceV3(Light, R[0]);
-    LightStrength = LIGHT_STRENGTH + 1.0f * (0.1f * sin(GameState.Time * 4.0f));
-    float Attenuation = LightStrength / (LightDistance * 0.5f);
-    float LightFactor = DotVec3(Normal, LightNormal) * Attenuation;
-#endif
+    if (!G_NoLighting) {
+      v3 LightDelta = DifferenceV3(Light, R[0]);
+      v3 LightNormal = NormalizeVec3(LightDelta);
+      float LightDistance = DistanceV3(Light, R[0]);
+      LightStrength = LIGHT_STRENGTH + 1.0f * (0.1f * sin(GameState.Time * 4.0f));
+      float Attenuation = LightStrength / (LightDistance * 0.5f);
+      LightFactor = DotVec3(Normal, LightNormal) * Attenuation;
+    }
 
     // View-space
     R[0] = MultiplyMatrixVector(View, R[0]);

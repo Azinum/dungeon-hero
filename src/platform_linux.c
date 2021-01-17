@@ -287,13 +287,6 @@ inline i32 WindowHeight() {
   return Win.Height;
 }
 
-void WindowFocus() {
-#if 0
-  XGrabPointer(Win.Disp, Win.Win, False, 0, GrabModeAsync, GrabModeAsync, None, Win.WinCursor, CurrentTime);
-  XGrabKeyboard(Win.Disp, Win.Win, False, GrabModeAsync, GrabModeAsync, CurrentTime);
-#endif
-}
-
 void WindowSetFramebufferCallback(framebuffer_size_callback FramebufferSizeCallback) {
   Win.FramebufferSizeCallback = FramebufferSizeCallback;
 }

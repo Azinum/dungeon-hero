@@ -31,8 +31,6 @@ i32 WindowWidth();
 
 i32 WindowHeight();
 
-void WindowFocus();
-
 void WindowSwapBuffers(struct render_state* RenderState);
 
 void WindowSetTitle(const char* Title);

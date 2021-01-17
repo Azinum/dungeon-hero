@@ -8,6 +8,14 @@ static i32 G_CompatibleOpenGL = 0;
 static i32 G_Fov = 75;
 static double G_Sensitivity = 0.05f;
 
+static float G_Ambient = 5.0f;
+static i32 G_DrawSolid = 0;
+static i32 G_DrawBoundingBox = 0;
+static i32 G_DrawBoundingBoxPoints = 0;
+static i32 G_DrawVertices = 0;
+static i32 G_NoLighting = 0;
+static v3 G_BackgroundColor = V3(40, 40, 100);
+
 #define FOV_MIN 30
 #define FOV_MAX 110
 
@@ -57,6 +65,29 @@ static i32 LoadConfig(const char* Path) {
     }
     else if (!strncmp(Word, "sensitivity", WORD_SIZE)) {
       SScanf(Result, Iter, "%lf", &G_Sensitivity);
+    }
+
+    // Rendering options:
+    else if (!strncmp(Word, "r_ambient", WORD_SIZE)) {
+      SScanf(Result, Iter, "%f", &G_Ambient);
+    }
+    else if (!strncmp(Word, "r_draw_solid", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_DrawSolid);
+    }
+    else if (!strncmp(Word, "r_draw_bounding_box", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_DrawBoundingBox);
+    }
+    else if (!strncmp(Word, "r_draw_bounding_box_points", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_DrawBoundingBoxPoints);
+    }
+    else if (!strncmp(Word, "r_draw_vertices", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_DrawVertices);
+    }
+    else if (!strncmp(Word, "r_no_lighting", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_NoLighting);
+    }
+    else if (!strncmp(Word, "r_background_color", WORD_SIZE)) {
+      SScanf(Result, Iter, "%f %f %f", &G_BackgroundColor.X, &G_BackgroundColor.Y, &G_BackgroundColor.Z);
     }
   } while (1);
 

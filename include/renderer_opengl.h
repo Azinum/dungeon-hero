@@ -14,6 +14,7 @@ typedef struct render_state {
   u32 ModelCount;
 
   u32 Textures[MAX_TEXTURE];
+
   u32 TextureCount;
 } render_state;
 

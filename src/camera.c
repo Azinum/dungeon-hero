@@ -23,31 +23,46 @@ void CameraUpdate(camera* Camera) {
   if (KeyDown[KEY_D]) {
     Camera->P = AddToV3(Camera->P, V3(
       Camera->Right.X * 5.0f * GameState.DeltaTime,
-      Camera->Right.Y * 5.0f * GameState.DeltaTime,
+      0, //Camera->Right.Y * 5.0f * GameState.DeltaTime,
       Camera->Right.Z * 5.0f * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_A]) {
     Camera->P = AddToV3(Camera->P, V3(
       -Camera->Right.X * 5.0f * GameState.DeltaTime,
-      -Camera->Right.Y * 5.0f * GameState.DeltaTime,
+      0, //-Camera->Right.Y * 5.0f * GameState.DeltaTime,
       -Camera->Right.Z * 5.0f * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_W]) {
     Camera->P = AddToV3(Camera->P, V3(
       Camera->Forward.X * 5.0f * GameState.DeltaTime,
-      Camera->Forward.Y * 5.0f * GameState.DeltaTime,
+      0, // Camera->Forward.Y * 5.0f * GameState.DeltaTime,
       Camera->Forward.Z * 5.0f * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_S]) {
     Camera->P = AddToV3(Camera->P, V3(
       -Camera->Forward.X * 5.0f * GameState.DeltaTime,
-      -Camera->Forward.Y * 5.0f * GameState.DeltaTime,
+      0, // -Camera->Forward.Y * 5.0f * GameState.DeltaTime,
       -Camera->Forward.Z * 5.0f * GameState.DeltaTime
     ));
   }
+
+  // NOTE(lucas): Temporary!
+  if (Camera->P.X < WorldMin.X + 1) {
+    Camera->P.X = WorldMin.X + 1;
+  }
+  if (Camera->P.X > WorldMax.X - 1) {
+    Camera->P.X = WorldMax.X - 1;
+  }
+  if (Camera->P.Z < WorldMin.Z + 1) {
+    Camera->P.Z = WorldMin.Z + 1;
+  }
+  if (Camera->P.Z > WorldMax.Z - 1) {
+    Camera->P.Z = WorldMax.Z - 1;
+  }
+
   if (KeyDown[KEY_Z]) {
     Camera->P.Y += 5.0f * GameState.DeltaTime;
   }
@@ -90,7 +105,7 @@ void CameraUpdate(camera* Camera) {
     sin(ToRadians(Camera->Yaw)) * cos(ToRadians(Camera->Pitch))
   );
   Camera->Forward = NormalizeVec3(Direction);
-  v3 WorldUp = V3(0.0f, 1.0f, 0.0f);
+  const v3 WorldUp = V3(0.0f, 1.0f, 0.0f);
   Camera->Right = NormalizeVec3(Cross(Camera->Forward, WorldUp));
   Camera->Up = NormalizeVec3(Cross(Camera->Right, Camera->Forward));
 }

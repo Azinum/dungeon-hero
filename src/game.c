@@ -21,6 +21,9 @@ static v3 Light = V3(0.0f, 0.7f, 8.0f);
 double MouseX = 0;
 double MouseY = 0;
 
+v3 WorldMin = V3(-5, 0, 4);
+v3 WorldMax = V3(5, 0, 15);
+
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
   Game->Time = 0;
@@ -28,20 +31,29 @@ static void GameStateInit(game_state* Game) {
   Game->EntityCount = 0;
 
 #if 1
-  for (i32 Z = 4; Z <= 11; ++Z) {
-    for (i32 X = -5; X <= 5; ++X) {
-      if (!(rand() % 20)) {
+  for (i32 Z = WorldMin.Z; Z <= WorldMax.Z; ++Z) {
+    for (i32 X = WorldMin.X; X <= WorldMax.X; ++X) {
+      GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_TEST);
+
+      if (X == WorldMin.X || X == WorldMax.X || Z == WorldMin.Z || Z == WorldMax.Z) {
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
+        GameAddEntity(V3(X, 1, Z), MESH_CUBE, TEXTURE_UV);
+        GameAddEntity(V3(X, 2, Z), MESH_CUBE, TEXTURE_UV);
+        continue;
+      }
+      if (!(rand() % 30)) {
         entity* Cube = GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
         Cube->Type = ENTITY_ROTATOR;
+        continue;
       }
-      if (!(rand() % 20)) {
+      if (!(rand() % 30)) {
         GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
+        continue;
       }
-      if (!(rand() % 35)) {
+      if (!(rand() % 39)) {
         GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_MONSTER);
+        continue;
       }
-
-      GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_TEST);
     }
   }
 #endif
@@ -60,7 +72,7 @@ static void GameRun() {
   }
   PlatformSetCursorMode(CURSOR_DISABLED);
   GameStateInit(Game);
-  CameraInit(&Camera, V3(0, 1, 0));
+  CameraInit(&Camera, V3(0, 1.5f, 5));
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};
@@ -79,9 +91,9 @@ static void GameRun() {
     Game->Time += Game->DeltaTime;
     LastFrame += Game->DeltaTime;
 
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, &Camera);
     PlatformGetCursorPos(&MouseX, &MouseY);
     CameraUpdate(&Camera);
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, &Camera);
 
     // DrawSimpleTexture2D(Renderer, Light.X - 16, Light.Y - 16, 36, 36, &Assets.Textures[TEXTURE_SUN_ICON], COLOR(1, 1, 0));
 

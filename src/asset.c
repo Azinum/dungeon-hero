@@ -4,7 +4,7 @@ void AssetsInit(assets* Assets) {
   memset(Assets, 0, sizeof(assets));
   Assets->MeshCount = 0;
   Assets->TextureCount = 0;
-  Assets->CubemapCount = 0;
+  Assets->SkyboxCount = 0;
 }
 
 void AssetsLoadAll(assets* Assets) {
@@ -32,14 +32,14 @@ void AssetsLoadAll(assets* Assets) {
     ++Assets->TextureCount;
   }
 
-  for (u32 Index = 0; Index < MAX_CUBEMAP; ++Index) {
-    snprintf(Path, MAX_PATH_SIZE, "%s/%s.png", TEXTURE_PATH, CubemapFileNames[Index]);
+  for (u32 Index = 0; Index < MAX_SKYBOX_TEXTURE; ++Index) {
+    snprintf(Path, MAX_PATH_SIZE, "%s/%s.png", TEXTURE_PATH, SkyboxFileNames[Index]);
     image Texture;
     if (LoadImage(Path, &Texture) != 0) {
       continue;
     }
-    Assets->Cubemaps[Index] = Texture;
-    ++Assets->CubemapCount;
+    Assets->Skyboxes[Index] = Texture;
+    ++Assets->SkyboxCount;
   }
 }
 
@@ -52,8 +52,8 @@ void AssetsUnloadAll(assets* Assets) {
     image* Texture = &Assets->Textures[Index];
     UnloadImage(Texture);
   }
-  for (u32 Index = 0; Index < Assets->CubemapCount; ++Index) {
-    image* Texture = &Assets->Cubemaps[Index];
+  for (u32 Index = 0; Index < Assets->SkyboxCount; ++Index) {
+    image* Texture = &Assets->Skyboxes[Index];
     UnloadImage(Texture);
   }
 }

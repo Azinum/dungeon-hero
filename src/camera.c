@@ -52,7 +52,7 @@ void CameraUpdate(camera* Camera) {
     ));
   }
 
-#if 0
+#if 1
   // NOTE(lucas): Temporary!
   if (Camera->P.X < WorldMin.X + 1) {
     Camera->P.X = WorldMin.X + 1;

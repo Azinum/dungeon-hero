@@ -5,48 +5,50 @@ static i32 DefaultShader;
 static i32 SkyboxShader;
 static model CubeModel;
 
+#define SKYBOX_SIZE 1.0f
+
 float SkyboxVertices[] = {
-	-1.0f,  1.0f, -1.0f,
-	-1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
-	1.0f,  1.0f, -1.0f,
-	-1.0f,  1.0f, -1.0f,
+	-SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
+	-SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
+	-SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
 
-	-1.0f, -1.0f,  1.0f,
-	-1.0f, -1.0f, -1.0f,
-	-1.0f,  1.0f, -1.0f,
-	-1.0f,  1.0f, -1.0f,
-	-1.0f,  1.0f,  1.0f,
-	-1.0f, -1.0f,  1.0f,
+	-SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
+	-SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	-SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
+	-SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
+	-SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	-SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
 
-	1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f,  1.0f,
-	1.0f,  1.0f,  1.0f,
-	1.0f,  1.0f,  1.0f,
-	1.0f,  1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
+	 SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
 
-	-1.0f, -1.0f,  1.0f,
-	-1.0f,  1.0f,  1.0f,
-	1.0f,  1.0f,  1.0f,
-	1.0f,  1.0f,  1.0f,
-	1.0f, -1.0f,  1.0f,
-	-1.0f, -1.0f,  1.0f,
+	-SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
+	-SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
+	-SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
 
-	-1.0f,  1.0f, -1.0f,
-	1.0f,  1.0f, -1.0f,
-	1.0f,  1.0f,  1.0f,
-	1.0f,  1.0f,  1.0f,
-	-1.0f,  1.0f,  1.0f,
-	-1.0f,  1.0f, -1.0f,
+	-SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	-SKYBOX_SIZE,  SKYBOX_SIZE,  SKYBOX_SIZE,
+	-SKYBOX_SIZE,  SKYBOX_SIZE, -SKYBOX_SIZE,
 
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f,  1.0f,
-	1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f,  1.0f,
-	1.0f, -1.0f,  1.0f
+	-SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	-SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE, -SKYBOX_SIZE,
+	-SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE,
+	 SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE
 };
 
 #define ERR_BUFFER_SIZE 512
@@ -92,7 +94,7 @@ static i32 UploadModel(model* Model, mesh* Mesh) {
 }
 
 static i32 UploadModel2(model* Model, float* Vertices, u32 VertexCount) {
-  Model->DrawCount = VertexCount;
+  Model->DrawCount = VertexCount / 3;
 
   glGenVertexArrays(1, &Model->VAO);
   glBindVertexArray(Model->VAO);
@@ -136,14 +138,37 @@ static i32 UploadCubemapTexture(u32* TextureId, image* Texture) {
   glGenTextures(1, TextureId);
   glBindTexture(GL_TEXTURE_CUBE_MAP, *TextureId);
 
+  for (i32 Index = 0; Index < 6; ++Index) {
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + Index, 0, GL_RGBA, Texture->Width, Texture->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Texture->PixelBuffer);
+  }
+
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-  glTexImage2D(GL_TEXTURE_CUBE_MAP, 0, GL_RGBA, Texture->Width, Texture->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Texture->PixelBuffer);
-  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  return 0;
+}
+
+// TODO(lucas): The top texture seems to be rotated wrong, is this an issue with the cubemapping or is it the skyboxes (textures) themselves? Fix!
+static i32 UploadSkyboxTexture(u32* TextureId, u32 SkyboxId, assets* Assets) {
+  glGenTextures(1, TextureId);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, *TextureId);
+
+  for (i32 Index = 0; Index < 6; ++Index) {
+    image* Texture = &Assets->Skyboxes[SkyboxId + Index];
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + Index, 0, GL_RGBA, Texture->Width, Texture->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Texture->PixelBuffer);
+  }
+
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   return 0;
 }
 
@@ -277,6 +302,12 @@ static void OpenGLInit() {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
+  glEnable(GL_TEXTURE_CUBE_MAP_EXT);
+  glEnable(GL_TEXTURE_GEN_S);
+  glEnable(GL_TEXTURE_GEN_R);
+  glEnable(GL_TEXTURE_GEN_T);
+  glEnable(GL_NORMALIZE);
+
   fprintf(stdout, "GL VENDOR:    %s\n", glGetString(GL_VENDOR));
   fprintf(stdout, "GL RENDERER:  %s\n", glGetString(GL_RENDERER));
   fprintf(stdout, "GL VERSION:   %s\n", glGetString(GL_VERSION));
@@ -319,14 +350,13 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
     RenderState->Textures[Index] = TextureId;
     RenderState->TextureCount++;
   }
-  for (u32 Index = 0; Index < Assets->CubemapCount; ++Index) {
-    image* Texture = &Assets->Cubemaps[Index];
+  for (u32 Index = 0; Index < Assets->SkyboxCount / 6; ++Index) {
     u32 TextureId = 0;
-    UploadCubemapTexture(&TextureId, Texture);
+    UploadSkyboxTexture(&TextureId, Index * 6, Assets);
     RenderState->Cubemaps[Index] = TextureId;
     RenderState->CubemapCount++;
   }
-	UploadModel2(&CubeModel, SkyboxVertices, ARR_SIZE(SkyboxVertices) / 3);
+	UploadModel2(&CubeModel, SkyboxVertices, ARR_SIZE(SkyboxVertices));
   return 0;
 }
 
@@ -354,6 +384,10 @@ static void DrawSkybox(render_state* RenderState, assets* Assets, camera* Camera
 
   // TODO(lucas): Do this once elsewhere
   View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
+  // NOTE(lucas): We translate the view to the origin here, this is so that we don't move outside the skybox
+  View.Elements[3][0] = 0;
+  View.Elements[3][1] = 0;
+  View.Elements[3][2] = 0;
 
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);

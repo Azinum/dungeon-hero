@@ -21,7 +21,7 @@ static v3 Light = V3(0.0f, 0.7f, 8.0f);
 double MouseX = 0;
 double MouseY = 0;
 
-v3 WorldMin = V3(-5, 0, 4);
+v3 WorldMin = V3(-7, 0, 4);
 v3 WorldMax = V3(5, 0, 15);
 
 static void GameStateInit(game_state* Game) {
@@ -95,8 +95,6 @@ static void GameRun() {
     PlatformGetCursorPos(&MouseX, &MouseY);
     CameraUpdate(&Camera);
 
-    // DrawSimpleTexture2D(Renderer, Light.X - 16, Light.Y - 16, 36, 36, &Assets.Textures[TEXTURE_SUN_ICON], COLOR(1, 1, 0));
-
     if (KeyPressed[KEY_COMMA]) {
       char Date[MAX_PATH_SIZE];
       char Path[MAX_PATH_SIZE];
@@ -125,7 +123,7 @@ static void GameRun() {
       if (LastFrame > 1.0f) {
         LastFrame = 1.0f;
       }
-      DrawSkybox(Renderer, &Assets, &Camera, CUBEMAP_DEFAULT);
+      DrawSkybox(Renderer, &Assets, &Camera, CUBEMAP_SKYBOX_DOOM);
       RendererSwapBuffers(Renderer);
       RendererClear(G_BackgroundColor.X, G_BackgroundColor.Y, G_BackgroundColor.Z);
     }

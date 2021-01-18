@@ -1,0 +1,264 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 91.44      0.32     0.32  1238461     0.00     0.00  DrawMesh
+  5.72      0.34     0.02     4709     0.00     0.07  UpdateAndDrawEntities
+  2.86      0.35     0.01        7     1.43     1.43  MeshLoadOBJ
+  0.00      0.35     0.00     4710     0.00     0.00  WindowEvents
+  0.00      0.35     0.00     4709     0.00     0.00  CameraUpdate
+  0.00      0.35     0.00     4709     0.00     0.00  PlatformGetCursorPos
+  0.00      0.35     0.00     4709     0.00     0.00  PlatformWarpCursor
+  0.00      0.35     0.00     4709     0.00     0.00  RendererClear
+  0.00      0.35     0.00     4709     0.00     0.00  RendererSwapBuffers
+  0.00      0.35     0.00     4709     0.00     0.00  WindowSwapBuffers
+  0.00      0.35     0.00      313     0.00     0.00  WindowSetTitle
+  0.00      0.35     0.00      263     0.00     0.00  EntityInit
+  0.00      0.35     0.00      263     0.00     0.00  GameAddEntity
+  0.00      0.35     0.00       21     0.00     0.00  StoreAttrib
+  0.00      0.35     0.00       14     0.00     0.00  MeshInit
+  0.00      0.35     0.00        8     0.00     0.00  ReadFile
+  0.00      0.35     0.00        7     0.00     0.00  MeshSortIndexedData
+  0.00      0.35     0.00        7     0.00     0.00  MeshUnload
+  0.00      0.35     0.00        7     0.00     0.00  UploadAndIndexModel
+  0.00      0.35     0.00        7     0.00     0.00  UploadModel
+  0.00      0.35     0.00        6     0.00     0.00  LoadImage
+  0.00      0.35     0.00        6     0.00     0.00  LoadPNGFromFile
+  0.00      0.35     0.00        6     0.00     0.00  UnloadImage
+  0.00      0.35     0.00        6     0.00     0.00  UploadTexture
+  0.00      0.35     0.00        2     0.00     0.00  PlatformDisableCursor
+  0.00      0.35     0.00        2     0.00     0.00  ReadFileAndNullTerminate
+  0.00      0.35     0.00        1     0.00     0.00  AssetsInit
+  0.00      0.35     0.00        1     0.00    10.00  AssetsLoadAll
+  0.00      0.35     0.00        1     0.00     0.00  AssetsUnloadAll
+  0.00      0.35     0.00        1     0.00   350.06  AudioInit
+  0.00      0.35     0.00        1     0.00     0.00  CameraInit
+  0.00      0.35     0.00        1     0.00   350.06  GameRun
+  0.00      0.35     0.00        1     0.00   350.06  GameStart
+  0.00      0.35     0.00        1     0.00     0.00  GameStateInit
+  0.00      0.35     0.00        1     0.00     0.00  LoadConfig
+  0.00      0.35     0.00        1     0.00     0.00  OpenGLInit
+  0.00      0.35     0.00        1     0.00     0.00  OpenStream
+  0.00      0.35     0.00        1     0.00     0.00  PlatformHideCursor
+  0.00      0.35     0.00        1     0.00     0.00  PlatformOpenGLInit
+  0.00      0.35     0.00        1     0.00     0.00  PlatformSetCursorMode
+  0.00      0.35     0.00        1     0.00     0.00  RendererDestroy
+  0.00      0.35     0.00        1     0.00     0.00  RendererInit
+  0.00      0.35     0.00        1     0.00     0.00  ShaderCompile
+  0.00      0.35     0.00        1     0.00     0.00  WindowClose
+  0.00      0.35     0.00        1     0.00     0.00  WindowOpen
+
+			Call graph
+
+
+granularity: each sample hit covers 2 byte(s) for 2.86% of 0.35 seconds
+
+index % time    self  children    called     name
+                0.00    0.35       1/1           GameStart [3]
+[1]    100.0    0.00    0.35       1         AudioInit [1]
+                0.00    0.35       1/1           GameRun [2]
+                0.00    0.00       1/1           OpenStream [38]
+-----------------------------------------------
+                0.00    0.35       1/1           AudioInit [1]
+[2]    100.0    0.00    0.35       1         GameRun [2]
+                0.02    0.32    4709/4709        UpdateAndDrawEntities [5]
+                0.00    0.01       1/1           AssetsLoadAll [8]
+                0.00    0.00    4710/4710        WindowEvents [9]
+                0.00    0.00    4709/4709        RendererSwapBuffers [14]
+                0.00    0.00    4709/4709        RendererClear [13]
+                0.00    0.00    4709/4709        PlatformGetCursorPos [11]
+                0.00    0.00    4709/4709        CameraUpdate [10]
+                0.00    0.00     313/313         WindowSetTitle [16]
+                0.00    0.00       1/1           WindowOpen [46]
+                0.00    0.00       1/1           RendererInit [43]
+                0.00    0.00       1/1           PlatformSetCursorMode [41]
+                0.00    0.00       1/1           GameStateInit [35]
+                0.00    0.00       1/1           CameraInit [34]
+                0.00    0.00       1/1           AssetsUnloadAll [33]
+                0.00    0.00       1/1           RendererDestroy [42]
+                0.00    0.00       1/1           WindowClose [45]
+-----------------------------------------------
+                0.00    0.35       1/1           main [4]
+[3]    100.0    0.00    0.35       1         GameStart [3]
+                0.00    0.35       1/1           AudioInit [1]
+                0.00    0.00       1/1           LoadConfig [36]
+-----------------------------------------------
+                                                 <spontaneous>
+[4]    100.0    0.00    0.35                 main [4]
+                0.00    0.35       1/1           GameStart [3]
+-----------------------------------------------
+                0.02    0.32    4709/4709        GameRun [2]
+[5]     97.1    0.02    0.32    4709         UpdateAndDrawEntities [5]
+                0.32    0.00 1238461/1238461     DrawMesh [6]
+-----------------------------------------------
+                0.32    0.00 1238461/1238461     UpdateAndDrawEntities [5]
+[6]     91.4    0.32    0.00 1238461         DrawMesh [6]
+-----------------------------------------------
+                0.01    0.00       7/7           AssetsLoadAll [8]
+[7]      2.9    0.01    0.00       7         MeshLoadOBJ [7]
+                0.00    0.00       7/8           ReadFile [21]
+                0.00    0.00       7/14          MeshInit [20]
+-----------------------------------------------
+                0.00    0.01       1/1           GameRun [2]
+[8]      2.9    0.00    0.01       1         AssetsLoadAll [8]
+                0.01    0.00       7/7           MeshLoadOBJ [7]
+                0.00    0.00       7/14          MeshInit [20]
+                0.00    0.00       6/6           LoadImage [26]
+                0.00    0.00       1/1           AssetsInit [32]
+-----------------------------------------------
+                0.00    0.00    4710/4710        GameRun [2]
+[9]      0.0    0.00    0.00    4710         WindowEvents [9]
+                0.00    0.00    4709/4709        PlatformWarpCursor [12]
+                0.00    0.00       1/2           PlatformDisableCursor [30]
+-----------------------------------------------
+                0.00    0.00    4709/4709        GameRun [2]
+[10]     0.0    0.00    0.00    4709         CameraUpdate [10]
+-----------------------------------------------
+                0.00    0.00    4709/4709        GameRun [2]
+[11]     0.0    0.00    0.00    4709         PlatformGetCursorPos [11]
+-----------------------------------------------
+                0.00    0.00    4709/4709        WindowEvents [9]
+[12]     0.0    0.00    0.00    4709         PlatformWarpCursor [12]
+-----------------------------------------------
+                0.00    0.00    4709/4709        GameRun [2]
+[13]     0.0    0.00    0.00    4709         RendererClear [13]
+-----------------------------------------------
+                0.00    0.00    4709/4709        GameRun [2]
+[14]     0.0    0.00    0.00    4709         RendererSwapBuffers [14]
+                0.00    0.00    4709/4709        WindowSwapBuffers [15]
+-----------------------------------------------
+                0.00    0.00    4709/4709        RendererSwapBuffers [14]
+[15]     0.0    0.00    0.00    4709         WindowSwapBuffers [15]
+-----------------------------------------------
+                0.00    0.00     313/313         GameRun [2]
+[16]     0.0    0.00    0.00     313         WindowSetTitle [16]
+-----------------------------------------------
+                0.00    0.00     263/263         GameAddEntity [18]
+[17]     0.0    0.00    0.00     263         EntityInit [17]
+-----------------------------------------------
+                0.00    0.00     263/263         GameStateInit [35]
+[18]     0.0    0.00    0.00     263         GameAddEntity [18]
+                0.00    0.00     263/263         EntityInit [17]
+-----------------------------------------------
+                0.00    0.00      21/21          UploadModel [25]
+[19]     0.0    0.00    0.00      21         StoreAttrib [19]
+-----------------------------------------------
+                0.00    0.00       7/14          MeshLoadOBJ [7]
+                0.00    0.00       7/14          AssetsLoadAll [8]
+[20]     0.0    0.00    0.00      14         MeshInit [20]
+-----------------------------------------------
+                0.00    0.00       1/8           LoadConfig [36]
+                0.00    0.00       7/8           MeshLoadOBJ [7]
+[21]     0.0    0.00    0.00       8         ReadFile [21]
+-----------------------------------------------
+                0.00    0.00       7/7           UploadAndIndexModel [24]
+[22]     0.0    0.00    0.00       7         MeshSortIndexedData [22]
+-----------------------------------------------
+                0.00    0.00       7/7           AssetsUnloadAll [33]
+[23]     0.0    0.00    0.00       7         MeshUnload [23]
+-----------------------------------------------
+                0.00    0.00       7/7           RendererInit [43]
+[24]     0.0    0.00    0.00       7         UploadAndIndexModel [24]
+                0.00    0.00       7/7           MeshSortIndexedData [22]
+                0.00    0.00       7/7           UploadModel [25]
+-----------------------------------------------
+                0.00    0.00       7/7           UploadAndIndexModel [24]
+[25]     0.0    0.00    0.00       7         UploadModel [25]
+                0.00    0.00      21/21          StoreAttrib [19]
+-----------------------------------------------
+                0.00    0.00       6/6           AssetsLoadAll [8]
+[26]     0.0    0.00    0.00       6         LoadImage [26]
+                0.00    0.00       6/6           LoadPNGFromFile [27]
+-----------------------------------------------
+                0.00    0.00       6/6           LoadImage [26]
+[27]     0.0    0.00    0.00       6         LoadPNGFromFile [27]
+-----------------------------------------------
+                0.00    0.00       6/6           AssetsUnloadAll [33]
+[28]     0.0    0.00    0.00       6         UnloadImage [28]
+-----------------------------------------------
+                0.00    0.00       6/6           RendererInit [43]
+[29]     0.0    0.00    0.00       6         UploadTexture [29]
+-----------------------------------------------
+                0.00    0.00       1/2           PlatformSetCursorMode [41]
+                0.00    0.00       1/2           WindowEvents [9]
+[30]     0.0    0.00    0.00       2         PlatformDisableCursor [30]
+-----------------------------------------------
+                0.00    0.00       2/2           ShaderCompile [44]
+[31]     0.0    0.00    0.00       2         ReadFileAndNullTerminate [31]
+-----------------------------------------------
+                0.00    0.00       1/1           AssetsLoadAll [8]
+[32]     0.0    0.00    0.00       1         AssetsInit [32]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[33]     0.0    0.00    0.00       1         AssetsUnloadAll [33]
+                0.00    0.00       7/7           MeshUnload [23]
+                0.00    0.00       6/6           UnloadImage [28]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[34]     0.0    0.00    0.00       1         CameraInit [34]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[35]     0.0    0.00    0.00       1         GameStateInit [35]
+                0.00    0.00     263/263         GameAddEntity [18]
+-----------------------------------------------
+                0.00    0.00       1/1           GameStart [3]
+[36]     0.0    0.00    0.00       1         LoadConfig [36]
+                0.00    0.00       1/8           ReadFile [21]
+-----------------------------------------------
+                0.00    0.00       1/1           RendererInit [43]
+[37]     0.0    0.00    0.00       1         OpenGLInit [37]
+                0.00    0.00       1/1           PlatformOpenGLInit [40]
+-----------------------------------------------
+                0.00    0.00       1/1           AudioInit [1]
+[38]     0.0    0.00    0.00       1         OpenStream [38]
+-----------------------------------------------
+                0.00    0.00       1/1           PlatformSetCursorMode [41]
+[39]     0.0    0.00    0.00       1         PlatformHideCursor [39]
+-----------------------------------------------
+                0.00    0.00       1/1           OpenGLInit [37]
+[40]     0.0    0.00    0.00       1         PlatformOpenGLInit [40]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[41]     0.0    0.00    0.00       1         PlatformSetCursorMode [41]
+                0.00    0.00       1/2           PlatformDisableCursor [30]
+                0.00    0.00       1/1           PlatformHideCursor [39]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[42]     0.0    0.00    0.00       1         RendererDestroy [42]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[43]     0.0    0.00    0.00       1         RendererInit [43]
+                0.00    0.00       7/7           UploadAndIndexModel [24]
+                0.00    0.00       6/6           UploadTexture [29]
+                0.00    0.00       1/1           OpenGLInit [37]
+                0.00    0.00       1/1           ShaderCompile [44]
+-----------------------------------------------
+                0.00    0.00       1/1           RendererInit [43]
+[44]     0.0    0.00    0.00       1         ShaderCompile [44]
+                0.00    0.00       2/2           ReadFileAndNullTerminate [31]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[45]     0.0    0.00    0.00       1         WindowClose [45]
+-----------------------------------------------
+                0.00    0.00       1/1           GameRun [2]
+[46]     0.0    0.00    0.00       1         WindowOpen [46]
+-----------------------------------------------
+
+Index by function name
+
+  [32] AssetsInit             [20] MeshInit               [42] RendererDestroy
+   [8] AssetsLoadAll           [7] MeshLoadOBJ            [43] RendererInit
+  [33] AssetsUnloadAll        [22] MeshSortIndexedData    [14] RendererSwapBuffers
+   [1] AudioInit              [23] MeshUnload             [44] ShaderCompile
+  [34] CameraInit             [37] OpenGLInit             [19] StoreAttrib
+  [10] CameraUpdate           [38] OpenStream             [28] UnloadImage
+   [6] DrawMesh               [30] PlatformDisableCursor   [5] UpdateAndDrawEntities
+  [17] EntityInit             [11] PlatformGetCursorPos   [24] UploadAndIndexModel
+  [18] GameAddEntity          [39] PlatformHideCursor     [25] UploadModel
+   [2] GameRun                [40] PlatformOpenGLInit     [29] UploadTexture
+   [3] GameStart              [41] PlatformSetCursorMode  [45] WindowClose
+  [35] GameStateInit          [12] PlatformWarpCursor      [9] WindowEvents
+  [36] LoadConfig             [21] ReadFile               [46] WindowOpen
+  [26] LoadImage              [31] ReadFileAndNullTerminate [16] WindowSetTitle
+  [27] LoadPNGFromFile        [13] RendererClear          [15] WindowSwapBuffers

@@ -27,6 +27,12 @@ typedef enum texture_id {
   MAX_TEXTURE,
 } texture_id;
 
+typedef enum cubemap_id {
+  CUBEMAP_DEFAULT,
+
+  MAX_CUBEMAP,
+} cubemap_id;
+
 static const char* MeshFileNames[MAX_MESH] = {
   "cube",
   "stone",
@@ -48,10 +54,17 @@ static const char* TextureFileNames[MAX_TEXTURE] = {
   "monster",
 };
 
+static const char* CubemapFileNames[MAX_TEXTURE] = {
+  "pan_ares_lg",
+};
+
 typedef struct assets {
   mesh Meshes[MAX_MESH];
   u32 MeshCount;
 
   image Textures[MAX_TEXTURE];
   u32 TextureCount;
+
+  image Cubemaps[MAX_CUBEMAP];
+  u32 CubemapCount;
 } assets;

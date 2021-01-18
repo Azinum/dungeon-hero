@@ -20,35 +20,39 @@ void CameraInit(camera* Camera, v3 Position) {
 }
 
 void CameraUpdate(camera* Camera) {
+  Camera->Right.Y = 0;
+  Camera->Forward.Y = 0;
+
   if (KeyDown[KEY_D]) {
     Camera->P = AddToV3(Camera->P, V3(
       Camera->Right.X * 5.0f * GameState.DeltaTime,
-      0, //Camera->Right.Y * 5.0f * GameState.DeltaTime,
+      Camera->Right.Y * 5.0f * GameState.DeltaTime,
       Camera->Right.Z * 5.0f * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_A]) {
     Camera->P = AddToV3(Camera->P, V3(
       -Camera->Right.X * 5.0f * GameState.DeltaTime,
-      0, //-Camera->Right.Y * 5.0f * GameState.DeltaTime,
+      -Camera->Right.Y * 5.0f * GameState.DeltaTime,
       -Camera->Right.Z * 5.0f * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_W]) {
     Camera->P = AddToV3(Camera->P, V3(
       Camera->Forward.X * 5.0f * GameState.DeltaTime,
-      0, // Camera->Forward.Y * 5.0f * GameState.DeltaTime,
+      Camera->Forward.Y * 5.0f * GameState.DeltaTime,
       Camera->Forward.Z * 5.0f * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_S]) {
     Camera->P = AddToV3(Camera->P, V3(
       -Camera->Forward.X * 5.0f * GameState.DeltaTime,
-      0, // -Camera->Forward.Y * 5.0f * GameState.DeltaTime,
+      -Camera->Forward.Y * 5.0f * GameState.DeltaTime,
       -Camera->Forward.Z * 5.0f * GameState.DeltaTime
     ));
   }
 
+#if 0
   // NOTE(lucas): Temporary!
   if (Camera->P.X < WorldMin.X + 1) {
     Camera->P.X = WorldMin.X + 1;
@@ -62,7 +66,7 @@ void CameraUpdate(camera* Camera) {
   if (Camera->P.Z > WorldMax.Z - 1) {
     Camera->P.Z = WorldMax.Z - 1;
   }
-
+#endif
   if (KeyDown[KEY_Z]) {
     Camera->P.Y += 5.0f * GameState.DeltaTime;
   }

@@ -10,9 +10,9 @@
 #include "mesh.h"
 #include "audio.h"
 #include "asset.h"
+#include "camera.h"
 #include "renderer.h"
 #include "platform.h"
-#include "camera.h"
 #include "entity.h"
 
 #define MAX_ENTITY 512

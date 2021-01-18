@@ -18,3 +18,5 @@ typedef struct color {
 #endif
 
 static void RendererUpdateBuffers(struct render_state* RenderState);
+
+static void DrawSkybox(struct render_state* RenderState, struct assets* Assets, struct camera* Camera, u32 TextureId);

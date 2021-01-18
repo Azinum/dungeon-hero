@@ -14,8 +14,10 @@ typedef struct render_state {
   u32 ModelCount;
 
   u32 Textures[MAX_TEXTURE];
-
   u32 TextureCount;
+
+  u32 Cubemaps[MAX_CUBEMAP];
+  u32 CubemapCount;
 } render_state;
 
 i32 RendererInit(render_state* RenderState, assets* Assets);

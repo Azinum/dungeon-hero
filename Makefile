@@ -27,7 +27,7 @@ debug:
 	gdb ./${BUILD_DIR}/${PROG_NAME}
 
 debug_profile:
-	${CC} ${FLAGS} ${LIBS} ${O_DEBUG_PROFILE}
+	${CC} ${FLAGS} ${LIBS} ${O_DEBUG_PROFILE} ${RENDERER}
 	./${BUILD_DIR}/${PROG_NAME}
 	gprof -b ./${BUILD_DIR}/${PROG_NAME} gmon.out > ./${PROF_DIR}/profile.out
 	mv gmon.out ./${PROF_DIR}

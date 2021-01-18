@@ -548,6 +548,11 @@ static void RendererUpdateBuffers(render_state* RenderState) {
   RenderState->ZBuffer = calloc(WindowWidth() * WindowHeight(), sizeof(float));
 }
 
+static void DrawSkybox(render_state* RenderState, assets* Assets, camera* Camera, u32 TextureId) {
+  (void)RenderState; (void)Assets; (void)TextureId;
+  // TODO(lucas): Implement
+}
+
 void RendererDestroy(render_state* RenderState) {
   FrameBufferDestroy(&RenderState->FrameBuffer);
   free(RenderState->ZBuffer);

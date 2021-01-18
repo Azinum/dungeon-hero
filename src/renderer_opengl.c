@@ -2,6 +2,52 @@
 
 static render_state RenderState;
 static i32 DefaultShader;
+static i32 SkyboxShader;
+static model CubeModel;
+
+float SkyboxVertices[] = {
+	-1.0f,  1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	-1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f
+};
 
 #define ERR_BUFFER_SIZE 512
 
@@ -45,6 +91,24 @@ static i32 UploadModel(model* Model, mesh* Mesh) {
   return 0;
 }
 
+static i32 UploadModel2(model* Model, float* Vertices, u32 VertexCount) {
+  Model->DrawCount = VertexCount;
+
+  glGenVertexArrays(1, &Model->VAO);
+  glBindVertexArray(Model->VAO);
+
+  glGenBuffers(1, &Model->VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, Model->VBO);
+  glBufferData(GL_ARRAY_BUFFER, VertexCount * sizeof(*Vertices), Vertices, GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, 3 * sizeof(float), GL_FALSE, (void*)0);
+
+  glBindVertexArray(0);
+  return 0;
+}
+
 static i32 UploadAndIndexModel(model* Model, mesh* Mesh) {
   i32 IndexResult = MeshSortIndexedData(Mesh);
   if (IndexResult != 0) {
@@ -57,13 +121,28 @@ static i32 UploadTexture(u32* TextureId, image* Texture) {
   glGenTextures(1, TextureId);
   glBindTexture(GL_TEXTURE_2D, *TextureId);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glGenerateMipmap(GL_TEXTURE_2D);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Texture->Width, Texture->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Texture->PixelBuffer);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  return 0;
+}
+
+static i32 UploadCubemapTexture(u32* TextureId, image* Texture) {
+  glGenTextures(1, TextureId);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, *TextureId);
+
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+  glTexImage2D(GL_TEXTURE_CUBE_MAP, 0, GL_RGBA, Texture->Width, Texture->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Texture->PixelBuffer);
   glBindTexture(GL_TEXTURE_2D, 0);
   return 0;
 }
@@ -151,6 +230,7 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
 
+  // TODO(lucas): Do this once elsewhere!
   View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
   // View = InverseMat4(View);
 
@@ -189,6 +269,7 @@ static void OpenGLInit() {
   }
 
   glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
   glShadeModel(GL_FLAT);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -214,7 +295,9 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
     DefaultShader = ShaderCompile("resource/shader/default");
   }
 
-  if (DefaultShader < 0) {
+  SkyboxShader = ShaderCompile("resource/shader/skybox");
+
+  if (DefaultShader < 0 || SkyboxShader < 0) {
     fprintf(stderr, "Failed to load shader(s)\n");
     return -1;
   }
@@ -236,6 +319,14 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
     RenderState->Textures[Index] = TextureId;
     RenderState->TextureCount++;
   }
+  for (u32 Index = 0; Index < Assets->CubemapCount; ++Index) {
+    image* Texture = &Assets->Cubemaps[Index];
+    u32 TextureId = 0;
+    UploadCubemapTexture(&TextureId, Texture);
+    RenderState->Cubemaps[Index] = TextureId;
+    RenderState->CubemapCount++;
+  }
+	UploadModel2(&CubeModel, SkyboxVertices, ARR_SIZE(SkyboxVertices) / 3);
   return 0;
 }
 
@@ -250,10 +341,39 @@ static void RendererClear(u8 ColorR, u8 ColorG, u8 ColorB) {
 
 static void RendererUpdateBuffers(render_state* RenderState) {
   (void)RenderState;
-  // TODO(lucas): Implement this!!
+  // TODO(lucas): Implement
+}
+
+static void DrawSkybox(render_state* RenderState, assets* Assets, camera* Camera, u32 TextureId) {
+  (void)Assets;
+  u32 Texture = RenderState->Cubemaps[TextureId];
+  model* Model = &CubeModel;
+  u32 Handle = SkyboxShader;
+  glUseProgram(Handle);
+  glDepthFunc(GL_LEQUAL);
+
+  // TODO(lucas): Do this once elsewhere
+  View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
+
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, Texture);
+
+  glBindVertexArray(Model->VAO);
+  glDrawArrays(GL_TRIANGLES, 0, Model->DrawCount);
+  glBindVertexArray(0);
+
+  glDepthFunc(GL_LESS);
+  glUseProgram(0);
 }
 
 void RendererDestroy(render_state* RenderState) {
+  glDeleteVertexArrays(1, &CubeModel.VAO);
+  glDeleteVertexArrays(1, &CubeModel.VBO);
+  CubeModel.DrawCount = 0;
+
   for (u32 Index = 0; Index < RenderState->ModelCount; ++Index) {
     model* Model = &RenderState->Models[Index];
     glDeleteVertexArrays(1, &Model->VAO);
@@ -261,10 +381,19 @@ void RendererDestroy(render_state* RenderState) {
     glDeleteBuffers(1, &Model->EBO);
   }
   RenderState->ModelCount = 0;
+
   for (u32 Index = 0; Index < RenderState->TextureCount; ++Index) {
     u32 TextureId = RenderState->Textures[Index];
     glDeleteTextures(1, &TextureId);
   }
   RenderState->TextureCount = 0;
+
+  for (u32 Index = 0; Index < RenderState->CubemapCount; ++Index) {
+    u32 TextureId = RenderState->Cubemaps[Index];
+    glDeleteTextures(1, &TextureId);
+  }
+  RenderState->CubemapCount = 0;
+
   glDeleteShader(DefaultShader);
+  glDeleteShader(SkyboxShader);
 }

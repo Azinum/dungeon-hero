@@ -33,12 +33,12 @@ static void GameStateInit(game_state* Game) {
 #if 1
   for (i32 Z = WorldMin.Z; Z <= WorldMax.Z; ++Z) {
     for (i32 X = WorldMin.X; X <= WorldMax.X; ++X) {
-      GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_TEST);
+      GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_UV);
 
       if (X == WorldMin.X || X == WorldMax.X || Z == WorldMin.Z || Z == WorldMax.Z) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
-        GameAddEntity(V3(X, 1, Z), MESH_CUBE, TEXTURE_UV);
-        GameAddEntity(V3(X, 2, Z), MESH_CUBE, TEXTURE_UV);
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_TEST);
+        GameAddEntity(V3(X, 1, Z), MESH_CUBE, TEXTURE_TEST);
+        GameAddEntity(V3(X, 2, Z), MESH_CUBE, TEXTURE_TEST);
         continue;
       }
       if (!(rand() % 30)) {
@@ -125,6 +125,7 @@ static void GameRun() {
       if (LastFrame > 1.0f) {
         LastFrame = 1.0f;
       }
+      DrawSkybox(Renderer, &Assets, &Camera, CUBEMAP_DEFAULT);
       RendererSwapBuffers(Renderer);
       RendererClear(G_BackgroundColor.X, G_BackgroundColor.Y, G_BackgroundColor.Z);
     }

@@ -24,7 +24,7 @@ static float LightStrength = 5.0f;
 double MouseX = 0;
 double MouseY = 0;
 
-v3 WorldMin = V3(-7, 0, 4);
+v3 WorldMin = V3(-13, 0, 4);
 v3 WorldMax = V3(5, 0, 15);
 
 static void GameStateInit(game_state* Game) {
@@ -44,17 +44,17 @@ static void GameStateInit(game_state* Game) {
         GameAddEntity(V3(X, 2, Z), MESH_CUBE, TEXTURE_TEST);
         continue;
       }
-      if (!(rand() % 30)) {
-        entity* Cube = GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
-        Cube->Type = ENTITY_ROTATOR;
+      if (!(rand() % 40)) {
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
         continue;
       }
-      if (!(rand() % 30)) {
-        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_UV);
+      if (!(rand() % 49)) {
+        entity* Monster = GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_MONSTER);
+        Monster->Type = ENTITY_ROTATOR;
         continue;
       }
-      if (!(rand() % 39)) {
-        GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_MONSTER);
+      if (!(rand() % 60)) {
+        GameAddEntity(V3(X, -1, Z), MESH_MONSTER_ARM, TEXTURE_MONSTER);
         continue;
       }
     }

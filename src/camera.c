@@ -7,6 +7,7 @@ static double LastY = 0;
 static double XOffset = 0;
 static double YOffset = 0;
 
+#define MOVEMENT_SPEED 6.0f
 #define LOOK_SENSITIVITY 150.0f
 
 void CameraInit(camera* Camera, v3 Position) {
@@ -28,30 +29,30 @@ void CameraUpdate(camera* Camera) {
 
   if (KeyDown[KEY_D]) {
     Camera->P = AddToV3(Camera->P, V3(
-      Camera->Right.X * 5.0f * GameState.DeltaTime,
-      Camera->Right.Y * 5.0f * GameState.DeltaTime,
-      Camera->Right.Z * 5.0f * GameState.DeltaTime
+      Camera->Right.X * MOVEMENT_SPEED * GameState.DeltaTime,
+      Camera->Right.Y * MOVEMENT_SPEED * GameState.DeltaTime,
+      Camera->Right.Z * MOVEMENT_SPEED * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_A]) {
     Camera->P = AddToV3(Camera->P, V3(
-      -Camera->Right.X * 5.0f * GameState.DeltaTime,
-      -Camera->Right.Y * 5.0f * GameState.DeltaTime,
-      -Camera->Right.Z * 5.0f * GameState.DeltaTime
+      -Camera->Right.X * MOVEMENT_SPEED * GameState.DeltaTime,
+      -Camera->Right.Y * MOVEMENT_SPEED * GameState.DeltaTime,
+      -Camera->Right.Z * MOVEMENT_SPEED * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_W]) {
     Camera->P = AddToV3(Camera->P, V3(
-      Camera->Forward.X * 5.0f * GameState.DeltaTime,
-      Camera->Forward.Y * 5.0f * GameState.DeltaTime,
-      Camera->Forward.Z * 5.0f * GameState.DeltaTime
+      Camera->Forward.X * MOVEMENT_SPEED * GameState.DeltaTime,
+      Camera->Forward.Y * MOVEMENT_SPEED * GameState.DeltaTime,
+      Camera->Forward.Z * MOVEMENT_SPEED * GameState.DeltaTime
     ));
   }
   if (KeyDown[KEY_S]) {
     Camera->P = AddToV3(Camera->P, V3(
-      -Camera->Forward.X * 5.0f * GameState.DeltaTime,
-      -Camera->Forward.Y * 5.0f * GameState.DeltaTime,
-      -Camera->Forward.Z * 5.0f * GameState.DeltaTime
+      -Camera->Forward.X * MOVEMENT_SPEED * GameState.DeltaTime,
+      -Camera->Forward.Y * MOVEMENT_SPEED * GameState.DeltaTime,
+      -Camera->Forward.Z * MOVEMENT_SPEED * GameState.DeltaTime
     ));
   }
 

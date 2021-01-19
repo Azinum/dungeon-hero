@@ -9,6 +9,7 @@ typedef enum mesh_id {
   MESH_COOKING_POT,
   MESH_PLANE,
   MESH_MONSTER,
+  MESH_MONSTER_ARM,
   MESH_TEA_POT,
   MESH_STALL,
 
@@ -49,6 +50,7 @@ static const char* MeshFileNames[MAX_MESH] = {
   "cooking_pot",
   "plane",
   "monster",
+  "monster_arm",
   "teapot",
   "stall",
 };

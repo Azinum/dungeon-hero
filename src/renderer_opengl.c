@@ -245,7 +245,7 @@ inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H,
   (void)RenderState; (void)X; (void)Y; (void)W; (void)H; (void)XOffset; (void)YOffset; (void)XRange; (void)YRange; (void)Texture; (void)Tint;
 }
 
-static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float Rotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float LightStrength, float Rotation, v3 Scaling, camera* Camera) {
   (void)Assets;
   u32 Handle = DefaultShader;
   glUseProgram(Handle);
@@ -263,6 +263,7 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
   glUniform3f(glGetUniformLocation(Handle, "Light"), Light.X, Light.Y, Light.Z);
+  glUniform1f(glGetUniformLocation(Handle, "LightStrength"), LightStrength);
 
   model* Model = &RenderState->Models[MeshId];
 

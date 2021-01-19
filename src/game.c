@@ -16,8 +16,11 @@
 #define BUFFER_SIZE 512
 #define MAX_DELTA_TIME 0.5f
 
+#define LIGHT_STRENGTH 20.0f
+
 game_state GameState;
-static v3 Light = V3(0.0f, 0.7f, 8.0f);
+static v3 Light = V3(0.0f, 0.5f, 7.0f);
+static float LightStrength = 5.0f;
 double MouseX = 0;
 double MouseY = 0;
 
@@ -94,7 +97,8 @@ static void GameRun() {
     Game->Time += Game->DeltaTime;
     LastFrame += Game->DeltaTime;
 
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, &Camera);
+    LightStrength = LIGHT_STRENGTH + 30.0f * (0.2f * sin(Game->Time * 1.5f));
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, LightStrength, &Camera);
     PlatformGetCursorPos(&MouseX, &MouseY);
     CameraUpdate(&Camera);
 

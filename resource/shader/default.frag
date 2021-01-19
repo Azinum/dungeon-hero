@@ -10,17 +10,21 @@ out vec4 OutColor;
 
 uniform sampler2D Texture;
 uniform vec3 Light;
+uniform float LightStrength;
 
 vec3 LightColor = vec3(1, 1, 1);
 
 void main() {
-	float AmbientStrength = 0.1;
+	float AmbientStrength = 0.02;
 	vec3 Ambient = AmbientStrength * LightColor;
 
 	vec3 Normal = normalize(SurfaceNormal);
-	vec3 LightDirection = normalize(Light - FragPos);
-	float Delta = max(dot(Normal, LightDirection), 0.0);
-	vec3 Diffuse = Delta * LightColor;
+	vec3 LightDirection = Light - FragPos;
 
-	OutColor = vec4((Ambient + Diffuse), 1.0) * texture(Texture, TexCoord);
+	float Brightness = dot(Normal, LightDirection) / (length(LightDirection) * length(Normal));
+	Brightness = clamp(Brightness, 0, 1);
+
+	vec3 Diffuse = Brightness * LightColor;
+
+	OutColor = vec4((Diffuse * Ambient * LightStrength), 1.0) * texture(Texture, TexCoord);
 }

@@ -123,8 +123,8 @@ void PlatformOpenGLInit() {
 }
 
 void PlatformWarpCursor(double X, double Y) {
-  Win.LastWarpedMouseX = (i32)X;
-  Win.LastWarpedMouseY = (i32)Y;
+  Win.LastWarpedMouseX = X;
+  Win.LastWarpedMouseY = Y;
 
   XWarpPointer(
       Win.Disp,

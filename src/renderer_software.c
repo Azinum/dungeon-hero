@@ -7,8 +7,6 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-static float LightStrength = 0;
-
 #define LIGHT_STRENGTH 1
 #define NO_LIGHTING 0
 #define DITHERING 0
@@ -440,7 +438,7 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 
 #define MAX_CLIPPED_TRIANGLES 8
 
-static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float YRotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float LightStrength, float YRotation, v3 Scaling, camera* Camera) {
   mesh* Mesh = &Assets->Meshes[MeshId];
   image* Texture = &Assets->Textures[TextureId];
   Assert(Mesh);
@@ -494,7 +492,8 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
       v3 LightDelta = DifferenceV3(Light, R[0]);
       v3 LightNormal = NormalizeVec3(LightDelta);
       float LightDistance = DistanceV3(Light, R[0]);
-      LightStrength = LIGHT_STRENGTH + 1.0f * (0.1f * sin(GameState.Time * 4.0f));
+      // TODO(lucas): Unify hardware and software rendering lighting (light intensity for starters)
+      LightStrength = LIGHT_STRENGTH + 1.0f * (0.1f * sin(GameState.Time * 2.0f));
       float Attenuation = LightStrength / (LightDistance * 0.5f);
       LightFactor = DotVec3(Normal, LightNormal) * Attenuation;
     }

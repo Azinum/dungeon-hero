@@ -10,7 +10,7 @@ static entity* EntityInit(entity* E, v3 P, mesh_id MeshId, texture_id TextureId)
   return E;
 }
 
-static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, render_state* RenderState, assets* Assets, v3 Light, camera* Camera) {
+static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, render_state* RenderState, assets* Assets, v3 Light, float LightStrength, camera* Camera) {
   for (u32 EntityIndex = 0; EntityIndex < EntityCount; ++EntityIndex) {
     entity* Entity = &Entities[EntityIndex];
     v3 P = Entity->P;
@@ -36,6 +36,6 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, render_stat
     }
 #else
 #endif
-    DrawMesh(RenderState, Assets, Entity->MeshId, Entity->TextureId, P, Light, Entity->Rotation, Entity->Scaling, Camera);
+    DrawMesh(RenderState, Assets, Entity->MeshId, Entity->TextureId, P, Light, LightStrength, Entity->Rotation, Entity->Scaling, Camera);
   }
 }

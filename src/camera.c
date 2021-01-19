@@ -4,6 +4,8 @@ static camera Camera;
 
 static double LastX = 0;
 static double LastY = 0;
+static double XOffset = 0;
+static double YOffset = 0;
 
 #define LOOK_SENSITIVITY 150.0f
 
@@ -19,7 +21,7 @@ void CameraInit(camera* Camera, v3 Position) {
   Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 500);
 }
 
-// TODO(lucas): There seem to be something off with the camera movement. Panning the camera to the left seems easier to do than to the right. Wat dis? Some floating point thingy?
+// TODO(lucas): There seem to be something off with the camera movement. Panning the camera to the left seems easier to do than to the right. Wat dis? Some floating point error thingy?
 void CameraUpdate(camera* Camera) {
   Camera->Right.Y = 0;
   Camera->Forward.Y = 0;
@@ -88,13 +90,13 @@ void CameraUpdate(camera* Camera) {
     Camera->Pitch += LOOK_SENSITIVITY * GameState.DeltaTime;
   }
 
-  double XOffset = MouseX - LastX;
-  double YOffset = MouseY - LastY;
+  XOffset = MouseX - LastX;
+  YOffset = LastY - MouseY;
   LastX = MouseX;
   LastY = MouseY;
 
   XOffset *= G_Sensitivity;
-  YOffset *= -G_Sensitivity;
+  YOffset *= G_Sensitivity;
 
   Camera->Yaw += XOffset;
   Camera->Pitch += YOffset;

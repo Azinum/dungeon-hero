@@ -5,6 +5,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/XInput2.h>
 
 #if RENDERER_OPENGL
 
@@ -181,6 +182,24 @@ void PlatformHideCursor() {
 
 void PlatformShowCursor() {
   XDefineCursor(Win.Disp, Win.Win, None);
+}
+
+void PlatformEnableRawMouseMotion() {
+  XIEventMask E;
+  u8 Mask[XIMaskLen(XI_RawMotion)] = {0};
+  E.deviceid = XIAllMasterDevices;
+  E.mask_len = sizeof(Mask);
+  E.mask = Mask;
+  XISelectEvents(Win.Disp, Win.Win, &E, 1);
+}
+
+void PlatformDisableRawMouseMotion() {
+  XIEventMask E;
+  u8 Mask[] = {0};
+  E.deviceid = XIAllMasterDevices;
+  E.mask_len = sizeof(Mask);
+  E.mask = Mask;
+  XISelectEvents(Win.Disp, Win.Win, &E, 1);
 }
 
 i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {

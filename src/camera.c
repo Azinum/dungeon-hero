@@ -19,6 +19,7 @@ void CameraInit(camera* Camera, v3 Position) {
   Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 500);
 }
 
+// TODO(lucas): There seem to be something off with the camera movement. Panning the camera to the left seems easier to do than to the right. Wat dis? Some floating point thingy?
 void CameraUpdate(camera* Camera) {
   Camera->Right.Y = 0;
   Camera->Forward.Y = 0;

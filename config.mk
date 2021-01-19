@@ -20,7 +20,7 @@ SRC=src/main.c
 
 BUILD_DIR=build
 
-LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lGL -lGLU -lGLEW -lportaudio
+LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lXi -lGL -lGLU -lGLEW -lportaudio
 
 LIBS_MAC=-lpng -lm -lGLEW -lportaudio -framework OpenGL -framework Cocoa
 

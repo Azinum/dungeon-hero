@@ -25,6 +25,10 @@ void PlatformHideCursor();
 
 void PlatformShowCursor();
 
+void PlatformEnableRawMouseMotion();
+
+void PlatformDisableRawMouseMotion();
+
 i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen);
 
 i32 WindowWidth();

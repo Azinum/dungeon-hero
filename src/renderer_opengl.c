@@ -152,7 +152,7 @@ static i32 UploadCubemapTexture(u32* TextureId, image* Texture) {
   return 0;
 }
 
-// TODO(lucas): The top texture seems to be rotated wrong, is this an issue with the cubemapping or is it the skyboxes (textures) themselves? Fix!
+// TODO(lucas): The top and bottom textures seem to be rotated wrong, is this an issue with the cubemapping or is it the skyboxes (textures) themselves? Fix!
 static i32 UploadSkyboxTexture(u32* TextureId, u32 SkyboxId, assets* Assets) {
   glGenTextures(1, TextureId);
   glBindTexture(GL_TEXTURE_CUBE_MAP, *TextureId);

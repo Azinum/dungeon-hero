@@ -70,7 +70,10 @@ static void GameRun() {
   if (RendererInit(Renderer, &Assets) != 0) {
     return;
   }
+
   PlatformSetCursorMode(CURSOR_DISABLED);
+  PlatformEnableRawMouseMotion();
+
   GameStateInit(Game);
   CameraInit(&Camera, V3(0, 1.5f, 5));
 

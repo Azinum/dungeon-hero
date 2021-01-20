@@ -451,7 +451,7 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
   u32 ClippedCount = 0;
   (void)Clipped; (void)ClippedCount;
 
-  View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
+  // View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
   // View = InverseMat4(View);
 
   for (u32 Index = 0; Index < Mesh->IndexCount; Index += 3) {

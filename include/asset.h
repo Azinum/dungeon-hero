@@ -24,6 +24,7 @@ typedef enum texture_id {
   TEXTURE_STALL,
 
   TEXTURE_MONSTER,
+  TEXTURE_MONSTER_ARM,
 
   MAX_TEXTURE,
 } texture_id;
@@ -62,6 +63,7 @@ static const char* TextureFileNames[MAX_TEXTURE] = {
   "box",
   "stall",
   "monster",
+  "monster_arm",
 };
 
 // TODO(lucas): Implement an easier way of loading skyboxes!

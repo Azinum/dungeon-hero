@@ -375,12 +375,8 @@ i32 WindowEvents() {
       case EnterNotify: {
         const i32 X = E.xcrossing.x;
         const i32 Y = E.xcrossing.y;
-        VirtMouseX = X;
-        VirtMouseY = Y;
-        Win.MouseX = X;
-        Win.MouseY = Y;
-        LastMouseX = X;
-        LastMouseY = Y;
+        VirtMouseX = Win.MouseX = X;
+        VirtMouseY = Win.MouseY = Y;
         break;
       }
       case MotionNotify: {

@@ -1,6 +1,7 @@
 // camera.c
 
 static camera Camera;
+static const v3 WorldUp = V3(0.0f, 1.0f, 0.0f);
 
 static double LastX = 0;
 static double LastY = 0;
@@ -22,7 +23,6 @@ void CameraInit(camera* Camera, v3 Position) {
   Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 500);
 }
 
-// TODO(lucas): There seem to be something off with the camera movement. Panning the camera to the left seems easier to do than to the right. Wat dis? Some floating point error thingy?
 void CameraUpdate(camera* Camera) {
   Camera->Right.Y = 0;
   Camera->Forward.Y = 0;
@@ -113,7 +113,10 @@ void CameraUpdate(camera* Camera) {
     sin(ToRadians(Camera->Yaw)) * cos(ToRadians(Camera->Pitch))
   );
   Camera->Forward = NormalizeVec3(Direction);
-  const v3 WorldUp = V3(0.0f, 1.0f, 0.0f);
   Camera->Right = NormalizeVec3(Cross(Camera->Forward, WorldUp));
   Camera->Up = NormalizeVec3(Cross(Camera->Right, Camera->Forward));
+}
+
+void CameraUpdateViewMatrix(camera* Camera) {
+  View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
 }

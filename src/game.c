@@ -16,6 +16,7 @@
 #define BUFFER_SIZE 512
 #define MAX_DELTA_TIME 0.5f
 
+#undef LIGHT_STRENGTH
 #define LIGHT_STRENGTH 20.0f
 
 game_state GameState;
@@ -54,7 +55,7 @@ static void GameStateInit(game_state* Game) {
         continue;
       }
       if (!(rand() % 60)) {
-        GameAddEntity(V3(X, -1, Z), MESH_MONSTER_ARM, TEXTURE_MONSTER);
+        GameAddEntity(V3(X, -1, Z), MESH_MONSTER_ARM, TEXTURE_MONSTER_ARM);
         continue;
       }
     }
@@ -98,9 +99,10 @@ static void GameRun() {
     LastFrame += Game->DeltaTime;
 
     LightStrength = LIGHT_STRENGTH + 30.0f * (0.2f * sin(Game->Time * 1.5f));
-    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, LightStrength, &Camera);
     PlatformGetCursorPos(&MouseX, &MouseY);
     CameraUpdate(&Camera);
+    CameraUpdateViewMatrix(&Camera);
+    UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, LightStrength, &Camera);
 
     if (KeyPressed[KEY_COMMA]) {
       char Date[MAX_PATH_SIZE];

@@ -255,8 +255,7 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
   Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
   Model = MultiplyMat4(Model, Scale(Scaling));
 
-  // TODO(lucas): Do this once elsewhere!
-  View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
+  // View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
   // View = InverseMat4(View);
 
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
@@ -383,15 +382,14 @@ static void DrawSkybox(render_state* RenderState, assets* Assets, camera* Camera
   glUseProgram(Handle);
   glDepthFunc(GL_LEQUAL);
 
-  // TODO(lucas): Do this once elsewhere
-  View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
-  // NOTE(lucas): We translate the view to the origin here, this is so that we don't move outside the skybox
-  View.Elements[3][0] = 0;
-  View.Elements[3][1] = 0;
-  View.Elements[3][2] = 0;
+  mat4 ViewMatrix = View;
+  // NOTE(lucas): We translate the view matrix to the origin here, this is so that we don't move outside the skybox
+  ViewMatrix.Elements[3][0] = 0;
+  ViewMatrix.Elements[3][1] = 0;
+  ViewMatrix.Elements[3][2] = 0;
 
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
-  glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&ViewMatrix);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, Texture);

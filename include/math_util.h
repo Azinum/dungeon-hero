@@ -99,6 +99,13 @@ inline float Lerp(float V0, float V1, float T) {
   return (1.0f - T) * V0 + T * V1;
 }
 
+inline v2 LerpV2(v2 V0, v2 V1, v2 T) {
+  return V2(
+    Lerp(V0.X, V1.X, T.X),
+    Lerp(V0.Y, V1.Y, T.Y)
+  );
+}
+
 inline mat4 Translate(v3 T) {
   mat4 Result = Mat4D(1.0f);
 
@@ -132,6 +139,24 @@ inline v3 MultiplyMatrixVector(mat4 M, v3 A) {
     Result.X /= W;
     Result.Y /= W;
     Result.Z /= W;
+  }
+
+  return Result;
+}
+
+inline v3 MultiplyMatrixVectorW(mat4 M, v3 A, float* W) {
+  v3 Result;
+  float X = A.X, Y = A.Y, Z = A.Z;
+
+  Result.X = X * M.Elements[0][0] + Y * M.Elements[1][0] + Z * M.Elements[2][0] + M.Elements[3][0];
+  Result.Y = X * M.Elements[0][1] + Y * M.Elements[1][1] + Z * M.Elements[2][1] + M.Elements[3][1];
+  Result.Z = X * M.Elements[0][2] + Y * M.Elements[1][2] + Z * M.Elements[2][2] + M.Elements[3][2];
+  *W =       X * M.Elements[0][3] + Y * M.Elements[1][3] + Z * M.Elements[2][3] + M.Elements[3][3];
+
+  if (*W != 0.0f) {
+    Result.X /= *W;
+    Result.Y /= *W;
+    Result.Z /= *W;
   }
 
   return Result;

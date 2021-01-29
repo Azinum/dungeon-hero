@@ -298,11 +298,11 @@ i32 WindowOpen(i32 Width, i32 Height, const char* Title, u8 Fullscreen) {
   return 0;
 }
 
-inline i32 WindowWidth() {
+i32 WindowWidth() {
   return Win.Width;
 }
 
-inline i32 WindowHeight() {
+i32 WindowHeight() {
   return Win.Height;
 }
 

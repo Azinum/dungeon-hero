@@ -9,7 +9,6 @@ typedef enum mesh_id {
   MESH_COOKING_POT,
   MESH_PLANE,
   MESH_MONSTER,
-  MESH_MONSTER_ARM,
   MESH_TEA_POT,
   MESH_STALL,
 
@@ -24,7 +23,6 @@ typedef enum texture_id {
   TEXTURE_STALL,
 
   TEXTURE_MONSTER,
-  TEXTURE_MONSTER_ARM,
 
   MAX_TEXTURE,
 } texture_id;
@@ -51,7 +49,6 @@ static const char* MeshFileNames[MAX_MESH] = {
   "cooking_pot",
   "plane",
   "monster",
-  "monster_arm",
   "teapot",
   "stall",
 };
@@ -63,7 +60,6 @@ static const char* TextureFileNames[MAX_TEXTURE] = {
   "box",
   "stall",
   "monster",
-  "monster_arm",
 };
 
 // TODO(lucas): Implement an easier way of loading skyboxes!

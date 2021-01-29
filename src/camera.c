@@ -20,7 +20,7 @@ void CameraInit(camera* Camera, v3 Position) {
   Camera->Pitch = 0.0f;
   Camera->Yaw = 90.0f;
 
-  Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 500);
+  Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 100.0f);
 }
 
 void CameraUpdate(camera* Camera) {
@@ -56,7 +56,7 @@ void CameraUpdate(camera* Camera) {
     ));
   }
 
-#if 1
+#if 0
   // NOTE(lucas): Temporary!
   if (Camera->P.X < WorldMin.X + 1) {
     Camera->P.X = WorldMin.X + 1;

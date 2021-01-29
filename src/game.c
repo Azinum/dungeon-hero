@@ -17,11 +17,11 @@
 #define MAX_DELTA_TIME 0.5f
 
 #undef LIGHT_STRENGTH
-#define LIGHT_STRENGTH 20.0f
+#define LIGHT_STRENGTH 30.0f
 
 game_state GameState;
 static v3 Light = V3(0.0f, 0.5f, 7.0f);
-static float LightStrength = 5.0f;
+static float LightStrength = 15.0f;
 double MouseX = 0;
 double MouseY = 0;
 
@@ -34,7 +34,7 @@ static void GameStateInit(game_state* Game) {
   Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
-#if 1
+#if 0
   for (i32 Z = WorldMin.Z; Z <= WorldMax.Z; ++Z) {
     for (i32 X = WorldMin.X; X <= WorldMax.X; ++X) {
       GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_UV);
@@ -54,10 +54,14 @@ static void GameStateInit(game_state* Game) {
         Monster->Type = ENTITY_ROTATOR;
         continue;
       }
-      if (!(rand() % 60)) {
-        GameAddEntity(V3(X, -1, Z), MESH_MONSTER_ARM, TEXTURE_MONSTER_ARM);
-        continue;
-      }
+    }
+  }
+#else
+  entity* Cube = GameAddEntity(V3(1, 0, 10), MESH_CUBE, TEXTURE_UV);
+  Cube->Type = ENTITY_ROTATOR;
+  for (i32 Z = WorldMin.Z; Z <= WorldMax.Z; ++Z) {
+    for (i32 X = WorldMin.X; X <= WorldMax.X; ++X) {
+      GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_UV);
     }
   }
 #endif
@@ -79,7 +83,7 @@ static void GameRun() {
   PlatformEnableRawMouseMotion();
 
   GameStateInit(Game);
-  CameraInit(&Camera, V3(0, 1.5f, 5));
+  CameraInit(&Camera, V3(0, 1.5f, 6));
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};
@@ -98,7 +102,7 @@ static void GameRun() {
     Game->Time += Game->DeltaTime;
     LastFrame += Game->DeltaTime;
 
-    LightStrength = LIGHT_STRENGTH + 30.0f * (0.2f * sin(Game->Time * 1.5f));
+    LightStrength = LIGHT_STRENGTH + 50.0f * (0.2f * sin(Game->Time * 1.5f));
     PlatformGetCursorPos(&MouseX, &MouseY);
     CameraUpdate(&Camera);
     CameraUpdateViewMatrix(&Camera);

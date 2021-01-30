@@ -13,7 +13,6 @@ typedef struct audio_state {
 } audio_state;
 
 typedef struct audio_engine {
-  float MasterVolume;
   audio_state Sound;
 } audio_engine;
 

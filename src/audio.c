@@ -35,8 +35,8 @@ i32 StereoCallback(const void* InBuffer, void* OutBuffer, u64 FramesPerBuffer, c
       }
     }
 
-    Left  *= AudioEngine.MasterVolume;
-    Right *= AudioEngine.MasterVolume;
+    Left  *= G_MasterVolume;
+    Right *= G_MasterVolume;
     *(Out++) = Left;
     *(Out++) = Right;
   }
@@ -70,7 +70,6 @@ static i32 AudioInit(u32 SampleRate, u32 FramesPerBuffer, callback Callback) {
     Result = -1;
     goto Done;
   }
-  AudioEngine.MasterVolume = 1.0f;
   AudioEngine.Sound = (audio_state) {
     .Volume = 0.0f,
     .Id = -1,

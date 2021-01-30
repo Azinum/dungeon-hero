@@ -60,7 +60,6 @@ static void GameStateInit(game_state* Game) {
   }
 #else
 #endif
-  AudioPlay(AUDIO_TRACK_1, 1.0f);
 }
 
 static void GameRun() {
@@ -78,6 +77,7 @@ static void GameRun() {
   PlatformEnableRawMouseMotion();
 
   GameStateInit(Game);
+  AudioPlay(AUDIO_TRACK_1, G_MusicVolume);
   CameraInit(&Camera, V3(0, 1.5f, 0));
 
   char Title[BUFFER_SIZE] = {0};

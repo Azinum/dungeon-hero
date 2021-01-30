@@ -477,6 +477,8 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
   MaxX = Min(MaxX, (i32)FrameBuffer->Width - 1);
   MaxY = Min(MaxY, (i32)FrameBuffer->Height - 1);
 
+  i32 Inside = 0;
+
   v3 P = {0};
   for (P.Y = MinY; P.Y <= MaxY; ++P.Y) {
     for (P.X = MinX; P.X <= MaxX; ++P.X) {
@@ -488,6 +490,7 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
 
       // NOTE(lucas): Are we inside the triangle?
       if (W0 >= 0.0f && W1 >= 0.0f && W2 >= 0.0f && WSum <= 1.0f) {
+        Inside = 1;
         float Z = 0;
         Z += A.Z * W0;
         Z += B.Z * W1;
@@ -513,29 +516,29 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
           Texel.G = Clamp(Texel.G * LightFactor, G_Ambient, 0xFF);
           Texel.B = Clamp(Texel.B * LightFactor, G_Ambient, 0xFF);
           DrawPixel(FrameBuffer, P.X, P.Y, Texel);
-
         }
       }
     }
   }
+  if (Inside) {
+    if (G_DrawBoundingBox) {
+      color LineColor = COLOR(70, 60, 255);
+      DrawLine(RenderState, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
+      DrawLine(RenderState, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
+      DrawLine(RenderState, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
+      DrawLine(RenderState, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
+    }
 
-  if (G_DrawBoundingBox) {
-    color LineColor = COLOR(70, 60, 255);
-    DrawLine(RenderState, V2(MinX, MinY), V2(MaxX, MinY), LineColor);
-    DrawLine(RenderState, V2(MinX, MaxY), V2(MaxX, MaxY), LineColor);
-    DrawLine(RenderState, V2(MinX, MinY), V2(MinX, MaxY), LineColor);
-    DrawLine(RenderState, V2(MaxX, MinY), V2(MaxX, MaxY), LineColor);
-  }
+    if (G_DrawBoundingBoxPoints) {
+      DrawRect(RenderState, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
+      DrawRect(RenderState, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
+    }
 
-  if (G_DrawBoundingBoxPoints) {
-    DrawRect(RenderState, MinX, MinY, 4, 4, COLOR(50, 255, 50), BLEND_MODE_NORMAL);
-    DrawRect(RenderState, MaxX, MaxY, 4, 4, COLOR(255, 50, 50), BLEND_MODE_NORMAL);
-  }
-
-  if (G_DrawVertices) {
-    DrawRect(RenderState, A.X, A.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-    DrawRect(RenderState, B.X, B.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
-    DrawRect(RenderState, C.X, C.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+    if (G_DrawVertices) {
+      DrawRect(RenderState, A.X, A.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+      DrawRect(RenderState, B.X, B.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+      DrawRect(RenderState, C.X, C.Y, 2, 2, COLORA(255, 255, 255, 100), BLEND_MODE_ADD);
+    }
   }
 }
 

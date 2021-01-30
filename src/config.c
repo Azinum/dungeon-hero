@@ -16,6 +16,9 @@ static i32 G_DrawVertices = 0;
 static i32 G_NoLighting = 0;
 static v3 G_BackgroundColor = V3(40, 40, 100);
 
+static float G_MasterVolume = 1.0f;
+static float G_MusicVolume = 0.5f;
+
 #define FOV_MIN 30
 #define FOV_MAX 110
 
@@ -88,6 +91,16 @@ static i32 LoadConfig(const char* Path) {
     }
     else if (!strncmp(Word, "r_background_color", WORD_SIZE)) {
       SScanf(Result, Iter, "%f %f %f", &G_BackgroundColor.X, &G_BackgroundColor.Y, &G_BackgroundColor.Z);
+    }
+
+    // Audio:
+    else if (!strncmp(Word, "master_volume", WORD_SIZE)) {
+      SScanf(Result, Iter, "%f", &G_MasterVolume);
+      G_MasterVolume = Clamp(G_MasterVolume, 0.0f, 1.0f);
+    }
+    else if (!strncmp(Word, "music_volume", WORD_SIZE)) {
+      SScanf(Result, Iter, "%f", &G_MusicVolume);
+      G_MusicVolume = Clamp(G_MusicVolume, 0.0f, 1.0f);
     }
   } while (1);
 

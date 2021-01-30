@@ -43,7 +43,14 @@ void AssetsLoadAll(assets* Assets) {
   }
 
   for (u32 Index = 0; Index < MAX_AUDIO; ++Index) {
-    // TODO(lucas): Load audio files
+    snprintf(Path, MAX_PATH_SIZE, "%s/%s.wav", AUDIO_PATH, AudioFileNames[Index]);
+    audio_source Source;
+    if (LoadWAVE(Path, &Source) != NoError) {
+      fprintf(stderr, "Failed to load audio file '%s'\n", Path);
+      continue;
+    }
+    Assets->Audio[Index] = Source;
+    ++Assets->AudioCount;
   }
 }
 
@@ -60,7 +67,12 @@ void AssetsUnloadAll(assets* Assets) {
     image* Texture = &Assets->Skyboxes[Index];
     UnloadImage(Texture);
   }
-  for (u32 Index = 0; Index < MAX_AUDIO; ++Index) {
-    // TODO(lucas): Unload audio files
+  for (u32 Index = 0; Index < Assets->AudioCount; ++Index) {
+    audio_source* Source = &Assets->Audio[Index];
+    if (Source->Buffer) {
+      free(Source->Buffer);
+      Source->Buffer = NULL;
+      memset(Source, 0, sizeof(audio_source));
+    }
   }
 }

@@ -34,6 +34,11 @@
 #define Min(A, B) ((A < B ) ? (A) : (B))
 #define Max(A, B) ((A > B ) ? (A) : (B))
 
+typedef enum status_code {
+  NoError = 0,
+  Error = -1
+} status_code;
+
 inline float Random(float From, float To) {
   return (float)rand() / (float)(RAND_MAX / To) + (float)rand() / (float)(RAND_MAX / From);
 }

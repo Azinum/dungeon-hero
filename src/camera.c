@@ -8,7 +8,7 @@ static double LastY = 0;
 static double XOffset = 0;
 static double YOffset = 0;
 
-#define MOVEMENT_SPEED 6.0f
+#define MOVEMENT_SPEED 8.0f
 #define LOOK_SENSITIVITY 150.0f
 
 void CameraInit(camera* Camera, v3 Position) {
@@ -19,13 +19,29 @@ void CameraInit(camera* Camera, v3 Position) {
   Camera->Forward = V3(0.0f, 0.0f, 1.0f);
   Camera->Pitch = 0.0f;
   Camera->Yaw = 90.0f;
-
   Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 100.0f);
 }
 
 void CameraUpdate(camera* Camera) {
   Camera->Right.Y = 0;
   Camera->Forward.Y = 0;
+
+#if 1
+  v3 Min = WorldMin;
+  v3 Max = WorldMax;
+  if (Camera->P.X < Min.X + 1) {
+    Camera->P.X = Min.X + 1;
+  }
+  if (Camera->P.X > Max.X - 1) {
+    Camera->P.X = Max.X - 1;
+  }
+  if (Camera->P.Z < Min.Z + 1) {
+    Camera->P.Z = Min.Z + 1;
+  }
+  if (Camera->P.Z > Max.Z - 1) {
+    Camera->P.Z = Max.Z - 1;
+  }
+#endif
 
   if (KeyDown[KEY_D]) {
     Camera->P = AddToV3(Camera->P, V3(
@@ -56,21 +72,6 @@ void CameraUpdate(camera* Camera) {
     ));
   }
 
-#if 0
-  // NOTE(lucas): Temporary!
-  if (Camera->P.X < WorldMin.X + 1) {
-    Camera->P.X = WorldMin.X + 1;
-  }
-  if (Camera->P.X > WorldMax.X - 1) {
-    Camera->P.X = WorldMax.X - 1;
-  }
-  if (Camera->P.Z < WorldMin.Z + 1) {
-    Camera->P.Z = WorldMin.Z + 1;
-  }
-  if (Camera->P.Z > WorldMax.Z - 1) {
-    Camera->P.Z = WorldMax.Z - 1;
-  }
-#endif
   if (KeyDown[KEY_Z]) {
     Camera->P.Y += 5.0f * GameState.DeltaTime;
   }

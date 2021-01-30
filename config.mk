@@ -24,7 +24,7 @@ LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lXi -lGL -lGLU -lGLEW -lportaudi
 
 LIBS_MAC=-lpng -lm -lGLEW -lportaudio -framework OpenGL -framework Cocoa
 
-FLAGS=${SRC} -o ${BUILD_DIR}/${PROG_NAME} -I${INCLUDE_DIR} -Wall -W -Wno-missing-braces -std=c99
+FLAGS=${SRC} -o ${BUILD_DIR}/${PROG_NAME} -I${INCLUDE_DIR} -Wall -Wno-missing-braces -std=c99
 
 FLAGS_MAC=src/platform_macos.m ${SRC} -o ${BUILD_DIR}/${PROG_NAME} -I${INCLUDE_DIR} -Wall -W -Wno-missing-braces -std=c99
 
@@ -34,4 +34,4 @@ O_DEBUG_PROFILE=-p -Og -W
 
 O_DEBUG=-Og -g
 
-RENDERER=#-D RENDERER_OPENGL
+RENDERER=-D RENDERER_OPENGL

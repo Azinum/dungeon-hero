@@ -9,13 +9,14 @@
 #include "image.h"
 #include "mesh.h"
 #include "audio.h"
+#include "riff.h"
 #include "asset.h"
 #include "camera.h"
 #include "renderer.h"
 #include "platform.h"
 #include "entity.h"
 
-#define MAX_ENTITY 512
+#define MAX_ENTITY 1024
 
 typedef struct game_state {
   float Time;

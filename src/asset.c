@@ -41,6 +41,10 @@ void AssetsLoadAll(assets* Assets) {
     Assets->Skyboxes[Index] = Texture;
     ++Assets->SkyboxCount;
   }
+
+  for (u32 Index = 0; Index < MAX_AUDIO; ++Index) {
+    // TODO(lucas): Load audio files
+  }
 }
 
 void AssetsUnloadAll(assets* Assets) {
@@ -55,5 +59,8 @@ void AssetsUnloadAll(assets* Assets) {
   for (u32 Index = 0; Index < Assets->SkyboxCount; ++Index) {
     image* Texture = &Assets->Skyboxes[Index];
     UnloadImage(Texture);
+  }
+  for (u32 Index = 0; Index < MAX_AUDIO; ++Index) {
+    // TODO(lucas): Unload audio files
   }
 }

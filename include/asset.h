@@ -2,6 +2,7 @@
 
 #define MESH_PATH "resource/mesh"
 #define TEXTURE_PATH "resource/texture"
+#define AUDIO_PATH "resource/audio"
 
 typedef enum mesh_id {
   MESH_CUBE = 0,
@@ -36,10 +37,15 @@ typedef enum cubemap_id {
 
 typedef enum skybox_id {
   SKYBOX_DOOM = 0,
-  SKYBOX_STORMYDAYS,
 
   MAX_SKYBOX,
 } skybox_id;
+
+typedef enum audio_id {
+  AUDIO_TRACK_1,
+
+  MAX_AUDIO,
+} audio_id;
 
 #define MAX_SKYBOX_TEXTURE (MAX_SKYBOX * 6)
 
@@ -70,13 +76,10 @@ static const char* SkyboxFileNames[MAX_SKYBOX_TEXTURE] = {
   "doom_dn",
   "doom_bk",
   "doom_ft",
+};
 
-  "stormydays_rt",
-  "stormydays_lf",
-  "stormydays_up",
-  "stormydays_dn",
-  "stormydays_bk",
-  "stormydays_ft",
+static const char* AudioFileNames[MAX_AUDIO] = {
+  "track-1",
 };
 
 typedef struct assets {
@@ -88,4 +91,7 @@ typedef struct assets {
 
   image Skyboxes[MAX_SKYBOX_TEXTURE];
   u32 SkyboxCount;
+
+  audio_source Audio[MAX_SKYBOX_TEXTURE];
+  u32 AudioCount;
 } assets;

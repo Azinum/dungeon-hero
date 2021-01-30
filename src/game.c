@@ -7,6 +7,7 @@
 #include "image.c"
 #include "mesh.c"
 #include "audio.c"
+#include "riff.c"
 #include "asset.c"
 #include "platform.c"
 
@@ -26,7 +27,7 @@ double MouseX = 0;
 double MouseY = 0;
 
 v3 WorldMin = V3(-13, 0, 4);
-v3 WorldMax = V3(5, 0, 15);
+v3 WorldMax = V3(12, 0, 15);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -34,7 +35,7 @@ static void GameStateInit(game_state* Game) {
   Game->DeltaTime = 0;
   Game->EntityCount = 0;
 
-#if 0
+#if 1
   for (i32 Z = WorldMin.Z; Z <= WorldMax.Z; ++Z) {
     for (i32 X = WorldMin.X; X <= WorldMax.X; ++X) {
       GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_UV);
@@ -57,13 +58,6 @@ static void GameStateInit(game_state* Game) {
     }
   }
 #else
-  entity* Cube = GameAddEntity(V3(1, 0, 10), MESH_CUBE, TEXTURE_UV);
-  Cube->Type = ENTITY_ROTATOR;
-  for (i32 Z = WorldMin.Z; Z <= WorldMax.Z; ++Z) {
-    for (i32 X = WorldMin.X; X <= WorldMax.X; ++X) {
-      GameAddEntity(V3(X, -1, Z), MESH_PLANE, TEXTURE_UV);
-    }
-  }
 #endif
 }
 
@@ -83,7 +77,7 @@ static void GameRun() {
   PlatformEnableRawMouseMotion();
 
   GameStateInit(Game);
-  CameraInit(&Camera, V3(0, 1.5f, 6));
+  CameraInit(&Camera, V3(0, 1.5f, 0));
 
   char Title[BUFFER_SIZE] = {0};
   struct timeval TimeNow = {0};

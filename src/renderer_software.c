@@ -7,7 +7,7 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-#define LIGHT_STRENGTH 1
+#define LIGHT_STRENGTH 1.0f
 #define NO_LIGHTING 0
 #define DITHERING 0
 

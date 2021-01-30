@@ -21,6 +21,7 @@
 #define LIGHT_STRENGTH 30.0f
 
 game_state GameState;
+assets Assets = {0};
 static v3 Light = V3(0.0f, 0.5f, 7.0f);
 static float LightStrength = 15.0f;
 double MouseX = 0;
@@ -59,11 +60,11 @@ static void GameStateInit(game_state* Game) {
   }
 #else
 #endif
+  AudioPlay(AUDIO_TRACK_1, 1.0f);
 }
 
 static void GameRun() {
   game_state* Game = &GameState;
-  assets Assets;
   AssetsLoadAll(&Assets);
 
   render_state* Renderer = &RenderState;
@@ -136,7 +137,6 @@ static void GameRun() {
     }
   }
 
-  AssetsUnloadAll(&Assets);
   RendererDestroy(Renderer);
   WindowDestroyContext();
   WindowClose();
@@ -158,4 +158,5 @@ void GameStart() {
     // NOTE(lucas): We failed to initialize portaudio if we get to here, but we start the game anyways
     GameRun();
   }
+  AssetsUnloadAll(&Assets);
 }

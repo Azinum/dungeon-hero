@@ -2,7 +2,7 @@
 
 #include <portaudio.h>
 
-static audio_state AudioState;
+static audio_engine AudioEngine;
 static PaStream* Stream;
 static PaStreamParameters OutPort;
 
@@ -14,8 +14,31 @@ i32 StereoCallback(const void* InBuffer, void* OutBuffer, u64 FramesPerBuffer, c
   (void)InBuffer; (void)TimeInfo; (void)Flags; (void)UserData;
 
   for (u32 SampleIndex = 0; SampleIndex < FramesPerBuffer; ++SampleIndex) {
-    *(Out++) = 0;
-    *(Out++) = 0;
+    float Left = 0;
+    float Right = 0;
+
+    audio_state* Sound = &AudioEngine.Sound;
+    if (Sound->Id >= 0 && Sound->Id < MAX_AUDIO) {
+      audio_source* Source = &Assets.Audio[Sound->Id];
+      if (Source) {
+        if (Sound->Index < Source->SampleCount) {
+          if (Source->ChannelCount == 2) {
+            Left  += Sound->Volume * Source->Buffer[Sound->Index++];
+            Right += Sound->Volume * Source->Buffer[Sound->Index++];
+          }
+          else if (Source->ChannelCount == 1) {
+            float Frame = Sound->Volume * Source->Buffer[Sound->Index++];
+            Left  += Frame;
+            Right += Frame;
+          }
+        }
+      }
+    }
+
+    Left  *= AudioEngine.MasterVolume;
+    Right *= AudioEngine.MasterVolume;
+    *(Out++) = Left;
+    *(Out++) = Right;
   }
   return paContinue;
 }
@@ -47,9 +70,12 @@ static i32 AudioInit(u32 SampleRate, u32 FramesPerBuffer, callback Callback) {
     Result = -1;
     goto Done;
   }
-  AudioState.Volume = 1.0f;
-  AudioState.SampleRate = SampleRate;
-  AudioState.FramesPerBuffer = FramesPerBuffer;
+  AudioEngine.MasterVolume = 1.0f;
+  AudioEngine.Sound = (audio_state) {
+    .Volume = 0.0f,
+    .Id = -1,
+    .Index = 0,
+  };
 
   i32 OutputDevice = Pa_GetDefaultOutputDevice();
   OutPort.device = OutputDevice;
@@ -69,4 +95,11 @@ Done:
   Pa_CloseStream(Stream);
   Pa_Terminate();
   return Result;
+}
+
+static void AudioPlay(i32 Id, float Volume) {
+  audio_state* Sound = &AudioEngine.Sound;
+  Sound->Volume = Volume;
+  Sound->Id = Id;
+  Sound->Index = 0;
 }

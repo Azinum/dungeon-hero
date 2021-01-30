@@ -26,6 +26,7 @@ typedef struct game_state {
 } game_state;
 
 extern game_state GameState;
+extern assets Assets;
 extern double MouseX;
 extern double MouseY;
 extern v3 WorldMin;

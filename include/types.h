@@ -11,6 +11,12 @@ typedef uint8_t u8;
 typedef float r32;
 typedef double r64;
 
+typedef union quaternion {
+  struct {
+    float X, Y, Z, W;
+  };
+} quaternion;
+
 typedef union v4 {
   struct {
     float X, Y, Z, W;

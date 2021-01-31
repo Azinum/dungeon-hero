@@ -303,18 +303,19 @@ static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 
   glBindVertexArray(0);
 }
 
-static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float LightStrength, float Rotation, v3 Scaling, camera* Camera) {
+static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float LightStrength, v3 Rotation, v3 Scaling, camera* Camera) {
   (void)Assets;
   u32 Handle = DefaultShader;
   glUseProgram(Handle);
   u32 Texture = RenderState->Textures[TextureId];
 
   Model = Translate(P);
-  Model = MultiplyMat4(Model, Rotate(Rotation, V3(0, 1, 0)));
-  Model = MultiplyMat4(Model, Scale(Scaling));
 
-  // View = LookAt(Camera->P, AddToV3(Camera->P, Camera->Forward), Camera->Up);
-  // View = InverseMat4(View);
+  Model = MultiplyMat4(Model, Rotate(Rotation.Y, V3(0, 1, 0)));
+  Model = MultiplyMat4(Model, Rotate(Rotation.Z, V3(0, 0, 1)));
+  Model = MultiplyMat4(Model, Rotate(Rotation.X, V3(1, 0, 0)));
+
+  Model = MultiplyMat4(Model, Scale(Scaling));
 
   glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&Projection);
   glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);

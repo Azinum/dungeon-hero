@@ -5,7 +5,7 @@ static entity* EntityInit(entity* E, v3 P, mesh_id MeshId, texture_id TextureId)
   E->P = P;
   E->MeshId = MeshId;
   E->TextureId = TextureId;
-  E->Rotation = 0;
+  E->Rotation = V3(0, 0, 0);
   E->Scaling = V3(1, 1, 1);
   return E;
 }
@@ -20,22 +20,10 @@ static void UpdateAndDrawEntities(entity* Entities, u32 EntityCount, render_stat
 
     switch (Entity->Type) {
       case ENTITY_ROTATOR: {
-        Entity->Rotation += 50.0f * GameState.DeltaTime;
+        Entity->Rotation.Y += 50.0f * GameState.DeltaTime;
         break;
       }
     }
-#if 0
-#define YMax 1
-    if (P.Y < -YMax) {
-      Entity->P.Y = -YMax;
-      Entity->Speed.Y = -Entity->Speed.Y;
-    }
-    else if (P.Y > YMax) {
-      Entity->P.Y = YMax;
-      Entity->Speed.Y = -Entity->Speed.Y;
-    }
-#else
-#endif
     DrawMesh(RenderState, Assets, Entity->MeshId, Entity->TextureId, P, Light, LightStrength, Entity->Rotation, Entity->Scaling, Camera);
   }
 }

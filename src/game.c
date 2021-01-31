@@ -18,12 +18,12 @@
 #define MAX_DELTA_TIME 0.5f
 
 #undef LIGHT_STRENGTH
-#define LIGHT_STRENGTH 30.0f
+#define LIGHT_STRENGTH 25.0f
 
 game_state GameState;
 assets Assets = {0};
-static v3 Light = V3(0.0f, 0.5f, 7.0f);
-static float LightStrength = 15.0f;
+static v3 Light = V3(0.0f, 0.2f, 9.0f);
+static float LightStrength = 20.0f;
 double MouseX = 0;
 double MouseY = 0;
 
@@ -105,6 +105,15 @@ static void GameRun() {
 
     DrawTexture2D(Renderer, &Assets, 16, 16, 0.5f, 48, 48, 0, 0, 1, 1, TEXTURE_SUN_ICON, COLOR(1, 1, 1));
 
+    if (KeyPressed[KEY_T]) {
+      v3 Position = AddToV3(Camera.P, V3(
+        Camera.Forward.X * 1.5f,
+        Camera.Forward.Y * 1.5f,
+        Camera.Forward.Z * 1.5f
+      ));
+      GameAddEntity(Position, MESH_CUBE, TEXTURE_TEST);
+    }
+
     if (KeyPressed[KEY_COMMA]) {
       char Date[MAX_PATH_SIZE];
       char Path[MAX_PATH_SIZE];
@@ -116,6 +125,10 @@ static void GameRun() {
     }
     if (KeyPressed[KEY_R]) {
       GameStateInit(Game);
+      continue;
+    }
+    if (KeyPressed[KEY_0]) {
+      LoadConfig(CONFIG_FILE);
       continue;
     }
     if (KeyPressed[KEY_M]) {

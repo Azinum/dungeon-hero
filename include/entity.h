@@ -9,7 +9,7 @@ typedef struct entity {
   v3 P;
   v3 Speed;
   v3 Scaling;
-  float Rotation;
+  v3 Rotation;
 
   u32 Type;
 

@@ -27,23 +27,6 @@ void CameraUpdate(camera* Camera) {
   Camera->Right.Y = 0;
   Camera->Forward.Y = 0;
 
-#if 1
-  v3 Min = WorldMin;
-  v3 Max = WorldMax;
-  if (Camera->P.X < Min.X + 1) {
-    Camera->P.X = Min.X + 1;
-  }
-  if (Camera->P.X > Max.X - 1) {
-    Camera->P.X = Max.X - 1;
-  }
-  if (Camera->P.Z < Min.Z + 1) {
-    Camera->P.Z = Min.Z + 1;
-  }
-  if (Camera->P.Z > Max.Z - 1) {
-    Camera->P.Z = Max.Z - 1;
-  }
-#endif
-
   if (KeyDown[KEY_D]) {
     Camera->P = AddToV3(Camera->P, V3(
       Camera->Right.X * MOVEMENT_SPEED * GameState.DeltaTime,
@@ -72,6 +55,23 @@ void CameraUpdate(camera* Camera) {
       -Camera->Forward.Z * MOVEMENT_SPEED * GameState.DeltaTime
     ));
   }
+
+#if 1
+  v3 Min = WorldMin;
+  v3 Max = WorldMax;
+  if (Camera->P.X < Min.X + 1) {
+    Camera->P.X = Min.X + 1;
+  }
+  if (Camera->P.X > Max.X - 1) {
+    Camera->P.X = Max.X - 1;
+  }
+  if (Camera->P.Z < Min.Z + 1) {
+    Camera->P.Z = Min.Z + 1;
+  }
+  if (Camera->P.Z > Max.Z - 1) {
+    Camera->P.Z = Max.Z - 1;
+  }
+#endif
 
   if (KeyDown[KEY_Z]) {
     Camera->P.Y += 5.0f * GameState.DeltaTime;

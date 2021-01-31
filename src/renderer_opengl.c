@@ -272,6 +272,12 @@ static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 
   u32 Handle = TextureShader;
   glUseProgram(Handle);
 
+  color32 FullTint = COLOR32(
+    Tint.R / 255.0f,
+    Tint.G / 255.0f,
+    Tint.B / 255.0f
+  );
+
   image* Texture = &Assets->Textures[TextureId];
   u32 Id = RenderState->Textures[TextureId];
 
@@ -293,13 +299,65 @@ static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 
   // glUniform2f(glGetUniformLocation(Handle, "Range"), (float)XRange / Texture->Width, (float)YRange / Texture->Height);     // Use when drawing from a texture atlas
   glUniform2f(glGetUniformLocation(Handle, "Offset"), (float)XOffset, (float)YOffset);
   glUniform2f(glGetUniformLocation(Handle, "Range"), (float)XRange, (float)YRange);
-  glUniform4f(glGetUniformLocation(Handle, "Tint"), Tint.R, Tint.G, Tint.B, Tint.A);
+  glUniform4f(glGetUniformLocation(Handle, "Tint"), FullTint.R, FullTint.G, FullTint.B, 1.0f);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, Id);
 
   glBindVertexArray(QuadVAO);
   glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
+}
+
+static void DrawText(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float TextSize, const char* Text, u32 TextLength, u32 FontId, color Tint) {
+  u32 Handle = TextureShader;
+  glUseProgram(Handle);
+
+  color32 FullTint = COLOR32(
+    Tint.R / 255.0f,
+    Tint.G / 255.0f,
+    Tint.B / 255.0f
+  );
+
+  image* Texture = &Assets->Textures[FontId];
+  u32 Id = RenderState->Textures[FontId];
+
+  mat4 View = Mat4D(1.0f);
+
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&OrthoProjection);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
+  glUniform4f(glGetUniformLocation(Handle, "Tint"), FullTint.R, FullTint.G, FullTint.B, 1.0f);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, Id);
+  glBindVertexArray(QuadVAO);
+
+  i32 XPos = X;
+  i32 YPos = Y;
+  float FontSize = Texture->Width;
+
+  for (u32 Index = 0; Index < TextLength; ++Index) {
+    char Ch = Text[Index];
+    if (Ch == '\0')
+      break;
+
+    if (Ch >= 32 && Ch < 127 && Ch != '\n') {
+      float XOffset = 0;
+      float YOffset = (Ch - 32) * FontSize;
+      float XRange = FontSize;
+      float YRange = FontSize;
+
+      Model = Translate(V3(XPos, YPos, Z));
+      Model = Scale2D(Model, TextSize, TextSize);
+
+      glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
+      glUniform2f(glGetUniformLocation(Handle, "Offset"), XOffset / Texture->Width, YOffset / Texture->Height);
+      glUniform2f(glGetUniformLocation(Handle, "Range"), XRange / Texture->Width, YRange / Texture->Height);
+
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+      XPos += TextSize;
+    }
+  }
   glBindVertexArray(0);
 }
 

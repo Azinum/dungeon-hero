@@ -8,8 +8,16 @@ typedef struct color {
   u8 A;
 } color;
 
+typedef struct {
+  float R;
+  float G;
+  float B;
+} color32;
+
 #define COLOR(R, G, B) (color) {B, G, R, .A = 255}
 #define COLORA(R, G, B, ColorA) (color) {B, G, R, .A = ColorA}
+
+#define COLOR32(ColorR, ColorG, ColorB) (color32) {.R = ColorR, .G = ColorG, .B = ColorB}
 
 #if RENDERER_OPENGL
   #include "renderer_opengl.h"

@@ -6,12 +6,8 @@
 
 typedef enum mesh_id {
   MESH_CUBE = 0,
-  MESH_STONE,
-  MESH_COOKING_POT,
   MESH_PLANE,
   MESH_MONSTER,
-  MESH_TEA_POT,
-  MESH_STALL,
 
   MAX_MESH,
 } mesh_id;
@@ -21,16 +17,15 @@ typedef enum texture_id {
   TEXTURE_UV,
   TEXTURE_SUN_ICON,
   TEXTURE_BOX,
-  TEXTURE_STALL,
-
   TEXTURE_MONSTER,
+
+  TEXTURE_DEFAULT_FONT,
 
   MAX_TEXTURE,
 } texture_id;
 
 typedef enum cubemap_id {
   CUBEMAP_SKYBOX_DOOM = 0,
-  CUBEMAP_SKYBOX_STORMYDAYS,
 
   MAX_CUBEMAP,
 } cubemap_id;
@@ -51,12 +46,8 @@ typedef enum audio_id {
 
 static const char* MeshFileNames[MAX_MESH] = {
   "cube",
-  "stone",
-  "cooking_pot",
   "plane",
   "monster",
-  "teapot",
-  "stall",
 };
 
 static const char* TextureFileNames[MAX_TEXTURE] = {
@@ -64,8 +55,9 @@ static const char* TextureFileNames[MAX_TEXTURE] = {
   "uv_test",
   "sun_icon",
   "box",
-  "stall",
   "monster",
+
+  "font",
 };
 
 // TODO(lucas): Implement an easier way of loading skyboxes!

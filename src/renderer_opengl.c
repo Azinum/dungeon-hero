@@ -1,9 +1,12 @@
 // renderer_opengl.c
 
 static render_state RenderState;
-static i32 DefaultShader;
-static i32 SkyboxShader;
+static u32 DefaultShader;
+static u32 SkyboxShader;
+static u32 TextureShader;
+
 static model CubeModel;
+static u32 QuadVBO = 0, QuadVAO = 0;
 
 #define SKYBOX_SIZE 1.0f
 
@@ -51,6 +54,17 @@ float SkyboxVertices[] = {
 	 SKYBOX_SIZE, -SKYBOX_SIZE,  SKYBOX_SIZE
 };
 
+static float QuadVertices[] = {
+  // Vertex,  UV coord
+  0.0f, 1.0f, 0.0f, 1.0f,
+  1.0f, 0.0f, 1.0f, 0.0f,
+  0.0f, 0.0f, 0.0f, 0.0f,
+
+  0.0f, 1.0f, 0.0f, 1.0f,
+  1.0f, 1.0f, 1.0f, 1.0f,
+  1.0f, 0.0f, 1.0f, 0.0f,
+};
+
 #define ERR_BUFFER_SIZE 512
 
 static void OutputZBufferToFile(render_state* RenderState, const char* Path) {
@@ -61,6 +75,20 @@ static void OutputZBufferToFile(render_state* RenderState, const char* Path) {
 static void OutputFrameBufferToFile(render_state* RenderState, const char* Path) {
   (void)RenderState;
   (void)Path;
+}
+
+static void InitQuadData() {
+  glGenVertexArrays(1, &QuadVAO);
+  glGenBuffers(1, &QuadVBO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(QuadVertices), QuadVertices, GL_STATIC_DRAW);
+
+  glBindVertexArray(QuadVAO);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 }
 
 static void StoreAttrib(model* Model, i32 AttribNum, u32 Count, u32 Size, void* Data) {
@@ -224,7 +252,7 @@ static i32 ShaderCompile(const char* ShaderPath) {
   glGetProgramiv(Program, GL_VALIDATE_STATUS, &Report);
   if (Report != GL_NO_ERROR) {
     glGetProgramInfoLog(Program, ERR_BUFFER_SIZE, NULL, ErrorLog);
-    fprintf(stderr, "%s:%s\n", ShaderPath, ErrorLog);
+    // fprintf(stderr, "%s:%s\n", ShaderPath, ErrorLog);
     goto done;
   }
 }
@@ -237,12 +265,42 @@ done:
   return Program;
 }
 
-#define DrawSimpleTexture2D(RenderState, X, Y, W, H, TEXTURE, TINT) \
-  DrawTexture2D(RenderState, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
+#define DrawSimpleTexture2D(RenderState, X, Y, Z, W, H, TEXTURE, TINT) \
+  DrawTexture2D(RenderState, X, Y, Z, W, H, 0, 0, 1, 1, TEXTURE, TINT)
 
-inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
-  // TODO(lucas): Do implement this thiiiinng!
-  (void)RenderState; (void)X; (void)Y; (void)W; (void)H; (void)XOffset; (void)YOffset; (void)XRange; (void)YRange; (void)Texture; (void)Tint;
+static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, u32 TextureId, color Tint) {
+  u32 Handle = TextureShader;
+  glUseProgram(Handle);
+
+  image* Texture = &Assets->Textures[TextureId];
+  u32 Id = RenderState->Textures[TextureId];
+
+  Model = Translate(V3(X, Y, Z));
+
+  Model = Translate2D(Model, 0.5f * W, 0.5f * H);
+  Model = Rotate2D(Model, 0);
+  Model = Translate2D(Model, -0.5f * W, -0.5f * H);
+
+  Model = Scale2D(Model, W, H);
+
+  mat4 View = Mat4D(1.0f);
+
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "Projection"), 1, GL_FALSE, (float*)&OrthoProjection);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "View"), 1, GL_FALSE, (float*)&View);
+  glUniformMatrix4fv(glGetUniformLocation(Handle, "Model"), 1, GL_FALSE, (float*)&Model);
+
+  // glUniform2f(glGetUniformLocation(Handle, "Offset"), (float)XOffset / Texture->Width, (float)YOffset / Texture->Height);  // Use when drawing from a texture atlas
+  // glUniform2f(glGetUniformLocation(Handle, "Range"), (float)XRange / Texture->Width, (float)YRange / Texture->Height);     // Use when drawing from a texture atlas
+  glUniform2f(glGetUniformLocation(Handle, "Offset"), (float)XOffset, (float)YOffset);
+  glUniform2f(glGetUniformLocation(Handle, "Range"), (float)XRange, (float)YRange);
+  glUniform4f(glGetUniformLocation(Handle, "Tint"), Tint.R, Tint.G, Tint.B, Tint.A);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, Id);
+
+  glBindVertexArray(QuadVAO);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
 }
 
 static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float LightStrength, float Rotation, v3 Scaling, camera* Camera) {
@@ -297,6 +355,8 @@ static void OpenGLInit() {
   glDepthFunc(GL_LESS);
   glShadeModel(GL_FLAT);
   glEnable(GL_BLEND);
+  glEnable(GL_TEXTURE_2D);
+  glAlphaFunc(GL_GREATER, 1);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glEnable(GL_CULL_FACE);
@@ -316,6 +376,7 @@ static void OpenGLInit() {
 
 i32 RendererInit(render_state* RenderState, assets* Assets) {
   OpenGLInit();
+  InitQuadData();
   RenderState->ModelCount = 0;
   RenderState->TextureCount = 0;
 
@@ -328,7 +389,9 @@ i32 RendererInit(render_state* RenderState, assets* Assets) {
 
   SkyboxShader = ShaderCompile("resource/shader/skybox");
 
-  if (DefaultShader < 0 || SkyboxShader < 0) {
+  TextureShader = ShaderCompile("resource/shader/texture");
+
+  if (DefaultShader < 0 || SkyboxShader < 0 || TextureShader < 0) {
     fprintf(stderr, "Failed to load shader(s)\n");
     return -1;
   }
@@ -380,6 +443,7 @@ static void DrawSkybox(render_state* RenderState, assets* Assets, camera* Camera
   model* Model = &CubeModel;
   u32 Handle = SkyboxShader;
   glUseProgram(Handle);
+
   glDepthFunc(GL_LEQUAL);
 
   mat4 ViewMatrix = View;
@@ -407,6 +471,9 @@ void RendererDestroy(render_state* RenderState) {
   glDeleteVertexArrays(1, &CubeModel.VBO);
   CubeModel.DrawCount = 0;
 
+  glDeleteVertexArrays(1, &QuadVAO);
+  glDeleteVertexArrays(1, &QuadVBO);
+
   for (u32 Index = 0; Index < RenderState->ModelCount; ++Index) {
     model* Model = &RenderState->Models[Index];
     glDeleteVertexArrays(1, &Model->VAO);
@@ -429,4 +496,5 @@ void RendererDestroy(render_state* RenderState) {
 
   glDeleteShader(DefaultShader);
   glDeleteShader(SkyboxShader);
+  glDeleteShader(TextureShader);
 }

@@ -175,6 +175,9 @@ static i32 LoadWAVE(const char* Path, audio_source* Source) {
   printf("===\n");
   PrintWaveChunk(&WaveChunk);
 #else
+  (void)PrintWaveHeader;
+  (void)PrintWaveFormat;
+  (void)PrintWaveChunk;
 #endif
 Done:
   fclose(File);

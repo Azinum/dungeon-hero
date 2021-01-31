@@ -103,6 +103,8 @@ static void GameRun() {
     CameraUpdateViewMatrix(&Camera);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, LightStrength, &Camera);
 
+    DrawTexture2D(Renderer, &Assets, 16, 16, 0.5f, 48, 48, 0, 0, 1, 1, TEXTURE_SUN_ICON, COLOR(1, 1, 1));
+
     if (KeyPressed[KEY_COMMA]) {
       char Date[MAX_PATH_SIZE];
       char Path[MAX_PATH_SIZE];

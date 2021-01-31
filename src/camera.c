@@ -19,7 +19,8 @@ void CameraInit(camera* Camera, v3 Position) {
   Camera->Forward = V3(0.0f, 0.0f, 1.0f);
   Camera->Pitch = 0.0f;
   Camera->Yaw = 90.0f;
-  Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.05f, 100.0f);
+  Projection = Perspective(G_Fov, (float)Win.Width / Win.Height, 0.01f, 100.0f);
+  OrthoProjection = Orthographic(0.0f, (float)Win.Width, (float)Win.Height, 0, -1.0f, 1.0f);
 }
 
 void CameraUpdate(camera* Camera) {

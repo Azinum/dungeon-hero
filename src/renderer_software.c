@@ -360,8 +360,11 @@ void DrawLine(render_state* RenderState, v2 A, v2 B, color Color) {
 }
 
 // TODO(lucas): Implement rendering of texture region
-inline void DrawTexture2D(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, u32 TextureId, color Tint) {
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
+  image* Texture = &Assets->Textures[TextureId];
+  (void)Z;
+
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;

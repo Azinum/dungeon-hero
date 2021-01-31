@@ -12,17 +12,11 @@
 #include <xmmintrin.h>
 #endif
 
-#define Translate2D(MODEL, X, Y) { \
-  MODEL = MultiplyMat4(MODEL, Translate(V3(X, Y, 0))); \
-}
+#define Translate2D(MODEL, X, Y) MultiplyMat4(MODEL, Translate(V3(X, Y, 0)))
 
-#define Rotate2D(MODEL, ANGLE) { \
-  MODEL = MultiplyMat4(MODEL, Rotate(ANGLE, V3(0, 0, 1))); \
-}
+#define Rotate2D(MODEL, ANGLE) MultiplyMat4(MODEL, Rotate(ANGLE, V3(0, 0, 1)))
 
-#define Scale2D(MODEL, X, Y) { \
-  MODEL = MultiplyMat4(MODEL, Scale(V3(X, Y, 1))); \
-}
+#define Scale2D(MODEL, X, Y) MultiplyMat4(MODEL, Scale(V3(X, Y, 1)))
 
 typedef union mat4 {
   float Elements[4][4];
@@ -393,17 +387,29 @@ inline mat4 ScaleMat4(mat4 A, v3 B) {
 inline mat4 Perspective(float Fov, float AspectRatio, float ZNear, float ZFar) {
   mat4 Result = {0};
 
-#if 1
   float TanThetaOver2 = tanf(Fov * (PI32 / 360.0f));
 
   Result.Elements[0][0] = 1.0f / TanThetaOver2;
   Result.Elements[1][1] = AspectRatio / TanThetaOver2;
   Result.Elements[2][3] = -1.0f;
   Result.Elements[2][2] = (ZNear + ZFar) / (ZNear - ZFar);
-  Result.Elements[3][2] = (2.0f * ZNear * ZFar) / (ZNear - ZFar);
+  Result.Elements[3][2] = (1.0f * ZNear * ZFar) / (ZNear - ZFar);
   Result.Elements[3][3] = 0.0f;
-#else
-#endif
+
+  return Result;
+}
+
+inline mat4 Orthographic(float Left, float Right, float Bottom, float Top, float ZNear, float ZFar) {
+  mat4 Result = {0};
+
+  Result.Elements[0][0] = 2.0f / (Right - Left);
+  Result.Elements[1][1] = 2.0f / (Top - Bottom);
+  Result.Elements[2][2] = 2.0f / (ZNear - ZFar);
+  Result.Elements[3][3] = 1.0f;
+
+  Result.Elements[3][0] = (Left + Right) / (Left - Right);
+  Result.Elements[3][1] = (Bottom + Top) / (Bottom - Top);
+  Result.Elements[3][2] = (ZFar + ZNear) / (ZNear - ZFar);
 
   return Result;
 }

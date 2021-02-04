@@ -24,8 +24,8 @@ void CameraInit(camera* Camera, v3 Position) {
 }
 
 void CameraUpdate(camera* Camera) {
-  Camera->Right.Y = 0;
-  Camera->Forward.Y = 0;
+  // Camera->Right.Y = 0;
+  // Camera->Forward.Y = 0;
 
   if (KeyDown[KEY_D]) {
     Camera->P = AddToV3(Camera->P, V3(
@@ -56,7 +56,7 @@ void CameraUpdate(camera* Camera) {
     ));
   }
 
-#if 1
+#if 0
   v3 Min = WorldMin;
   v3 Max = WorldMax;
   if (Camera->P.X < Min.X + 1) {
@@ -74,12 +74,13 @@ void CameraUpdate(camera* Camera) {
 #endif
 
   if (KeyDown[KEY_Z]) {
-    Camera->P.Y += 5.0f * GameState.DeltaTime;
+    Camera->P.Y += MOVEMENT_SPEED * GameState.DeltaTime;
   }
   if (KeyDown[KEY_X]) {
-    Camera->P.Y -= 5.0f * GameState.DeltaTime;
+    Camera->P.Y -= MOVEMENT_SPEED * GameState.DeltaTime;
   }
 
+#if 0
   if (KeyDown[KEY_H]) {
     Camera->Yaw -= LOOK_SENSITIVITY * GameState.DeltaTime;
   }
@@ -92,7 +93,7 @@ void CameraUpdate(camera* Camera) {
   if (KeyDown[KEY_K]) {
     Camera->Pitch += LOOK_SENSITIVITY * GameState.DeltaTime;
   }
-
+#endif
   XOffset = MouseX - LastX;
   YOffset = LastY - MouseY;
   LastX = MouseX;

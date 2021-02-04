@@ -23,15 +23,15 @@
 
 game_state GameState;
 assets Assets = {0};
-static v3 Light = V3(0.0f, 1.0f, 9.0f);
+static v3 Light = V3(0.0f, 2.5f, 7.0f);
 static float LightStrength = 20.0f;
 static char UIText[UI_BUFFER_SIZE] = {0};
 
-double MouseX = 0;
-double MouseY = 0;
+double MouseX = 1.0f;
+double MouseY = 1.0f;
 
 v3 WorldMin = V3(-13, 0, 4);
-v3 WorldMax = V3(12, 0, 15);
+v3 WorldMax = V3(12, 0, 12);
 
 static void GameStateInit(game_state* Game) {
   memset(Game, 0, sizeof(game_state));
@@ -46,17 +46,15 @@ static void GameStateInit(game_state* Game) {
 
       if (X == WorldMin.X || X == WorldMax.X || Z == WorldMin.Z || Z == WorldMax.Z) {
         GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_TEST);
-        GameAddEntity(V3(X, 1, Z), MESH_CUBE, TEXTURE_TEST);
-        GameAddEntity(V3(X, 2, Z), MESH_CUBE, TEXTURE_TEST);
         continue;
       }
       if (!(rand() % 40)) {
-        entity* Box = GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
-        Box->Type = ENTITY_ROTATOR;
+        GameAddEntity(V3(X, 0, Z), MESH_CUBE, TEXTURE_BOX);
         continue;
       }
-      if (!(rand() % 49)) {
-        GameAddEntity(V3(X, 0, Z), MESH_MONSTER, TEXTURE_MONSTER);
+      if (!(rand() % 100)) {
+        entity* Monster = GameAddEntity(V3(X, -0.5f, Z), MESH_MONSTER, TEXTURE_MONSTER);
+        Monster->Rotation = V3(0, rand() % 360, 0);
         continue;
       }
     }
@@ -115,6 +113,15 @@ static void GameRun() {
       GameAddEntity(Position, MESH_CUBE, TEXTURE_TEST);
     }
 
+    if (KeyPressed[KEY_E]) {
+      v3 Position = AddToV3(Camera.P, V3(
+        Camera.Forward.X * 1.5f,
+        Camera.Forward.Y * 1.5f,
+        Camera.Forward.Z * 1.5f
+      ));
+      GameAddEntity(Position, MESH_TRIANGLE, TEXTURE_TEST);
+    }
+
     if (KeyPressed[KEY_COMMA]) {
       char Date[MAX_PATH_SIZE];
       char Path[MAX_PATH_SIZE];
@@ -128,7 +135,7 @@ static void GameRun() {
       GameStateInit(Game);
       continue;
     }
-    if (KeyPressed[KEY_0]) {
+    if (KeyPressed[KEY_L]) {
       LoadConfig(CONFIG_FILE);
       continue;
     }
@@ -136,21 +143,48 @@ static void GameRun() {
       PlatformSetCursorMode(!Win.CursorMode);
     }
 
+    if (KeyPressed[KEY_5]) {
+      G_DrawSolid = !G_DrawSolid;
+    }
+    if (KeyPressed[KEY_6]) {
+      G_DrawBoundingBox = !G_DrawBoundingBox;
+    }
+    if (KeyPressed[KEY_7]) {
+      G_DrawBoundingBoxPoints = !G_DrawBoundingBoxPoints;
+    }
+    if (KeyPressed[KEY_8]) {
+      G_DrawVertices = !G_DrawVertices;
+    }
+    if (KeyPressed[KEY_9]) {
+      G_DrawWireframe = !G_DrawWireframe;
+    }
+    if (KeyPressed[KEY_0]) {
+      G_NoLighting = !G_NoLighting;
+    }
+
     // TODO(lucas): Properly implement timestepping!
-    // if (LastFrame > (1.0f / G_TargetFps)) {
+    // if (LastFrame >= (1.0f / G_TargetFps)) {
       ++Tick;
-      float Delta = LastFrame - (1.0f / G_TargetFps);
-      if (!(Tick % 30)) {
+      // float Delta = LastFrame - (1.0f / G_TargetFps);
+      if (!(Tick % 20)) {
         snprintf(Title, BUFFER_SIZE, "%s | fps: %i, dt: %g, last: %.3f ms | %ix%i", WINDOW_TITLE, (i32)(1.0f / Game->DeltaTime), Game->DeltaTime, LastFrame, WindowWidth(), WindowHeight());
         WindowSetTitle(Title);
-        snprintf(UIText, UI_BUFFER_SIZE, "%i fps, delta: %g", (i32)(1.0f / Game->DeltaTime), Game->DeltaTime);
+        snprintf(UIText, UI_BUFFER_SIZE,
+          "%i fps, delta: %g\n"
+          "%i/%i entities"
+          ,
+          (i32)(1.0f / Game->DeltaTime),
+          Game->DeltaTime,
+          Game->EntityCount,
+          MAX_ENTITY
+        );
       }
       // LastFrame -= Delta;
       // if (LastFrame > 1.0f) {
       //   LastFrame = 1.0f;
       // }
 
-      DrawText(Renderer, &Assets, 16, 16, 0.9f, 0, 0, 12, UIText, UI_BUFFER_SIZE, TEXTURE_DEFAULT_FONT, COLOR(255, 255, 255));
+      DrawText(Renderer, &Assets, 16, 16, 0.9f, 0, 0, 14, 0.75f, UIText, UI_BUFFER_SIZE, TEXTURE_DEFAULT_FONT, COLOR(255, 255, 255));
       DrawSkybox(Renderer, &Assets, &Camera, CUBEMAP_SKYBOX_DOOM);
       RendererSwapBuffers(Renderer);
       RendererClear(G_BackgroundColor.X, G_BackgroundColor.Y, G_BackgroundColor.Z);

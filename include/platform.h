@@ -1,8 +1,8 @@
 // platform.h
 
 typedef enum cursor_mode {
-  CURSOR_NORMAL = 0,
-  CURSOR_DISABLED,
+  CURSOR_NORMAL = 0,  // Normal visible cursor that is confined to the screen
+  CURSOR_DISABLED,    // Hides and grabs cursor, uses virtual cursor positions
 } cursor_mode;
 
 typedef void (*framebuffer_size_callback)(i32 Width, i32 Height);

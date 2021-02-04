@@ -23,8 +23,13 @@ typedef union v4 {
   };
 } v4;
 
-typedef struct v3 {
-  float X, Y, Z;
+typedef union v3 {
+  struct {
+    float X, Y, Z;
+  };
+  struct {
+    float R, G, B;
+  };
 } v3;
 
 typedef union v2 {

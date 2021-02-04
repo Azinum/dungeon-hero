@@ -13,6 +13,7 @@ static i32 G_DrawSolid = 0;
 static i32 G_DrawBoundingBox = 0;
 static i32 G_DrawBoundingBoxPoints = 0;
 static i32 G_DrawVertices = 0;
+static i32 G_DrawWireframe = 0;
 static i32 G_NoLighting = 0;
 static v3 G_BackgroundColor = V3(40, 40, 100);
 
@@ -85,6 +86,9 @@ static i32 LoadConfig(const char* Path) {
     }
     else if (!strncmp(Word, "r_draw_vertices", WORD_SIZE)) {
       SScanf(Result, Iter, "%i", &G_DrawVertices);
+    }
+    else if (!strncmp(Word, "r_draw_wireframe", WORD_SIZE)) {
+      SScanf(Result, Iter, "%i", &G_DrawWireframe);
     }
     else if (!strncmp(Word, "r_no_lighting", WORD_SIZE)) {
       SScanf(Result, Iter, "%i", &G_NoLighting);

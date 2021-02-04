@@ -6,6 +6,7 @@
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xrender.h>
 
 #if RENDERER_OPENGL
 
@@ -98,8 +99,8 @@ typedef struct window {
 
   i32 MouseX;
   i32 MouseY;
-  double LastWarpedMouseX;
-  double LastWarpedMouseY;
+  i32 LastWarpedMouseX;
+  i32 LastWarpedMouseY;
   cursor_mode CursorMode;
 } window;
 
@@ -131,8 +132,7 @@ void PlatformWarpCursor(double X, double Y) {
       None,
       Win.Win,
       0, 0, 0, 0,
-      (i32)X,
-      (i32)Y
+      X, Y
   );
 
   XFlush(Win.Disp);
@@ -318,6 +318,7 @@ void WindowSwapBuffers(render_state* RenderState) {
   Win.Image->data = (void*)RenderState->FrameBuffer.Data;
   XPutImage(Win.Disp, Win.Win, Win.Gc, Win.Image, 0, 0, 0, 0, RenderState->FrameBuffer.Width, RenderState->FrameBuffer.Height);
   Win.Image->data = NULL;
+  XSync(Win.Disp, False);
 #endif
 }
 
@@ -402,11 +403,10 @@ i32 WindowEvents() {
         break;
     }
   }
-
   if (Win.CursorMode == CURSOR_DISABLED) {
-    // if (Win.LastWarpedMouseX != (Win.Width / 2) || Win.LastWarpedMouseY != (Win.Height / 2)) {
-      PlatformWarpCursor(Win.Width / 2, Win.Height / 2);
-    // }
+    if (VirtMouseX != (Win.Width / 2.0f) || VirtMouseY != (Win.Height / 2.0f)) {
+      PlatformWarpCursor(Win.Width / 2.0f, Win.Height / 2.0f);
+    }
   }
   XFlush(Win.Disp);
   return 0;
@@ -420,6 +420,7 @@ void WindowClose() {
   if (Win.WinCursor != None) {
     XFreeCursor(Win.Disp, Win.WinCursor);
   }
+  XUnmapWindow(Win.Disp, Win.Win);
   XDestroyWindow(Win.Disp, Win.Win);
   XCloseDisplay(Win.Disp);
 }

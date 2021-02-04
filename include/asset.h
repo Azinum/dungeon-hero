@@ -7,6 +7,7 @@
 typedef enum mesh_id {
   MESH_CUBE = 0,
   MESH_PLANE,
+  MESH_TRIANGLE,
   MESH_MONSTER,
 
   MAX_MESH,
@@ -47,6 +48,7 @@ typedef enum audio_id {
 static const char* MeshFileNames[MAX_MESH] = {
   "cube",
   "plane",
+  "triangle",
   "monster",
 };
 

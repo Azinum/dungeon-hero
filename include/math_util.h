@@ -148,9 +148,9 @@ inline v3 MultiplyMatrixVectorW(mat4 M, v3 A, float* W) {
   *W =       X * M.Elements[0][3] + Y * M.Elements[1][3] + Z * M.Elements[2][3] + M.Elements[3][3];
 
   if (*W != 0.0f) {
-    Result.X /= *W;
-    Result.Y /= *W;
-    Result.Z /= *W;
+    // Result.X /= *W;
+    // Result.Y /= *W;
+    // Result.Z /= *W;
   }
 
   return Result;

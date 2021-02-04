@@ -20,7 +20,7 @@ SRC=src/main.c
 
 BUILD_DIR=build
 
-LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lXi -lGL -lGLU -lGLEW -lportaudio
+LIBS=-lpng -lm -I${X11_INC} -L${X11_LIB} -lX11 -lXi -lXrender -lGL -lGLU -lGLEW -lportaudio
 
 LIBS_MAC=-lpng -lm -lGLEW -lportaudio -framework OpenGL -framework Cocoa
 
@@ -34,4 +34,4 @@ O_DEBUG_PROFILE=-p -Og -W
 
 O_DEBUG=-Og -g
 
-RENDERER=-D RENDERER_OPENGL
+RENDERER=#-D RENDERER_OPENGL

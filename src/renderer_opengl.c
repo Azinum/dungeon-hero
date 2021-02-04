@@ -309,7 +309,7 @@ static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 
   glBindVertexArray(0);
 }
 
-static void DrawText(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float TextSize, const char* Text, u32 TextLength, u32 FontId, color Tint) {
+static void DrawText(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float TextSize, float Kerning, const char* Text, u32 TextLength, u32 FontId, color Tint) {
   u32 Handle = TextureShader;
   glUseProgram(Handle);
 
@@ -334,7 +334,7 @@ static void DrawText(render_state* RenderState, assets* Assets, i32 X, i32 Y, fl
 
   i32 XPos = X;
   i32 YPos = Y;
-  float FontSize = Texture->Width;
+  i32 FontSize = Texture->Width;
 
   for (u32 Index = 0; Index < TextLength; ++Index) {
     char Ch = Text[Index];
@@ -355,7 +355,11 @@ static void DrawText(render_state* RenderState, assets* Assets, i32 X, i32 Y, fl
       glUniform2f(glGetUniformLocation(Handle, "Range"), XRange / Texture->Width, YRange / Texture->Height);
 
       glDrawArrays(GL_TRIANGLES, 0, 6);
-      XPos += TextSize;
+      XPos += TextSize * Kerning;
+    }
+    if (Ch == '\n') {
+      XPos = X;
+      YPos += TextSize * 1.5f;
     }
   }
   glBindVertexArray(0);

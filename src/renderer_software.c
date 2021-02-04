@@ -7,7 +7,7 @@ typedef enum blend_mode {
   BLEND_MODE_ADD,
 } blend_mode;
 
-#define LIGHT_STRENGTH 1.0f
+#define LIGHT_STRENGTH 2.5f
 #define NO_LIGHTING 0
 #define DITHERING 0
 
@@ -203,21 +203,21 @@ inline v2 Cartesian(v2 V0, v2 V1, v2 V2, float W0, float W1, float W2) {
   return Result;
 }
 
-// Copied them quick maffs
-static v3 IntersectPlane(v3 PlanePos, v3 PlaneNormal, v3 LineStart, v3 LineEnd) {
+static v3 IntersectPlane(v3 PlanePos, v3 PlaneNormal, v3 LineStart, v3 LineEnd, float* T) {
   PlaneNormal = NormalizeVec3(PlaneNormal);
   float PlaneDist = DotVec3(PlaneNormal, PlanePos);
   float aD = DotVec3(LineStart, PlaneNormal);
   float bD = DotVec3(LineEnd, PlaneNormal);
-  float T = (PlaneDist - aD) / (bD - aD);
-  v3 LineToIntersect = MultiplyV3(SubToV3(LineEnd, LineStart), T);
-
+  float baDiff = bD - aD;
+  Assert(baDiff != 0);
+  *T = (PlaneDist - aD) / baDiff;
+  v3 LineToIntersect = MultiplyV3(SubToV3(LineEnd, LineStart), *T);
   return AddToV3(LineStart, LineToIntersect);
 }
 
 // Shortest distance from a point to a plane
 static float PointToPlaneDistance(v3 PlanePos, v3 PlaneNormal, v3 P) {
-  float Result = 0;
+  float Result = 0.0f;
 
   Result = PlaneNormal.X * P.X + PlaneNormal.Y * P.Y + PlaneNormal.Z * P.Z - DotVec3(PlaneNormal, PlanePos);
 
@@ -235,28 +235,42 @@ static i32 ClipAgainstPlane(v3 PlanePos, v3 PlaneNormal, triangle* T, triangle* 
   // Number of vertices that are inside and outside the plane respectively
   i32 NumInside = 0;
   i32 NumOutside = 0;
-  static v3* Inside[3] = {};
-  static v3* Outside[3] = {};
+  v3* Inside[3] = { &T->A, &T->B, &T->C };
+  v3* Outside[3] = { &T->A, &T->B, &T->C };
+  v2 InsideUV[3] = {};
+  v2 OutsideUV[3] = {};
 
   if (Dist0 >= 0.0f) {
-    Inside[NumInside++] = &T->A;
+    Inside[NumInside] = &T->A;
+    InsideUV[NumInside] = T->T0;
+    ++NumInside;
   }
   else {
-    Outside[NumOutside++] = &T->A;
+    Outside[NumOutside] = &T->A;
+    OutsideUV[NumOutside] = T->T0;
+    ++NumOutside;
   }
 
   if (Dist1 >= 0.0f) {
-    Inside[NumInside++] = &T->B;
+    Inside[NumInside] = &T->B;
+    InsideUV[NumInside] = T->T1;
+    ++NumInside;
   }
   else {
-    Outside[NumOutside++] = &T->B;
+    Outside[NumOutside] = &T->B;
+    OutsideUV[NumOutside] = T->T1;
+    ++NumOutside;
   }
 
   if (Dist2 >= 0.0f) {
-    Inside[NumInside++] = &T->C;
+    Inside[NumInside] = &T->C;
+    InsideUV[NumInside] = T->T2;
+    ++NumInside;
   }
   else {
-    Outside[NumOutside++] = &T->C;
+    Outside[NumOutside] = &T->C;
+    OutsideUV[NumOutside] = T->T2;
+    ++NumOutside;
   }
 
   // All points are outside the plane
@@ -270,25 +284,67 @@ static i32 ClipAgainstPlane(v3 PlanePos, v3 PlaneNormal, triangle* T, triangle* 
     return 1;
   }
 
-  Clipped0->T0 = T->T0;
-  Clipped0->T1 = T->T1;
-  Clipped0->T2 = T->T2;
-
   if (NumInside == 1 && NumOutside == 2) {
+    float Dist = 0.0f;
+
     Clipped0->A = *Inside[0];
-    Clipped0->B = IntersectPlane(PlanePos, PlaneNormal, *Inside[0], *Outside[0]);
-    Clipped0->C = IntersectPlane(PlanePos, PlaneNormal, *Inside[0], *Outside[1]);
+
+    Clipped0->T0 = V2(0, 1);
+    Clipped0->T1 = V2(0, 1);
+    Clipped0->T2 = V2(0, 1);
+
+    Clipped0->T0 = InsideUV[0];
+
+    Clipped0->B = IntersectPlane(PlanePos, PlaneNormal, *Inside[0], *Outside[0], &Dist);
+    Clipped0->T1 = V2(
+      Dist * (OutsideUV[0].U - InsideUV[0].U) + InsideUV[0].U,
+      Dist * (OutsideUV[0].V - InsideUV[0].V) + InsideUV[0].V
+    );
+
+    Clipped0->C = IntersectPlane(PlanePos, PlaneNormal, *Inside[0], *Outside[1], &Dist);
+    Clipped0->T2 = V2(
+      Dist * (OutsideUV[1].U - InsideUV[0].U) + InsideUV[0].U,
+      Dist * (OutsideUV[1].V - InsideUV[0].V) + InsideUV[0].V
+    );
+
     return 1;
   }
 
   if (NumInside == 2 && NumOutside == 1) {
+    float Dist = 0.0f;
+
     Clipped0->A = *Inside[0];
     Clipped0->B = *Inside[1];
-    Clipped0->C = IntersectPlane(PlanePos, PlaneNormal, *Inside[0], *Outside[0]);
+
+    Clipped0->T0 = V2(0, 0);
+    Clipped0->T1 = V2(0, 0);
+    Clipped0->T2 = V2(0, 0);
+
+
+    Clipped0->T0 = InsideUV[0];
+    Clipped0->T1 = InsideUV[1];
+
+    Clipped0->C = IntersectPlane(PlanePos, PlaneNormal, *Inside[0], *Outside[0], &Dist);
+    Clipped0->T2 = V2(
+      Dist * (OutsideUV[0].U - InsideUV[0].U) + InsideUV[0].U,
+      Dist * (OutsideUV[0].V - InsideUV[0].V) + InsideUV[0].V
+    );
 
     Clipped1->A = *Inside[1];
     Clipped1->B = Clipped0->C;
-    Clipped1->C = IntersectPlane(PlanePos, PlaneNormal, *Inside[1], *Outside[0]);
+
+    Clipped1->T0 = V2(0, 0);
+    Clipped1->T1 = V2(0, 0);
+    Clipped1->T2 = V2(0, 0);
+
+    Clipped1->T0 = Clipped0->T1;
+    Clipped1->T1 = Clipped0->T2;
+
+    Clipped1->C = IntersectPlane(PlanePos, PlaneNormal, *Inside[1], *Outside[0], &Dist);
+    Clipped1->T2 = V2(
+      Dist * (OutsideUV[0].U - InsideUV[1].U) + InsideUV[1].U,
+      Dist * (OutsideUV[0].V - InsideUV[1].V) + InsideUV[1].V
+    );
     return 2;
   }
 
@@ -359,7 +415,6 @@ void DrawLine(render_state* RenderState, v2 A, v2 B, color Color) {
   }
 }
 
-// TODO(lucas): Implement rendering of texture region
 static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, u32 TextureId, color Tint) {
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
   image* Texture = &Assets->Textures[TextureId];
@@ -374,35 +429,42 @@ static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 
   i32 XDiff = 0;
   i32 YDiff = 0;
 
+  v3 FullTint = V3(
+    Tint.R / 255.0f,
+    Tint.B / 255.0f,
+    Tint.B / 255.0f
+  );
+
   // TODO(lucas): Cleanup sampling!
   // TODO(lucas): There is an error in the sampling in which we sample more pixels than we need
+  // TODO(lucas): Probably want to switch the way we organize the framebuffer. We should let the origin be top left, so that drawing will be more intuitive, as well as matching the way OpenGL handles this.
   for (Y = MinY; Y < MaxY; ++Y) {
-    YDiff = MaxY - Y;
-    YCoord = Texture->Height * ((float)YDiff / H) * YRange + (YOffset * Texture->Height);
+    YDiff = MaxY - Y - 1;
+    YCoord = (i32)(Texture->Height * ((float)YDiff / H) * YRange + (YOffset * Texture->Height)) % Texture->Height;
 
     for (X = MinX; X < MaxX; ++X) {
       XDiff = X - MaxX;
-      XCoord = Texture->Width * ((float)(XDiff) / W) * XRange + (XOffset * Texture->Width);
-      color Texel = RGBToBGR(&Texture->PixelBuffer[(i32)(4 * ((YCoord * Texture->Width) + XCoord))]);
+      XCoord = (i32)(Texture->Width * ((float)(XDiff) / W) * XRange + (XOffset * Texture->Width)) % Texture->Width;
+      color Texel = RGBToBGR(&Texture->PixelBuffer[(i32)(4 * (XCoord + (YCoord * Texture->Width)))]);
 
       if (Texel.R == 255 && Texel.G == 0 && Texel.B == 255) {
         continue;
       }
 
-      // TODO(lucas): Add full (linear) color tint
-      Texel.R *= Tint.R;
-      Texel.G *= Tint.G;
-      Texel.B *= Tint.B;
+      Texel.R *= FullTint.R;
+      Texel.G *= FullTint.G;
+      Texel.B *= FullTint.B;
 
       DrawPixel(FrameBuffer, X, Y, Texel);
     }
   }
 }
 
-// TODO(lucas): Implement rendering of texture region
-inline void DrawTexture2DFast(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, image* Texture, color Tint) {
+inline void DrawTexture2DFast(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, u32 TextureId, color Tint) {
   (void)XOffset; (void)YOffset; (void)XRange; (void)YRange; (void)Tint;
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
+  image* Texture = &Assets->Textures[TextureId];
+
   i32 MinX = X;
   i32 MinY = Y;
   i32 MaxX = X + W;
@@ -419,10 +481,16 @@ inline void DrawTexture2DFast(render_state* RenderState, i32 X, i32 Y, i32 W, i3
 
   Dest += (FrameBuffer->Width / 4) * ((FrameBuffer->Height - 1) - YStart) + XStart;
   for (i32 YPos = 0; YPos < YChunkCount; ++YPos) {
-    i32 YCoord = (i32)(Texture->Height * ((float)(YPos) / H) * YRange);
+    i32 YCoord = (i32)(Texture->Height * ((float)(YPos) / H) * YRange + (YOffset * Texture->Height)) % Texture->Height;
     for (i32 XPos = 0; XPos < XChunkCount; ++XPos) {
-      i32 XCoord = (i32)(Texture->Width * ((float)(XPos * 4) / W) * XRange);
+      i32 XCoord = (i32)(Texture->Width * ((float)(XPos * 4) / W) * XRange + (XOffset * Texture->Width)) % Texture->Width;
+      // TODO(lucas): Discard transparent texels!
+#if 1
+      __m128i* Texel = (__m128i*)&Texture->PixelBuffer[4 * (XCoord + (YCoord * Texture->Width))];
+      *(Dest)++ = *Texel;
+#else
       color* C = (color*)&Texture->PixelBuffer[4 * (XCoord + (YCoord * Texture->Width))];
+      // TODO(lucas): This doesn't seem quite efficient. We should SIMD load 4 pixels at a time here. Fix!
       Texel = _mm_setr_epi8(
         C->R, C->G, C->B, C->A,
         (C + 1)->R, (C + 1)->G, (C + 1)->B, (C + 1)->A,
@@ -430,8 +498,35 @@ inline void DrawTexture2DFast(render_state* RenderState, i32 X, i32 Y, i32 W, i3
         (C + 3)->R, (C + 3)->G, (C + 3)->B, (C + 3)->A
       );
       *(Dest)++ = Texel;
+#endif
     }
     Dest -= (FrameBuffer->Width / 4) + (XEnd - XStart);
+  }
+}
+
+static void DrawText(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float TextSize, float Kerning, const char* Text, u32 TextLength, u32 FontId, color Tint) {
+  image* Texture = &Assets->Textures[FontId];
+  i32 XPos = X;
+  i32 YPos = Y;
+  float FontSize = Texture->Width;
+
+  for (u32 Index = 0; Index < TextLength; ++Index) {
+    char Ch = Text[Index];
+    if (Ch == '\0')
+      break;
+    if (Ch >= 32 && Ch < 127 && Ch != '\n') {
+      float XOffset = 0;
+      float YOffset = ((Ch - 32) * FontSize) / Texture->Height;
+      float XRange = FontSize / Texture->Width;
+      float YRange = FontSize / Texture->Height;
+      // DrawTexture2DFast(RenderState, Assets, XPos, YPos, Z, TextSize, TextSize, XOffset, YOffset, XRange, YRange, FontId, Tint);
+      DrawTexture2D(RenderState, Assets, XPos, YPos, Z, TextSize, TextSize, XOffset, YOffset, XRange, YRange, FontId, Tint);
+      XPos += TextSize * Kerning;
+    }
+    if (Ch == '\n') {
+      XPos = X;
+      YPos += TextSize * 1.5f;
+    }
   }
 }
 
@@ -513,11 +608,18 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
             );
             i32 XCoord = (i32)Abs(Texture->Width * UV.U) % Texture->Width;
             i32 YCoord = (i32)Abs(Texture->Height * (1.0f - UV.V)) % Texture->Height;
+            // TODO(lucas): Fix so that we don't have to do this conversion every time
             Texel = RGBToBGR(&Texture->PixelBuffer[4 * ((YCoord * Texture->Width) + XCoord)]);
           }
           Texel.R = Clamp(Texel.R * LightFactor, G_Ambient, 0xFF);
           Texel.G = Clamp(Texel.G * LightFactor, G_Ambient, 0xFF);
           Texel.B = Clamp(Texel.B * LightFactor, G_Ambient, 0xFF);
+          if (G_DrawWireframe) {
+            if (W0 <= 0.02f || W1 <= 0.02f || W2 <= 0.02f) {
+              Texel = COLOR(220, 50, 50);
+              // Texel = COLOR(0, 0, 0);
+            }
+          }
           DrawPixel(FrameBuffer, P.X, P.Y, Texel);
         }
       }
@@ -545,7 +647,7 @@ static void DrawFilledTriangle(render_state* RenderState, v3 A, v3 B, v3 C, v2 T
   }
 }
 
-#define MAX_CLIPPED_TRIANGLES 6
+#define MAX_CLIPPED_TRIANGLES 2
 #define MAX_CLIPPED 6
 
 static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 TextureId, v3 P, v3 Light, float LightStrength, v3 Rotation, v3 Scaling, camera* Camera) {
@@ -609,13 +711,17 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
       LightFactor = DotVec3(Normal, LightNormal) * Attenuation;
     }
 
-    // View-space
-    R[0] = MultiplyMatrixVector(View, R[0]);
-    R[1] = MultiplyMatrixVector(View, R[1]);
-    R[2] = MultiplyMatrixVector(View, R[2]);
+    float W0 = 1.0f;
+    float W1 = 1.0f;
+    float W2 = 1.0f;
 
-    // TODO(lucas): Clip against near plane (and probably far plane as well)
+    // View-space
+    R[0] = MultiplyMatrixVectorW(View, R[0], &W0);
+    R[1] = MultiplyMatrixVectorW(View, R[1], &W1);
+    R[2] = MultiplyMatrixVectorW(View, R[2], &W2);
+
 #if 1
+/*
     R[0] = MultiplyMatrixVector(Projection, R[0]);
     R[1] = MultiplyMatrixVector(Projection, R[1]);
     R[2] = MultiplyMatrixVector(Projection, R[2]);
@@ -630,19 +736,42 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
     if (Degenerate(R[0], R[1], R[2])) {
       continue;
     }
+*/
 #else
 
-    triangle ViewTriangle = Triangle(R[0], R[1], R[2]);
-    triangle RasterTriangles[MAX_CLIPPED_TRIANGLES] = {};
-    i32 RasterTriangleCount = ClipAgainstPlane(V3(0.0f, 0.0f, 0.01f), V3(0.0f, 0.0f, 1.0f), &ViewTriangle, &RasterTriangles[0], &RasterTriangles[1]);
+    triangle ViewTriangle = TRIANGLE(R[0], R[1], R[2], T[0], T[1], T[2]);
+    triangle RasterTriangles[MAX_CLIPPED_TRIANGLES] = {0};
+    i32 RasterTriangleCount = ClipAgainstPlane(V3(0.0f, 0.0f, 0.5f), V3(0.0f, 0.0f, -1.0f), &ViewTriangle, &RasterTriangles[0], &RasterTriangles[1]);
 
+    if (RasterTriangleCount == 0) {
+      continue;
+    }
     for (i32 RasterIndex = 0; RasterIndex < RasterTriangleCount; ++RasterIndex) {
       triangle Tri = RasterTriangles[RasterIndex];
+      float W0 = 1.0f;
+      float W1 = 1.0f;
+      float W2 = 1.0f;
 
       // Screen-space
-      Tri.A = MultiplyMatrixVector(Projection, RasterTriangles[RasterIndex].A);
-      Tri.B = MultiplyMatrixVector(Projection, RasterTriangles[RasterIndex].B);
-      Tri.C = MultiplyMatrixVector(Projection, RasterTriangles[RasterIndex].C);
+      Tri.A = MultiplyMatrixVectorW(Projection, Tri.A, &W0);
+      Tri.B = MultiplyMatrixVectorW(Projection, Tri.B, &W1);
+      Tri.C = MultiplyMatrixVectorW(Projection, Tri.C, &W2);
+
+      Tri.A = DivideV3(Tri.A, W0);
+      Tri.B = DivideV3(Tri.B, W0);
+      Tri.C = DivideV3(Tri.C, W0);
+
+      // Tri.A.X *= -1.0f;
+      // Tri.B.X *= -1.0f;
+      // Tri.C.X *= -1.0f;
+      // Tri.A.Y *= -1.0f;
+      // Tri.B.Y *= -1.0f;
+      // Tri.C.Y *= -1.0f;
+
+      v3 Offset = V3(1.0f, 1.0f, 0.0f);
+      Tri.A = AddToV3(Tri.A, Offset);
+      Tri.B = AddToV3(Tri.B, Offset);
+      Tri.C = AddToV3(Tri.C, Offset);
 
       Tri.A.X += 1.0f; Tri.A.Y += 1.0f;
       Tri.B.X += 1.0f; Tri.B.Y += 1.0f;
@@ -658,6 +787,22 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
     }
 #endif
 
+#if 1
+    R[0] = MultiplyMatrixVector(Projection, R[0]);
+    R[1] = MultiplyMatrixVector(Projection, R[1]);
+    R[2] = MultiplyMatrixVector(Projection, R[2]);
+
+    R[0].X += 1.0f; R[0].Y += 1.0f;
+    R[1].X += 1.0f; R[1].Y += 1.0f;
+    R[2].X += 1.0f; R[2].Y += 1.0f;
+    R[0].X *= 0.5f * WindowWidth(); R[0].Y *= 0.5f * WindowHeight();
+    R[1].X *= 0.5f * WindowWidth(); R[1].Y *= 0.5f * WindowHeight();
+    R[2].X *= 0.5f * WindowWidth(); R[2].Y *= 0.5f * WindowHeight();
+
+    if (Degenerate(R[0], R[1], R[2])) {
+      continue;
+    }
+
     triangle Big = TRIANGLE(R[0], R[1], R[2], T[0], T[1], T[2]);
     TriangleCount = 0;
     Triangles[TriangleCount++] = Big;
@@ -670,27 +815,31 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
 
       while (NewTriangles > 0) {
         triangle Test = Triangles[--TriangleCount];
-        NewTriangles--;
+        --NewTriangles;
 
         switch (Index) {
           case 0:
+            // Bottom
             ToAdd = ClipAgainstPlane(V3(0.0f, 0.0f, 0.0f), V3(0.0f, 1.0f, 0.0f), &Test, &Clipped[0], &Clipped[1]);
             break;
           case 1:
+            // Top
             ToAdd = ClipAgainstPlane(V3(0.0f, (float)WindowHeight() - 1.0f, 0.0f), V3(0.0f, -1.0f, 0.0f), &Test, &Clipped[0], &Clipped[1]);
             break;
           case 2:
-            ToAdd = ClipAgainstPlane(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 0.0f), &Test, &Clipped[0], &Clipped[1]);
+            // Left
+            ToAdd = ClipAgainstPlane(V3(0.0f, 0.0f, 0.0f), V3(1.0f, 0.0f, 1.0f), &Test, &Clipped[0], &Clipped[1]);
             break;
           case 3:
+            // Right
             ToAdd = ClipAgainstPlane(V3((float)WindowWidth() - 1.0f, 0.0f, 0.0f), V3(-1.0f, 0.0f, 0.0f), &Test, &Clipped[0], &Clipped[1]);
             break;
           default:
-            assert(0);
+            Assert(0);
             break;
         }
 
-        assert(ToAdd <= 2);
+        Assert(ToAdd <= 2);
         for (i32 I = 0; I < ToAdd; ++I) {
           Triangles[TriangleCount++] = Clipped[I];
         }
@@ -700,9 +849,11 @@ static void DrawMesh(render_state* RenderState, assets* Assets, u32 MeshId, u32 
 
     for (i32 Index = 0; Index < TriangleCount; ++Index) {
       triangle Tri = Triangles[Index];
+      if (Degenerate(Tri.A, Tri.B, Tri.C))
+        continue;
       DrawFilledTriangle(RenderState, Tri.A, Tri.B, Tri.C, Tri.T0, Tri.T1, Tri.T2, Texture, LightFactor);
     }
-
+#endif
 skip_face:
     (void)0;
   }

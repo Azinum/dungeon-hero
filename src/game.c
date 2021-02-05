@@ -104,6 +104,8 @@ static void GameRun() {
     CameraUpdateViewMatrix(&Camera);
     UpdateAndDrawEntities((entity*)Game->Entities, Game->EntityCount, Renderer, &Assets, Light, LightStrength, &Camera);
 
+    // DrawTexture2D(Renderer, &Assets, 12, 12, 1.0f, 128, 128, 0, 0, 1, 1, TEXTURE_TEST, COLOR(255, 255, 255));
+
     if (KeyPressed[KEY_T]) {
       v3 Position = AddToV3(Camera.P, V3(
         Camera.Forward.X * 1.5f,

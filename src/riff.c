@@ -67,12 +67,17 @@ static i32 ValidateWaveFormat(wave_format* Header) {
   return NoError;
 }
 
-static i32 ValidateWaveChunk(wave_chunk* Header) {
+static i32 ValidateWaveChunk(wave_chunk* Header, i32* ListTag) {
   char ChunkId[] = {'d', 'a', 't', 'a'};
-  if (strncmp(Header->ChunkId, ChunkId, ARR_SIZE(ChunkId)) != 0) {
-    return Error;
+  char ChunkListId[] = {'L', 'I', 'S', 'T'};
+  if (!strncmp(Header->ChunkId, ChunkId, ARR_SIZE(ChunkId))) {
+    return NoError;
   }
-  return NoError;
+  if (!strncmp(Header->ChunkId, ChunkListId, ARR_SIZE(ChunkListId))) {
+    *ListTag = 1;
+    return NoError;
+  }
+  return Error;
 }
 
 static i32 IterateWaveFile(void* Dest, i32 Size, FILE* File, const char* Path) {
@@ -136,14 +141,23 @@ static i32 LoadWAVE(const char* Path, audio_source* Source) {
   }
 
   wave_chunk WaveChunk;
-  if (IterateWaveFile(&WaveChunk, sizeof(wave_chunk), File, Path) != NoError) {
-    Result = Error;
-    goto Done;
-  }
+  i32 ListTag = 0;
+  do {
+    if (IterateWaveFile(&WaveChunk, sizeof(wave_chunk), File, Path) != NoError) {
+      Result = Error;
+      goto Done;
+    }
 
-  if ((Result = ValidateWaveChunk(&WaveChunk)) != NoError) {
-    goto Done;
-  }
+    ListTag = 0;
+    if ((Result = ValidateWaveChunk(&WaveChunk, &ListTag)) != NoError) {
+      goto Done;
+    }
+    // NOTE(lucas): If there is a list tag in this chunk, skip it for now. Might want to use the contents of the list metadata later on.
+    if (ListTag) {
+      i32 ListTagSize = WaveChunk.Size;
+      fseek(File, ListTagSize, SEEK_CUR);
+    }
+  } while (ListTag);
 
   i32 SampleCount = WaveFormat.ChannelCount * (WaveChunk.Size / WaveFormat.DataBlockSize);
   void* Buffer = malloc(WaveChunk.Size);

@@ -460,6 +460,7 @@ static void DrawTexture2D(render_state* RenderState, assets* Assets, i32 X, i32 
   }
 }
 
+// This ain't working the way one would like it to...
 inline void DrawTexture2DFast(render_state* RenderState, assets* Assets, i32 X, i32 Y, float Z, i32 W, i32 H, float XOffset, float YOffset, float XRange, float YRange, u32 TextureId, color Tint) {
   (void)XOffset; (void)YOffset; (void)XRange; (void)YRange; (void)Tint;
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
@@ -485,7 +486,7 @@ inline void DrawTexture2DFast(render_state* RenderState, assets* Assets, i32 X, 
     for (i32 XPos = 0; XPos < XChunkCount; ++XPos) {
       i32 XCoord = (i32)(Texture->Width * ((float)(XPos * 4) / W) * XRange + (XOffset * Texture->Width)) % Texture->Width;
       // TODO(lucas): Discard transparent texels!
-#if 1
+#if 0
       __m128i* Texel = (__m128i*)&Texture->PixelBuffer[4 * (XCoord + (YCoord * Texture->Width))];
       *(Dest)++ = *Texel;
 #else
@@ -530,8 +531,8 @@ static void DrawText(render_state* RenderState, assets* Assets, i32 X, i32 Y, fl
   }
 }
 
-#define DrawSimpleTexture2D(RenderState, X, Y, W, H, TEXTURE, TINT) \
-  DrawTexture2D(RenderState, X, Y, W, H, 0, 0, 1, 1, TEXTURE, TINT)
+#define DrawSimpleTexture2D(RenderState, X, Y, Z, W, H, TEXTURE, TINT) \
+  DrawTexture2D(RenderState, X, Y, Z, W, H, 0, 0, 1, 1, TEXTURE, TINT)
 
 static void DrawRect(render_state* RenderState, i32 X, i32 Y, i32 W, i32 H, color Color, blend_mode BlendMode) {
   framebuffer* FrameBuffer = &RenderState->FrameBuffer;
